@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RCA+ 矛盾分析繪圖工具 (含修訂功能)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        #diagram-render-area {
+            position: relative; 
+            overflow: auto; 
+        }
+        #svg-connector-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; 
+            z-index: 0; 
+        }
+        .rca-node {
+            background-color: white;
+            border: 1px solid #d1d5db;
+            padding: 0.75rem 1.25rem;
+            margin: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            display: inline-flex; 
+            align-items: center; 
+            min-width: 200px; 
+            text-align: left; 
+            border-radius: 0.375rem; 
+            position: relative; 
+            z-index: 1; 
+        }
+        .rca-node-content { display: flex; flex-direction: column; gap: 0.5rem; width: 100%; }
+        .rca-node-header { display: flex; align-items: center; gap: 0.5rem; }
+        .rca-node-icon { font-weight: bold; font-size: 1.1em; }
+        .nc-badge { font-size: 0.7em; font-weight: bold; color: #4b5563; background-color: #e5e7eb; padding: 0.1rem 0.3rem; border-radius: 0.25rem; margin-left: 0.3rem; }
+        .rca-node-text { font-weight: 500; word-break: break-word; flex-grow: 1; }
+
+        .rca-node-initial-problem { border-left: 4px solid #ef4444; }
+        .rca-node-initial-problem .rca-node-icon { color: #ef4444; }
+        .rca-node-cause { border-left: 4px solid #3b82f6; }
+        .rca-node-cause .rca-node-icon.contradictory { color: #7c3aed; }
+        .rca-node-positive-effect { border-left: 4px solid #10b981; background-color: #f0fdf4; border-radius: 50px; padding: 0.75rem 1.5rem; min-width: 180px; }
+        .rca-node-positive-effect .rca-node-header { justify-content: center; }
+        .rca-node-positive-effect .rca-node-icon { color: #10b981; }
+        .rca-node-negative-effect { border-left: 4px solid #f97316; background-color: #fff7ed; }
+        .rca-node-negative-effect .rca-node-icon { color: #f97316; }
+
+        .rca-children-container { display: flex; flex-direction: column; align-items: center; margin-top: 1rem; position: relative; }
+        
+        .rca-node-actions { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.5rem; border-top: 1px solid #e5e7eb; padding-top: 0.5rem; }
+        .action-button { background-color: #6b7280; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; border: none; cursor: pointer; transition: background-color 0.2s; }
+        .action-button:hover { background-color: #4b5563; }
+        .action-button.add-cause { background-color: #3b82f6; }
+        .action-button.add-positive { background-color: #10b981; }
+        .action-button.add-negative { background-color: #f97316; }
+        .action-button.toggle-nc { background-color: #a855f7; }
+        .action-button.set-and-sources { background-color: #6d28d9; } 
+        .action-button.edit-node { background-color: #f59e0b; } /* Amber-500 for edit node */
+        .action-button.edit-node:hover { background-color: #d97706; }
+        .action-button.finalize-diagram { background-color: #059669; } 
+        .action-button.finalize-diagram:hover { background-color: #047857; }
+        .action-button.edit-diagram { background-color: #d97706; } 
+        .action-button.edit-diagram:hover { background-color: #b45309; }
+
+        .remove-button { background-color: #ef4444; }
+        
+        .input-group-container { margin-top: 0.5rem; }
+        .input-group { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.25rem; background-color: #f9fafb; }
+        .input-field { border: 1px solid #d1d5db; padding: 0.5rem; border-radius: 0.25rem; font-size: 0.875rem; width: 100%; }
+        .save-button { background-color: #065f46; color: white; }
+        .save-edit-button { background-color: #065f46; color: white; } /* Same as save, or can be different */
+
+
+        #cause-effect-table-section { margin-top: 2rem; }
+        .cause-effect-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .cause-effect-table th, .cause-effect-table td { border: 1px solid #d1d5db; padding: 0.5rem; text-align: left; font-size: 0.875rem; }
+        .cause-effect-table th { background-color: #e5e7eb; font-weight: 600; }
+        .cause-effect-table td { background-color: white; }
+
+        #and-source-modal { z-index: 50; }
+        #and-source-options-container label { cursor: pointer; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container mx-auto max-w-6xl">
+        <header class="mb-6 text-center">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-700">RCA+ 矛盾分析繪圖工具</h1>
+            <p class="text-gray-500 mt-1">視覺化根本原因、正面/負面效果，支援「且」關係連接與矛盾點標示。</p>
+        </header>
+
+        <section id="controls-section" class="mb-6 p-4 bg-white rounded-lg shadow">
+             <div id="problem-input-area">
+                <h2 class="text-xl font-semibold text-gray-700 mb-3">1. 設定主要負面效果</h2>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <input type="text" id="problem-statement-input" placeholder="輸入觀察到的主要負面效果" class="input-field flex-grow p-2 rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500">
+                    <button id="set-problem-button" class="action-button add-cause text-white font-semibold py-2 px-4 rounded-md">設定問題根源</button>
+                </div>
+            </div>
+            <div id="tool-buttons" style="display: none;" class="mt-4 flex flex-wrap gap-2">
+                <button id="finalize-diagram-button" class="action-button finalize-diagram text-white font-semibold py-2 px-4 rounded-md">完成圖表</button>
+                <button id="export-diagram-button" class="action-button bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-md">匯出圖表 (PNG)</button>
+                <button id="toggle-table-button" class="action-button bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-4 rounded-md">顯示原因效果表</button>
+            </div>
+        </section>
+
+        <section id="rca-diagram-section" class="bg-white p-4 md:p-6 rounded-lg shadow min-h-[400px]">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4 text-center" id="diagram-title" style="display: none;">2. RCA+ 分析圖</h2>
+            <div id="diagram-render-area">
+                <div id="rca-diagram-container" class="overflow-x-auto pb-4"></div>
+                <svg id="svg-connector-layer"></svg>
+            </div>
+        </section>
+
+        <section id="cause-effect-table-section" style="display: none;" class="bg-white p-4 md:p-6 rounded-lg shadow">
+            <h2 class="text-xl font-semibold text-gray-700 mb-3">3. 原因效果表</h2>
+            <table class="cause-effect-table">
+                <thead> <tr><th>原因</th><th>原因類型</th><th>正面效果</th><th>負面效果</th></tr> </thead>
+                <tbody id="cause-effect-table-body"></tbody>
+            </table>
+        </section>
+    </div>
+
+    <div id="and-source-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center" style="display: none;">
+        <div class="relative mx-auto p-5 border w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 text-center" id="and-source-modal-title">為效果設定 AND 輸入源</h3>
+                <div class="mt-4 px-2 py-3 max-h-72 overflow-y-auto" id="and-source-options-container"></div>
+                <div class="items-center px-4 py-3 mt-4 text-right">
+                    <button id="cancel-and-sources-button" class="mr-2 px-4 py-2 bg-gray-300 text-gray-800 text-base font-medium rounded-md w-auto shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300">取消</button>
+                    <button id="save-and-sources-button" class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-auto shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300">儲存AND來源</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let rcaData = null; 
+        let nodeIdCounter = 0;
+        let currentAndTargetNodeId = null; 
+        let isFinalizedView = false; 
+
+        const problemInput = document.getElementById('problem-statement-input');
+        const setProblemButton = document.getElementById('set-problem-button');
+        const diagramContainer = document.getElementById('rca-diagram-container');
+        const svgLayer = document.getElementById('svg-connector-layer');
+        const diagramTitle = document.getElementById('diagram-title');
+        const problemInputArea = document.getElementById('problem-input-area');
+        const toolButtonsContainer = document.getElementById('tool-buttons');
+        const finalizeDiagramButton = document.getElementById('finalize-diagram-button'); 
+        const exportDiagramButton = document.getElementById('export-diagram-button');
+        const toggleTableButton = document.getElementById('toggle-table-button');
+        const causeEffectTableSection = document.getElementById('cause-effect-table-section');
+        const causeEffectTableBody = document.getElementById('cause-effect-table-body');
+        const andSourceModal = document.getElementById('and-source-modal');
+        const andSourceOptionsContainer = document.getElementById('and-source-options-container');
+        const andSourceModalTitle = document.getElementById('and-source-modal-title');
+        const saveAndSourcesButton = document.getElementById('save-and-sources-button');
+        const cancelAndSourcesButton = document.getElementById('cancel-and-sources-button');
+
+        function initialize() {
+            setProblemButton.addEventListener('click', handleSetInitialProblem);
+            problemInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSetInitialProblem(); });
+            finalizeDiagramButton.addEventListener('click', handleToggleFinalizeView); 
+            exportDiagramButton.addEventListener('click', exportDiagramAsPNG);
+            toggleTableButton.addEventListener('click', handleToggleCauseEffectTable);
+            saveAndSourcesButton.addEventListener('click', handleSaveAndSources);
+            cancelAndSourcesButton.addEventListener('click', handleCancelAndSources);
+            new ResizeObserver(drawAllSvgConnectors).observe(diagramContainer);
+        }
+
+        function handleSetInitialProblem() {
+            const problemText = problemInput.value.trim();
+            if (!problemText) { alert('請輸入主要負面效果！'); return; }
+            nodeIdCounter = 0; 
+            rcaData = createNode(problemText, 'initial-problem', null); 
+            isFinalizedView = false; 
+            finalizeDiagramButton.textContent = '完成圖表';
+            finalizeDiagramButton.classList.remove('edit-diagram');
+            finalizeDiagramButton.classList.add('finalize-diagram');
+            problemInputArea.style.display = 'none'; 
+            diagramTitle.style.display = 'block'; 
+            toolButtonsContainer.style.display = 'flex';
+            renderRcaDiagram();
+            renderCauseEffectTable(); 
+        }
+
+        function handleToggleFinalizeView() {
+            isFinalizedView = !isFinalizedView;
+            if (isFinalizedView) {
+                finalizeDiagramButton.textContent = '編輯圖表';
+                finalizeDiagramButton.classList.remove('finalize-diagram');
+                finalizeDiagramButton.classList.add('edit-diagram');
+            } else {
+                finalizeDiagramButton.textContent = '完成圖表';
+                finalizeDiagramButton.classList.remove('edit-diagram');
+                finalizeDiagramButton.classList.add('finalize-diagram');
+            }
+            renderRcaDiagram(); 
+        }
+
+        function createNode(text, type, parentId, isNonChangeable = false) {
+            nodeIdCounter++;
+            const node = {
+                id: `node-${nodeIdCounter}`, text: text, type: type, parentId: parentId, children: [],
+                andSourceNodeIds: [] 
+            };
+            if (type === 'cause') node.isNonChangeable = isNonChangeable;
+            return node;
+        }
+        
+        function renderRcaDiagram() {
+            diagramContainer.innerHTML = ''; 
+            if (rcaData) {
+                diagramContainer.appendChild(createNodeElement(rcaData));
+            }
+            requestAnimationFrame(drawAllSvgConnectors);
+        }
+
+        function createNodeElement(nodeData) {
+            const nodeWrapper = document.createElement('div');
+            nodeWrapper.classList.add('rca-node-wrapper');
+            const nodeDiv = document.createElement('div');
+            nodeDiv.classList.add('rca-node', `rca-node-${nodeData.type}`);
+            nodeDiv.id = nodeData.id; 
+            nodeDiv.dataset.nodeId = nodeData.id;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.classList.add('rca-node-content');
+            const headerDiv = document.createElement('div');
+            headerDiv.classList.add('rca-node-header');
+            const iconSpan = document.createElement('span');
+            iconSpan.classList.add('rca-node-icon');
+            const textSpan = document.createElement('span');
+            textSpan.classList.add('rca-node-text');
+            textSpan.textContent = nodeData.text;
+
+            headerDiv.appendChild(iconSpan);
+            headerDiv.appendChild(textSpan);
+
+            if (nodeData.type === 'cause' && nodeData.isNonChangeable) {
+                const ncBadge = document.createElement('span');
+                ncBadge.classList.add('nc-badge'); ncBadge.textContent = 'NC';
+                headerDiv.appendChild(ncBadge);
+            }
+            contentDiv.appendChild(headerDiv);
+
+            if (!isFinalizedView) {
+                const actionsDiv = document.createElement('div');
+                actionsDiv.classList.add('rca-node-actions');
+
+                // 新增「修訂此項」按鈕
+                actionsDiv.appendChild(createActionButton('修訂此項', 'edit-node', () => promptEditNode(nodeData.id, contentDiv)));
+
+                if (nodeData.type === 'initial-problem') {
+                    iconSpan.textContent = '(-)';
+                    actionsDiv.appendChild(createActionButton('新增原因', 'add-cause', () => promptAddNode(nodeData.id, contentDiv, 'cause', '輸入原因描述')));
+                } else if (nodeData.type === 'cause') {
+                    const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(nodeData);
+                    if (hasPositiveChild && hasNegativeChild) {
+                        iconSpan.textContent = '(+/-)'; iconSpan.classList.add('contradictory');
+                    } else { iconSpan.textContent = ''; }
+                    actionsDiv.appendChild(createActionButton('新增子原因', 'add-cause', () => promptAddNode(nodeData.id, contentDiv, 'cause', '輸入子原因描述')));
+                    actionsDiv.appendChild(createActionButton('(+) 正面效果', 'add-positive', () => promptAddNode(nodeData.id, contentDiv, 'positive-effect', '輸入此原因帶來的正面效果')));
+                    actionsDiv.appendChild(createActionButton('(-) 負面效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入此原因導致的負面效果')));
+                    const ncButtonText = nodeData.isNonChangeable ? '取消NC標記' : '設為NC';
+                    actionsDiv.appendChild(createActionButton(ncButtonText, 'toggle-nc', () => toggleNonChangeable(nodeData.id)));
+                    // 只有非根節點才能被移除
+                    if (nodeData.parentId) { // 確保不是根節點 (initial-problem沒有parentId)
+                       actionsDiv.appendChild(createActionButton('移除此原因', 'remove-button', () => removeNode(nodeData.id)));
+                    }
+                } else if (nodeData.type === 'positive-effect' || nodeData.type === 'negative-effect') {
+                    iconSpan.textContent = nodeData.type === 'positive-effect' ? '(+)' : '(-)';
+                    actionsDiv.appendChild(createActionButton('設定AND輸入源', 'set-and-sources', () => openAndSourceModal(nodeData.id)));
+                    actionsDiv.appendChild(createActionButton('移除效果', 'remove-button', () => removeNode(nodeData.id)));
+                }
+                contentDiv.appendChild(actionsDiv);
+
+                const inputContainer = document.createElement('div'); 
+                inputContainer.classList.add('input-group-container');
+                contentDiv.appendChild(inputContainer);
+            } else {
+                if (nodeData.type === 'initial-problem') iconSpan.textContent = '(-)';
+                else if (nodeData.type === 'cause') {
+                    const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(nodeData);
+                    if (hasPositiveChild && hasNegativeChild) {
+                        iconSpan.textContent = '(+/-)'; iconSpan.classList.add('contradictory');
+                    } else { iconSpan.textContent = ''; }
+                } else if (nodeData.type === 'positive-effect') iconSpan.textContent = '(+)';
+                else if (nodeData.type === 'negative-effect') iconSpan.textContent = '(-)';
+            }
+            
+            nodeDiv.appendChild(contentDiv); 
+            nodeWrapper.appendChild(nodeDiv); 
+
+            if (nodeData.children && nodeData.children.length > 0) {
+                const childrenContainer = document.createElement('div');
+                childrenContainer.classList.add('rca-children-container');
+                if (nodeData.children.length > 1) childrenContainer.classList.add('has-multiple-children');
+                nodeData.children.forEach(childNode => childrenContainer.appendChild(createNodeElement(childNode)));
+                nodeWrapper.appendChild(childrenContainer);
+            }
+            return nodeWrapper;
+        }
+        
+        function promptEditNode(nodeId, parentNodeContentDiv) {
+            if (isFinalizedView) return;
+            const nodeToEdit = findNodeById(rcaData, nodeId);
+            if (!nodeToEdit) return;
+
+            const inputContainer = parentNodeContentDiv.querySelector('.input-group-container');
+            if (!inputContainer) return; 
+            inputContainer.innerHTML = ''; // 清除可能存在的其他輸入框
+
+            const inputGroup = document.createElement('div');
+            inputGroup.classList.add('input-group');
+
+            const nodeInput = document.createElement('input');
+            nodeInput.type = 'text';
+            nodeInput.value = nodeToEdit.text; // 預填入現有文字
+            nodeInput.classList.add('input-field');
+            
+            const saveEditButton = document.createElement('button');
+            saveEditButton.textContent = '儲存修訂';
+            saveEditButton.classList.add('action-button', 'save-edit-button', 'w-full', 'mt-2');
+
+            saveEditButton.onclick = () => {
+                const newText = nodeInput.value.trim();
+                if (newText) {
+                    nodeToEdit.text = newText;
+                    renderRcaDiagram(); 
+                    renderCauseEffectTable();
+                    inputContainer.innerHTML = ''; // 清除輸入框
+                } else {
+                    alert('描述不能為空！');
+                }
+            };
+            
+            nodeInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') saveEditButton.click();
+            });
+             // 新增取消按鈕
+            const cancelEditButton = document.createElement('button');
+            cancelEditButton.textContent = '取消修訂';
+            cancelEditButton.classList.add('action-button', 'bg-gray-400', 'hover:bg-gray-500', 'w-full', 'mt-1');
+            cancelEditButton.onclick = () => {
+                inputContainer.innerHTML = ''; // 清除輸入框
+            };
+
+
+            inputGroup.appendChild(nodeInput);
+            inputGroup.appendChild(saveEditButton);
+            inputGroup.appendChild(cancelEditButton);
+            inputContainer.appendChild(inputGroup); 
+            nodeInput.focus();
+            nodeInput.select();
+        }
+
+
+        function openAndSourceModal(targetNodeId) {
+            if (isFinalizedView) return; 
+            currentAndTargetNodeId = targetNodeId;
+            const targetNode = findNodeById(rcaData, targetNodeId);
+            if (!targetNode) return;
+
+            andSourceModalTitle.textContent = `為效果 "${targetNode.text}" 設定 AND 輸入源`;
+            andSourceOptionsContainer.innerHTML = ''; 
+
+            const availableCauses = [];
+            function findCausesRecursive(node) {
+                if (!node) return;
+                if (node.type === 'cause') availableCauses.push(node);
+                if (node.children) node.children.forEach(findCausesRecursive);
+            }
+            if (rcaData) findCausesRecursive(rcaData);
+
+            if (availableCauses.length === 0) {
+                andSourceOptionsContainer.innerHTML = '<p class="text-gray-500 text-center">圖表中尚無可用的原因節點。</p>';
+            } else {
+                availableCauses.forEach(causeNode => {
+                    if (causeNode.id === targetNode.id || isDescendant(targetNode, causeNode.id)) return;
+
+                    const div = document.createElement('div');
+                    div.classList.add('flex', 'items-center', 'my-2', 'p-2', 'hover:bg-gray-100', 'rounded');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `and-source-chk-${causeNode.id}`;
+                    checkbox.value = causeNode.id;
+                    checkbox.classList.add('form-checkbox', 'h-5', 'w-5', 'text-blue-600', 'rounded', 'border-gray-300');
+                    if (targetNode.andSourceNodeIds && targetNode.andSourceNodeIds.includes(causeNode.id)) {
+                        checkbox.checked = true;
+                    }
+                    const label = document.createElement('label');
+                    label.htmlFor = `and-source-chk-${causeNode.id}`;
+                    label.textContent = `${causeNode.text} (ID: ${causeNode.id})`;
+                    label.classList.add('ml-3', 'text-sm', 'text-gray-700', 'flex-grow');
+                    div.appendChild(checkbox); div.appendChild(label);
+                    andSourceOptionsContainer.appendChild(div);
+                });
+                 if (andSourceOptionsContainer.childElementCount === 0) {
+                    andSourceOptionsContainer.innerHTML = '<p class="text-gray-500 text-center">無有效的 AND 輸入源選項。</p>';
+                }
+            }
+            andSourceModal.style.display = 'flex';
+        }
+
+        function isDescendant(parentNode, childNodeIdToFind) {
+            if (!parentNode || !parentNode.children || parentNode.children.length === 0) return false;
+            for (const child of parentNode.children) {
+                if (child.id === childNodeIdToFind) return true;
+                if (isDescendant(child, childNodeIdToFind)) return true;
+            }
+            return false;
+        }
+
+        function handleSaveAndSources() {
+            if (!currentAndTargetNodeId) return;
+            const targetNode = findNodeById(rcaData, currentAndTargetNodeId);
+            if (!targetNode) return;
+            const selectedSourceIds = [];
+            const checkboxes = andSourceOptionsContainer.querySelectorAll('input[type="checkbox"]:checked');
+            checkboxes.forEach(chk => selectedSourceIds.push(chk.value));
+            targetNode.andSourceNodeIds = selectedSourceIds;
+            andSourceModal.style.display = 'none';
+            currentAndTargetNodeId = null;
+            renderRcaDiagram(); 
+        }
+
+        function handleCancelAndSources() {
+            andSourceModal.style.display = 'none';
+            currentAndTargetNodeId = null;
+        }
+
+        function drawAllSvgConnectors() {
+            svgLayer.innerHTML = ''; 
+            if (!rcaData) return;
+            const diagramRect = diagramContainer.getBoundingClientRect();
+            const svgRect = svgLayer.getBoundingClientRect();
+            
+            svgLayer.setAttribute('width', diagramContainer.scrollWidth);
+            svgLayer.setAttribute('height', diagramContainer.scrollHeight);
+            svgLayer.setAttribute('viewBox', `0 0 ${diagramContainer.scrollWidth} ${diagramContainer.scrollHeight}`);
+
+            function drawRecursive(node) {
+                const nodeElement = document.getElementById(node.id);
+                if (!nodeElement) return;
+
+                if (node.andSourceNodeIds && node.andSourceNodeIds.length > 0) {
+                    const targetRect = nodeElement.getBoundingClientRect();
+                    const targetX = targetRect.left - svgRect.left + diagramContainer.scrollLeft + targetRect.width / 2;
+                    const targetY = targetRect.top - svgRect.top + diagramContainer.scrollTop; 
+                    const mergePointYOffset = 40; 
+                    const mergePoint = { x: targetX, y: targetY - mergePointYOffset };
+                    drawSvgCircle(mergePoint.x, mergePoint.y, 6, '#6d28d9'); 
+                    node.andSourceNodeIds.forEach(sourceId => {
+                        const sourceElement = document.getElementById(sourceId);
+                        if (sourceElement) {
+                            const sourceRect = sourceElement.getBoundingClientRect();
+                            const sourceConnX = sourceRect.left - svgRect.left + diagramContainer.scrollLeft + sourceRect.width / 2;
+                            const sourceConnY = sourceRect.top - svgRect.top + diagramContainer.scrollTop + sourceRect.height; 
+                            drawSvgLine(sourceConnX, sourceConnY, mergePoint.x, mergePoint.y, '#6b7280');
+                        }
+                    });
+                    drawSvgLine(mergePoint.x, mergePoint.y, targetX, targetY, '#6b7280'); 
+                } else if (node.parentId) { 
+                    const parentElement = document.getElementById(node.parentId);
+                    if (parentElement) {
+                        const parentRect = parentElement.getBoundingClientRect();
+                        const childRect = nodeElement.getBoundingClientRect();
+                        const startX = parentRect.left - svgRect.left + diagramContainer.scrollLeft + parentRect.width / 2;
+                        const startY = parentRect.top - svgRect.top + diagramContainer.scrollTop + parentRect.height;
+                        const endX = childRect.left - svgRect.left + diagramContainer.scrollLeft + childRect.width / 2;
+                        const endY = childRect.top - svgRect.top + diagramContainer.scrollTop;
+                        drawSvgLine(startX, startY, endX, endY, '#9ca3af');
+                    }
+                }
+                if (node.children) node.children.forEach(drawRecursive);
+            }
+            drawRecursive(rcaData);
+        }
+
+        function drawSvgLine(x1, y1, x2, y2, color = 'black', strokeWidth = 2) {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+            line.setAttribute('stroke', color); line.setAttribute('stroke-width', strokeWidth);
+            svgLayer.appendChild(line);
+        }
+
+        function drawSvgCircle(cx, cy, r, fillColor = 'black') {
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', cx); circle.setAttribute('cy', cy);
+            circle.setAttribute('r', r); circle.setAttribute('fill', fillColor);
+            svgLayer.appendChild(circle);
+        }
+        
+        function checkChildrenEffects(nodeData) {
+            let hasPositiveChild = false; let hasNegativeChild = false;
+            if (nodeData.children) {
+                for (const child of nodeData.children) {
+                    if (child.type === 'positive-effect') hasPositiveChild = true;
+                    if (child.type === 'negative-effect') hasNegativeChild = true;
+                    if (hasPositiveChild && hasNegativeChild) break;
+                }
+            }
+            return { hasPositiveChild, hasNegativeChild };
+        }
+
+        function toggleNonChangeable(nodeId) {
+            if (isFinalizedView) return; 
+            const node = findNodeById(rcaData, nodeId);
+            if (node && node.type === 'cause') {
+                node.isNonChangeable = !node.isNonChangeable;
+                renderRcaDiagram(); renderCauseEffectTable();
+            }
+        }
+        
+        function createActionButton(text, className, onClickHandler) {
+            const button = document.createElement('button'); 
+            button.classList.add('action-button', ...className.split(' ')); 
+            button.textContent = text; 
+            button.addEventListener('click', onClickHandler); return button;
+        }
+        
+        function promptAddNode(parentId, parentNodeContentDiv, nodeTypeToAdd, placeholderText) {
+            if (isFinalizedView) return; 
+            const inputContainer = parentNodeContentDiv.querySelector('.input-group-container');
+            if (!inputContainer) return; 
+            inputContainer.innerHTML = ''; 
+            const inputGroup = document.createElement('div');
+            inputGroup.classList.add('input-group');
+            const nodeInput = document.createElement('input');
+            nodeInput.type = 'text'; nodeInput.placeholder = placeholderText;
+            nodeInput.classList.add('input-field');
+            const saveButton = document.createElement('button');
+            saveButton.textContent = '儲存';
+            saveButton.classList.add('action-button', 'save-button', 'w-full', 'mt-2');
+            saveButton.onclick = () => {
+                const nodeText = nodeInput.value.trim();
+                if (nodeText) { addNodeToData(parentId, nodeText, nodeTypeToAdd); } 
+                else { alert('描述不能為空！'); }
+            };
+            nodeInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') saveButton.click(); });
+            inputGroup.appendChild(nodeInput); inputGroup.appendChild(saveButton);
+            inputContainer.appendChild(inputGroup); nodeInput.focus();
+        }
+
+        function addNodeToData(parentId, nodeText, nodeType) {
+            const parentNode = findNodeById(rcaData, parentId); 
+            if (parentNode) {
+                const newNode = createNode(nodeText, nodeType, parentId);
+                parentNode.children.push(newNode);
+                renderRcaDiagram(); renderCauseEffectTable();
+            }
+        }
+
+        function removeNode(nodeIdToRemove) {
+            if (isFinalizedView) return; 
+            if (rcaData && rcaData.id === nodeIdToRemove) { alert('不能移除主要問題根源節點！'); return; }
+            function filterRecursive(node, idToRemove) {
+                if (!node) return null;
+                node.children = node.children.map(child => filterRecursive(child, idToRemove)).filter(child => child !== null);
+                function removeAndSourceFromTree(currentNode) { 
+                    if (!currentNode) return;
+                    if (currentNode.andSourceNodeIds && currentNode.andSourceNodeIds.includes(idToRemove)) {
+                        currentNode.andSourceNodeIds = currentNode.andSourceNodeIds.filter(srcId => srcId !== idToRemove);
+                    }
+                    if (currentNode.children) {
+                        currentNode.children.forEach(removeAndSourceFromTree);
+                    }
+                }
+                if (rcaData) removeAndSourceFromTree(rcaData);
+                return (node.id === idToRemove) ? null : node;
+            }
+            rcaData = filterRecursive(rcaData, nodeIdToRemove);
+            if (!rcaData) { 
+                 problemInputArea.style.display = 'flex'; 
+                 diagramTitle.style.display = 'none';
+                 toolButtonsContainer.style.display = 'none';
+                 causeEffectTableSection.style.display = 'none';
+            }
+            renderRcaDiagram(); renderCauseEffectTable();
+        }
+        
+        function findNodeById(node, id) {
+            if (!node) return null;
+            if (node.id === id) return node;
+            if (node.children) {
+                for (const child of node.children) {
+                    const found = findNodeById(child, id);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        function handleToggleCauseEffectTable() {
+            const isHidden = causeEffectTableSection.style.display === 'none';
+            causeEffectTableSection.style.display = isHidden ? 'block' : 'none';
+            toggleTableButton.textContent = isHidden ? '隱藏原因效果表' : '顯示原因效果表';
+            if (isHidden) renderCauseEffectTable();
+        }
+
+        function getCauseEffectTableData() {
+            const tableRowsData = [];
+            function collectDataRecursive(node) {
+                if (!node) return;
+                if (node.type === 'cause') {
+                    const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(node);
+                    let causeType = '';
+                    if (node.isNonChangeable) causeType = 'NC';
+                    else if (hasPositiveChild && hasNegativeChild) causeType = 'N+P';
+                    else if (hasNegativeChild) causeType = 'N';
+                    else if (hasPositiveChild) causeType = 'P'; 
+                    else causeType = 'N'; 
+                    
+                    if (causeType !== 'P') {
+                         const positiveEffects = node.children.filter(c => c.type === 'positive-effect').map(c => c.text).join('; ') || '一 (無)';
+                         const negativeEffects = node.children.filter(c => c.type === 'negative-effect').map(c => c.text).join('; ') || '一 (無)';
+                         tableRowsData.push({ cause: node.text, type: causeType, positive: positiveEffects, negative: negativeEffects });
+                    }
+                }
+                if (node.children) node.children.forEach(collectDataRecursive);
+            }
+            if (rcaData) collectDataRecursive(rcaData);
+            return tableRowsData;
+        }
+
+        function renderCauseEffectTable() {
+            if (!rcaData) { 
+                causeEffectTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500">請先設定主要負面效果並建立分析圖。</td></tr>';
+                return;
+            }
+            const tableData = getCauseEffectTableData();
+            causeEffectTableBody.innerHTML = ''; 
+            if (tableData.length === 0) {
+                causeEffectTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500">目前圖表中無符合條件的原因可顯示於表格。</td></tr>';
+                return;
+            }
+            tableData.forEach(rowData => {
+                const row = causeEffectTableBody.insertRow();
+                row.insertCell().textContent = rowData.cause;
+                row.insertCell().textContent = rowData.type;
+                row.insertCell().textContent = rowData.positive;
+                row.insertCell().textContent = rowData.negative;
+            });
+        }
+
+        function exportDiagramAsPNG() {
+            const diagramRenderArea = document.getElementById('diagram-render-area');
+            if (!diagramRenderArea || diagramContainer.children.length === 0) { alert('圖表為空或找不到圖表元素！'); return; }
+            
+            const activeInputGroupsInNodes = diagramContainer.querySelectorAll('.input-group-container .input-group');
+            activeInputGroupsInNodes.forEach(group => group.style.display = 'none'); 
+
+            svgLayer.setAttribute('width', diagramContainer.scrollWidth);
+            svgLayer.setAttribute('height', diagramContainer.scrollHeight);
+            svgLayer.setAttribute('viewBox', `0 0 ${diagramContainer.scrollWidth} ${diagramContainer.scrollHeight}`);
+
+            html2canvas(diagramRenderArea, { 
+                scale: 1.5, useCORS: true, backgroundColor: '#ffffff', logging: true, 
+                onclone: (clonedDoc) => {
+                    const clonedSvg = clonedDoc.getElementById('svg-connector-layer');
+                    const clonedDiagram = clonedDoc.getElementById('rca-diagram-container');
+                    if (clonedSvg && clonedDiagram) {
+                        clonedSvg.setAttribute('width', clonedDiagram.scrollWidth);
+                        clonedSvg.setAttribute('height', clonedDiagram.scrollHeight);
+                        clonedSvg.setAttribute('viewBox', `0 0 ${clonedDiagram.scrollWidth} ${clonedDiagram.scrollHeight}`);
+                    }
+                    if (isFinalizedView) {
+                        const clonedActionDivs = clonedDoc.querySelectorAll('.rca-node-actions');
+                        clonedActionDivs.forEach(div => div.style.display = 'none');
+                        const clonedInputContainers = clonedDoc.querySelectorAll('.input-group-container');
+                        clonedInputContainers.forEach(div => div.style.display = 'none');
+                    }
+                }
+            })
+            .then(canvas => {
+                activeInputGroupsInNodes.forEach(group => group.style.display = 'flex'); 
+                const image = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = 'rca-plus-diagram.png';
+                link.href = image;
+                link.click();
+            }).catch(err => {
+                console.error('匯出圖表失敗:', err);
+                alert('匯出圖表失敗，請檢查控制台錯誤訊息。');
+                activeInputGroupsInNodes.forEach(group => group.style.display = 'flex');
+            });
+        }
+        initialize();
+    </script>
+</body>
+</html>
