@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RCA+ 矛盾分析繪圖工具 (含參數與原理)</title>
+    <title>RCA+ 矛盾分析繪圖工具 (優化與問題排查)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -13,11 +13,14 @@
             background-color: #f3f4f6;
         }
         #diagram-render-area { position: relative; overflow: auto; }
-        #svg-connector-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+        #svg-connector-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+        }
         .rca-node {
             background-color: white; border: 1px solid #d1d5db; padding: 0.75rem 1.25rem; margin: 0.5rem;
             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            display: inline-flex; align-items: center; min-width: 220px; /* 稍微加寬以容納更多資訊 */
+            display: inline-flex; align-items: center; min-width: 220px; 
             text-align: left; border-radius: 0.375rem; position: relative; z-index: 1;
         }
         .rca-node-content { display: flex; flex-direction: column; gap: 0.5rem; width: 100%; }
@@ -26,8 +29,10 @@
         .nc-badge { font-size: 0.7em; font-weight: bold; color: #4b5563; background-color: #e5e7eb; padding: 0.1rem 0.3rem; border-radius: 0.25rem; margin-left: 0.3rem; }
         .rca-node-text { font-weight: 500; word-break: break-word; flex-grow: 1; }
         .selected-items-list { font-size: 0.75rem; color: #4b5563; margin-top: 0.5rem; padding-top: 0.25rem; border-top: 1px dashed #e5e7eb; }
-        .selected-items-list strong { color: #1f2937; }
-        .selected-items-list ul { list-style-type: disc; margin-left: 1rem; }
+        .selected-items-list strong { color: #1f2937; display: block; margin-bottom: 0.125rem;}
+        .selected-items-list ul { list-style-type: disc; margin-left: 1.25rem; padding-left: 0.25rem; }
+        .selected-items-list li { margin-bottom: 0.125rem; }
+
 
         .rca-node-initial-problem { border-left: 4px solid #ef4444; }
         .rca-node-initial-problem .rca-node-icon { color: #ef4444; }
@@ -51,8 +56,8 @@
         .action-button.toggle-nc { background-color: #a855f7; }
         .action-button.set-and-sources { background-color: #6d28d9; } 
         .action-button.edit-node { background-color: #f59e0b; } 
-        .action-button.set-parameters { background-color: #0ea5e9; } /* Sky blue for parameters */
-        .action-button.set-principles { background-color: #ec4899; } /* Pink for principles */
+        .action-button.set-parameters { background-color: #0ea5e9; } 
+        .action-button.set-principles { background-color: #ec4899; } 
         .action-button.finalize-diagram { background-color: #059669; } 
         .action-button.edit-diagram { background-color: #d97706; } 
         .remove-button { background-color: #ef4444; }
@@ -71,8 +76,16 @@
 
         /* Modals Styles */
         .modal { z-index: 50; }
+        .modal-content { position: relative; } /* For close button positioning */
+        .modal-close-button {
+            position: absolute; top: 0.75rem; right: 0.75rem;
+            background: none; border: none; font-size: 1.5rem;
+            color: #6b7280; cursor: pointer; line-height: 1;
+        }
+        .modal-close-button:hover { color: #1f2937; }
         .modal-options-container label { cursor: pointer; }
-        .modal-options-container h4 { font-semibold; margin-top: 0.5rem; margin-bottom: 0.25rem; color: #374151; }
+        .modal-options-container h4 { font-semibold; margin-top: 0.75rem; margin-bottom: 0.25rem; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.25rem; }
+        .modal-options-container h4:first-child { margin-top: 0; }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -115,24 +128,25 @@
     </div>
 
     <div id="and-source-modal" class="modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center" style="display: none;">
-        <div class="relative mx-auto p-5 border w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white">
+        <div class="modal-content mx-auto p-5 border w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white">
+            <button class="modal-close-button" onclick="document.getElementById('and-source-modal').style.display='none'; currentAndTargetNodeId = null;">&times;</button>
             <div class="mt-3">
                 <h3 class="text-lg leading-6 font-medium text-gray-900 text-center" id="and-source-modal-title">為效果設定 AND 輸入源</h3>
                 <div class="mt-4 px-2 py-3 max-h-72 overflow-y-auto modal-options-container" id="and-source-options-container"></div>
                 <div class="items-center px-4 py-3 mt-4 text-right">
-                    <button id="cancel-and-sources-button" class="mr-2 px-4 py-2 bg-gray-300 text-gray-800 text-base font-medium rounded-md w-auto shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300">取消</button>
-                    <button id="save-and-sources-button" class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-auto shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300">儲存AND來源</button>
+                    <button id="cancel-and-sources-button" class="mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">取消</button>
+                    <button id="save-and-sources-button" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-700">儲存AND來源</button>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="effect-parameter-modal" class="modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center" style="display: none;">
-        <div class="relative mx-auto p-5 border w-11/12 md:w-1/2 lg:w-2/5 shadow-lg rounded-md bg-white">
+        <div class="modal-content mx-auto p-5 border w-11/12 md:w-1/2 lg:w-2/5 shadow-lg rounded-md bg-white">
+            <button class="modal-close-button" onclick="document.getElementById('effect-parameter-modal').style.display='none'; currentParameterTargetNodeId = null;">&times;</button>
             <div class="mt-3">
                 <h3 class="text-lg leading-6 font-medium text-gray-900 text-center" id="effect-parameter-modal-title">設定效果參數</h3>
-                <div class="mt-4 px-2 py-3 max-h-96 overflow-y-auto modal-options-container" id="effect-parameter-options-container">
-                    </div>
+                <div class="mt-4 px-2 py-3 max-h-96 overflow-y-auto modal-options-container" id="effect-parameter-options-container"></div>
                 <div class="items-center px-4 py-3 mt-4 text-right">
                     <button id="cancel-effect-parameters-button" class="mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">取消</button>
                     <button id="save-effect-parameters-button" class="px-4 py-2 bg-sky-500 text-white rounded-md hover:bg-sky-700">儲存參數</button>
@@ -142,11 +156,11 @@
     </div>
 
     <div id="inventive-principle-modal" class="modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center" style="display: none;">
-        <div class="relative mx-auto p-5 border w-11/12 md:w-1/2 lg:w-2/5 shadow-lg rounded-md bg-white">
+        <div class="modal-content mx-auto p-5 border w-11/12 md:w-1/2 lg:w-2/5 shadow-lg rounded-md bg-white">
+            <button class="modal-close-button" onclick="document.getElementById('inventive-principle-modal').style.display='none'; currentPrincipleTargetNodeId = null;">&times;</button>
             <div class="mt-3">
                 <h3 class="text-lg leading-6 font-medium text-gray-900 text-center" id="inventive-principle-modal-title">選擇發明原理</h3>
-                <div class="mt-4 px-2 py-3 max-h-96 overflow-y-auto modal-options-container" id="inventive-principle-options-container">
-                    </div>
+                <div class="mt-4 px-2 py-3 max-h-96 overflow-y-auto modal-options-container" id="inventive-principle-options-container"></div>
                 <div class="items-center px-4 py-3 mt-4 text-right">
                     <button id="cancel-inventive-principles-button" class="mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">取消</button>
                     <button id="save-inventive-principles-button" class="px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-700">儲存原理</button>
@@ -155,17 +169,16 @@
         </div>
     </div>
 
-
     <script>
-        // --- (保持現有的全局變數和 DOM 元素引用) ---
+        // --- 全局變數 ---
         let rcaData = null; 
         let nodeIdCounter = 0;
         let currentAndTargetNodeId = null; 
         let isFinalizedView = false; 
-        let currentParameterTargetNodeId = null; // For effect parameters
-        let currentPrincipleTargetNodeId = null; // For inventive principles
+        let currentParameterTargetNodeId = null; 
+        let currentPrincipleTargetNodeId = null; 
 
-        // DOM Elements (add new modal elements)
+        // --- DOM 元素引用 ---
         const problemInput = document.getElementById('problem-statement-input');
         const setProblemButton = document.getElementById('set-problem-button');
         const diagramContainer = document.getElementById('rca-diagram-container');
@@ -197,7 +210,8 @@
         const saveInventivePrinciplesButton = document.getElementById('save-inventive-principles-button');
         const cancelInventivePrinciplesButton = document.getElementById('cancel-inventive-principles-button');
 
-        // --- Data for Parameters and Principles ---
+
+        // --- 資料列表 ---
         const EFFECT_PARAMETERS = {
             "活動": ["活動效用性", "活動可變性", "活動費用", "活動時間", "活動複雜性", "活動方便性", "活動安全性", "活動可靠性"],
             "系統": ["系統有效性", "系統可變性", "系統費用", "系統時間", "系統複雜性", "系統方便性", "系統安全性", "系統可靠性", "對系統的有害影響", "系統產生的有害影響", "組織壓力", "組織穩定性"],
@@ -213,6 +227,7 @@
             "模範轉移", "相對變化", "增強的環境", "鈍性(惰性)環境", "組合(複合)結構"
         ];
 
+        // --- 初始化函數 ---
         function initialize() {
             setProblemButton.addEventListener('click', handleSetInitialProblem);
             problemInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSetInitialProblem(); });
@@ -221,7 +236,7 @@
             toggleTableButton.addEventListener('click', handleToggleCauseEffectTable);
             
             saveAndSourcesButton.addEventListener('click', handleSaveAndSources);
-            cancelAndSourcesButton.addEventListener('click', handleCancelAndSources);
+            cancelAndSourcesButton.addEventListener('click', () => { andSourceModal.style.display = 'none'; currentAndTargetNodeId = null; });
             
             saveEffectParametersButton.addEventListener('click', handleSaveEffectParameters);
             cancelEffectParametersButton.addEventListener('click', () => { effectParameterModal.style.display = 'none'; currentParameterTargetNodeId = null; });
@@ -232,20 +247,60 @@
             new ResizeObserver(drawAllSvgConnectors).observe(diagramContainer);
         }
 
+        // --- 處理設定初始問題 ---
+        function handleSetInitialProblem() {
+            const problemText = problemInput.value.trim();
+            if (!problemText) { alert('請輸入主要負面效果！'); return; }
+            nodeIdCounter = 0; 
+            rcaData = createNode(problemText, 'initial-problem', null); 
+            isFinalizedView = false; 
+            finalizeDiagramButton.textContent = '完成圖表';
+            finalizeDiagramButton.classList.remove('edit-diagram');
+            finalizeDiagramButton.classList.add('finalize-diagram');
+            problemInputArea.style.display = 'none'; 
+            diagramTitle.style.display = 'block'; 
+            toolButtonsContainer.style.display = 'flex';
+            renderRcaDiagram();
+            renderCauseEffectTable(); 
+        }
+
+        // --- 切換完成/編輯檢視模式 ---
+        function handleToggleFinalizeView() {
+            isFinalizedView = !isFinalizedView;
+            if (isFinalizedView) {
+                finalizeDiagramButton.textContent = '編輯圖表';
+                finalizeDiagramButton.classList.remove('finalize-diagram');
+                finalizeDiagramButton.classList.add('edit-diagram');
+            } else {
+                finalizeDiagramButton.textContent = '完成圖表';
+                finalizeDiagramButton.classList.remove('edit-diagram');
+                finalizeDiagramButton.classList.add('finalize-diagram');
+            }
+            renderRcaDiagram(); 
+        }
+        
+        // --- 創建節點資料物件 ---
         function createNode(text, type, parentId, isNonChangeable = false) {
             nodeIdCounter++;
             const node = {
                 id: `node-${nodeIdCounter}`, text: text, type: type, parentId: parentId, children: [],
-                andSourceNodeIds: [],
-                effectParameters: [], // 新增
-                inventivePrinciples: [] // 新增
+                andSourceNodeIds: [], effectParameters: [], inventivePrinciples: [] 
             };
             if (type === 'cause') node.isNonChangeable = isNonChangeable;
             return node;
         }
+        
+        // --- 渲染整個RCA圖表 (HTML節點) ---
+        function renderRcaDiagram() {
+            diagramContainer.innerHTML = ''; 
+            if (rcaData) {
+                diagramContainer.appendChild(createNodeElement(rcaData));
+            }
+            requestAnimationFrame(drawAllSvgConnectors); // 確保DOM更新後再繪製SVG
+        }
 
+        // --- 創建單個節點的HTML元素 (遞迴) ---
         function createNodeElement(nodeData) {
-            // ... (大部分 createNodeElement 內容與前一版本相同) ...
             const nodeWrapper = document.createElement('div');
             nodeWrapper.classList.add('rca-node-wrapper');
             const nodeDiv = document.createElement('div');
@@ -273,7 +328,6 @@
             }
             contentDiv.appendChild(headerDiv);
 
-            // 顯示已選的效果參數和發明原理
             if (nodeData.effectParameters && nodeData.effectParameters.length > 0) {
                 const paramsDiv = document.createElement('div');
                 paramsDiv.classList.add('selected-items-list');
@@ -286,7 +340,6 @@
                 principlesDiv.innerHTML = `<strong>發明原理:</strong> <ul>${nodeData.inventivePrinciples.map(p => `<li>${p}</li>`).join('')}</ul>`;
                 contentDiv.appendChild(principlesDiv);
             }
-
 
             if (!isFinalizedView) {
                 const actionsDiv = document.createElement('div');
@@ -306,7 +359,7 @@
                     actionsDiv.appendChild(createActionButton('(-) 負面效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入此原因導致的負面效果')));
                     const ncButtonText = nodeData.isNonChangeable ? '取消NC標記' : '設為NC';
                     actionsDiv.appendChild(createActionButton(ncButtonText, 'toggle-nc', () => toggleNonChangeable(nodeData.id)));
-                    actionsDiv.appendChild(createActionButton('選擇發明原理', 'set-principles', () => openInventivePrincipleModal(nodeData.id))); // 新增按鈕
+                    actionsDiv.appendChild(createActionButton('選擇發明原理', 'set-principles', () => openInventivePrincipleModal(nodeData.id)));
                     if (nodeData.parentId) { 
                        actionsDiv.appendChild(createActionButton('移除此原因', 'remove-button', () => removeNode(nodeData.id)));
                     }
@@ -314,7 +367,7 @@
                     iconSpan.textContent = nodeData.type === 'positive-effect' ? '(+)' : '(-)';
                     actionsDiv.appendChild(createActionButton('(+) 新增正面子效果', 'add-positive', () => promptAddNode(nodeData.id, contentDiv, 'positive-effect', '輸入正面子效果描述')));
                     actionsDiv.appendChild(createActionButton('(-) 新增負面子效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入負面子效果描述')));
-                    actionsDiv.appendChild(createActionButton('設定效果參數', 'set-parameters', () => openEffectParameterModal(nodeData.id))); // 新增按鈕
+                    actionsDiv.appendChild(createActionButton('設定效果參數', 'set-parameters', () => openEffectParameterModal(nodeData.id)));
                     actionsDiv.appendChild(createActionButton('設定AND輸入源', 'set-and-sources', () => openAndSourceModal(nodeData.id)));
                     actionsDiv.appendChild(createActionButton('移除效果', 'remove-button', () => removeNode(nodeData.id)));
                 }
@@ -347,13 +400,153 @@
             }
             return nodeWrapper;
         }
+        
+        // --- 提示修訂節點文字 ---
+        function promptEditNode(nodeId, parentNodeContentDiv) {
+            if (isFinalizedView) return;
+            const nodeToEdit = findNodeById(rcaData, nodeId);
+            if (!nodeToEdit) return;
 
+            const inputContainer = parentNodeContentDiv.querySelector('.input-group-container');
+            if (!inputContainer) { 
+                console.error("Input container not found for node:", nodeId);
+                return; 
+            }
+            inputContainer.innerHTML = ''; 
+
+            const inputGroup = document.createElement('div');
+            inputGroup.classList.add('input-group');
+
+            const nodeInput = document.createElement('input');
+            nodeInput.type = 'text';
+            nodeInput.value = nodeToEdit.text; 
+            nodeInput.classList.add('input-field');
+            
+            const saveEditButton = document.createElement('button');
+            saveEditButton.textContent = '儲存修訂';
+            saveEditButton.classList.add('action-button', 'save-edit-button', 'w-full', 'mt-2');
+
+            saveEditButton.onclick = () => {
+                const newText = nodeInput.value.trim();
+                if (newText) {
+                    nodeToEdit.text = newText;
+                    renderRcaDiagram(); 
+                    renderCauseEffectTable();
+                    inputContainer.innerHTML = ''; 
+                } else {
+                    alert('描述不能為空！');
+                }
+            };
+            
+            nodeInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') saveEditButton.click();
+            });
+            const cancelEditButton = document.createElement('button');
+            cancelEditButton.textContent = '取消修訂';
+            cancelEditButton.classList.add('action-button', 'bg-gray-400', 'hover:bg-gray-500', 'w-full', 'mt-1');
+            cancelEditButton.onclick = () => {
+                inputContainer.innerHTML = ''; 
+            };
+
+            inputGroup.appendChild(nodeInput);
+            inputGroup.appendChild(saveEditButton);
+            inputGroup.appendChild(cancelEditButton);
+            inputContainer.appendChild(inputGroup); 
+            nodeInput.focus();
+            nodeInput.select();
+        }
+
+        // --- AND Source Modal Logic ---
+        function openAndSourceModal(targetNodeId) {
+            if (isFinalizedView) return; 
+            currentAndTargetNodeId = targetNodeId;
+            const targetNode = findNodeById(rcaData, targetNodeId);
+            if (!targetNode) {
+                // alert(`錯誤：找不到目標節點 (ID: ${targetNodeId})`); // 暫時的 debug alert
+                return;
+            }
+
+            andSourceModalTitle.textContent = `為效果 "${targetNode.text}" 設定 AND 輸入源`;
+            andSourceOptionsContainer.innerHTML = ''; 
+
+            const availableCauses = [];
+            function findCausesRecursive(node) {
+                if (!node) return;
+                if (node.type === 'cause') availableCauses.push(node);
+                if (node.children) node.children.forEach(findCausesRecursive);
+            }
+            if (rcaData) findCausesRecursive(rcaData);
+
+            if (availableCauses.length === 0) {
+                andSourceOptionsContainer.innerHTML = '<p class="text-gray-500 text-center">圖表中尚無可用的原因節點。</p>';
+            } else {
+                availableCauses.forEach(causeNode => {
+                    if (causeNode.id === targetNode.id || isDescendant(targetNode, causeNode.id)) return;
+
+                    const div = document.createElement('div');
+                    div.classList.add('flex', 'items-center', 'my-2', 'p-2', 'hover:bg-gray-100', 'rounded');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `and-source-chk-${causeNode.id}`;
+                    checkbox.value = causeNode.id;
+                    checkbox.classList.add('form-checkbox', 'h-5', 'w-5', 'text-blue-600', 'rounded', 'border-gray-300');
+                    if (targetNode.andSourceNodeIds && targetNode.andSourceNodeIds.includes(causeNode.id)) {
+                        checkbox.checked = true;
+                    }
+                    const label = document.createElement('label');
+                    label.htmlFor = `and-source-chk-${causeNode.id}`;
+                    label.textContent = `${causeNode.text} (ID: ${causeNode.id})`;
+                    label.classList.add('ml-3', 'text-sm', 'text-gray-700', 'flex-grow');
+                    div.appendChild(checkbox); div.appendChild(label);
+                    andSourceOptionsContainer.appendChild(div);
+                });
+                 if (andSourceOptionsContainer.childElementCount === 0) {
+                    andSourceOptionsContainer.innerHTML = '<p class="text-gray-500 text-center">無有效的 AND 輸入源選項。</p>';
+                }
+            }
+            andSourceModal.style.display = 'flex';
+        }
+
+        function isDescendant(parentNode, childNodeIdToFind) {
+            if (!parentNode || !parentNode.children || parentNode.children.length === 0) return false;
+            for (const child of parentNode.children) {
+                if (child.id === childNodeIdToFind) return true;
+                if (isDescendant(child, childNodeIdToFind)) return true;
+            }
+            return false;
+        }
+
+        function handleSaveAndSources() {
+            if (!currentAndTargetNodeId) return;
+            const targetNode = findNodeById(rcaData, currentAndTargetNodeId);
+            if (!targetNode) return;
+            const selectedSourceIds = [];
+            const checkboxes = andSourceOptionsContainer.querySelectorAll('input[type="checkbox"]:checked');
+            checkboxes.forEach(chk => selectedSourceIds.push(chk.value));
+            targetNode.andSourceNodeIds = selectedSourceIds;
+            andSourceModal.style.display = 'none';
+            currentAndTargetNodeId = null;
+            renderRcaDiagram(); 
+        }
+
+        function handleCancelAndSources() {
+            andSourceModal.style.display = 'none';
+            currentAndTargetNodeId = null;
+        }
+        
         // --- Effect Parameter Modal Logic ---
         function openEffectParameterModal(targetNodeId) {
             if (isFinalizedView) return;
             currentParameterTargetNodeId = targetNodeId;
             const targetNode = findNodeById(rcaData, targetNodeId);
-            if (!targetNode || (targetNode.type !== 'positive-effect' && targetNode.type !== 'negative-effect')) return;
+            if (!targetNode) {
+                // alert(`錯誤：找不到效果參數的目標節點 (ID: ${targetNodeId})`); // 暫時的 debug alert
+                return;
+            }
+            if (targetNode.type !== 'positive-effect' && targetNode.type !== 'negative-effect') {
+                // alert(`錯誤：效果參數僅能設定於效果節點上，目前節點類型為 ${targetNode.type}`); // 暫時的 debug alert
+                return;
+            }
 
             effectParameterModalTitle.textContent = `為效果 "${targetNode.text}" 設定效果參數`;
             effectParameterOptionsContainer.innerHTML = '';
@@ -365,12 +558,12 @@
 
                 EFFECT_PARAMETERS[category].forEach(param => {
                     const div = document.createElement('div');
-                    div.classList.add('flex', 'items-center', 'my-1');
+                    div.classList.add('flex', 'items-center', 'my-1', 'p-1', 'hover:bg-gray-50', 'rounded');
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
-                    checkbox.id = `param-chk-${param.replace(/\s|\//g, '-')}`; // Sanitize ID
+                    checkbox.id = `param-chk-${param.replace(/\s|\/|[\(\)]/g, '-')}`;
                     checkbox.value = param;
-                    checkbox.classList.add('form-checkbox', 'h-4', 'w-4', 'text-sky-600', 'rounded');
+                    checkbox.classList.add('form-checkbox', 'h-4', 'w-4', 'text-sky-600', 'rounded', 'border-gray-300', 'focus:ring-sky-500');
                     if (targetNode.effectParameters && targetNode.effectParameters.includes(param)) {
                         checkbox.checked = true;
                     }
@@ -406,19 +599,26 @@
             if (isFinalizedView) return;
             currentPrincipleTargetNodeId = targetNodeId;
             const targetNode = findNodeById(rcaData, targetNodeId);
-            if (!targetNode || targetNode.type !== 'cause') return;
+            if (!targetNode) {
+                // alert(`錯誤：找不到發明原理的目標節點 (ID: ${targetNodeId})`); // 暫時的 debug alert
+                return;
+            }
+             if (targetNode.type !== 'cause') {
+                // alert(`錯誤：發明原理僅能設定於原因節點上，目前節點類型為 ${targetNode.type}`); // 暫時的 debug alert
+                return;
+            }
 
             inventivePrincipleModalTitle.textContent = `為原因 "${targetNode.text}" 選擇發明原理`;
             inventivePrincipleOptionsContainer.innerHTML = '';
 
             INVENTIVE_PRINCIPLES.forEach(principle => {
                 const div = document.createElement('div');
-                div.classList.add('flex', 'items-center', 'my-1');
+                div.classList.add('flex', 'items-center', 'my-1', 'p-1', 'hover:bg-gray-50', 'rounded');
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
-                checkbox.id = `principle-chk-${principle.replace(/\s|\/|\[|\]/g, '-')}`; // Sanitize ID
+                checkbox.id = `principle-chk-${principle.replace(/\s|\/|[\(\)\[\]]/g, '-')}`;
                 checkbox.value = principle;
-                checkbox.classList.add('form-checkbox', 'h-4', 'w-4', 'text-pink-600', 'rounded');
+                checkbox.classList.add('form-checkbox', 'h-4', 'w-4', 'text-pink-600', 'rounded', 'border-gray-300', 'focus:ring-pink-500');
                 if (targetNode.inventivePrinciples && targetNode.inventivePrinciples.includes(principle)) {
                     checkbox.checked = true;
                 }
@@ -448,36 +648,267 @@
             renderRcaDiagram();
         }
 
-        // --- (保持其他 JavaScript 函數如 handleSetInitialProblem, drawAllSvgConnectors, etc. 與前一版本相同或稍作調整以適應新數據) ---
-        // ... (此處省略了大部分與前一版本相同的 JS 函數，如 handleToggleFinalizeView, promptEditNode, openAndSourceModal, isDescendant, handleSaveAndSources, handleCancelAndSources, drawAllSvgConnectors, drawSvgLine, drawSvgCircle, checkChildrenEffects, toggleNonChangeable, createActionButton, promptAddNode, addNodeToData, removeNode, findNodeById, handleToggleCauseEffectTable, getCauseEffectTableData, renderCauseEffectTable, exportDiagramAsPNG)
-        // 請確保將前一版本中這些函數的完整實現複製到此處。為簡潔起見，此處僅示意。
-        // 重要的：複製並貼上以下函數的完整實現，因為它們在此版本中保持不變：
-        // handleToggleFinalizeView, promptEditNode, openAndSourceModal, isDescendant, handleSaveAndSources, handleCancelAndSources, 
-        // drawAllSvgConnectors, drawSvgLine, drawSvgCircle, checkChildrenEffects, toggleNonChangeable, createActionButton, 
-        // promptAddNode, addNodeToData, removeNode, findNodeById, handleToggleCauseEffectTable, 
-        // getCauseEffectTableData, renderCauseEffectTable, exportDiagramAsPNG.
-        // (以下為這些函數的簡化佔位符，實際應使用完整代碼)
-        function handleToggleFinalizeView() { isFinalizedView = !isFinalizedView; finalizeDiagramButton.textContent = isFinalizedView ? '編輯圖表' : '完成圖表'; finalizeDiagramButton.classList.toggle('edit-diagram', isFinalizedView); finalizeDiagramButton.classList.toggle('finalize-diagram', !isFinalizedView); renderRcaDiagram(); }
-        function promptEditNode(nodeId, parentNodeContentDiv) { /* ... */ }
-        function openAndSourceModal(targetNodeId) { /* ... */ }
-        function isDescendant(parentNode, childNodeIdToFind) { /* ... */ return false; }
-        function handleSaveAndSources() { /* ... */ }
-        function handleCancelAndSources() { andSourceModal.style.display = 'none'; currentAndTargetNodeId = null; }
-        function drawAllSvgConnectors() { /* ... */ }
-        function drawSvgLine(x1, y1, x2, y2, color, strokeWidth) { /* ... */ }
-        function drawSvgCircle(cx, cy, r, fillColor) { /* ... */ }
-        function checkChildrenEffects(nodeData) { let hp=false, hn=false; if(nodeData.children) nodeData.children.forEach(c => { if(c.type==='positive-effect') hp=true; if(c.type==='negative-effect') hn=true; }); return {hasPositiveChild:hp, hasNegativeChild:hn}; }
-        function toggleNonChangeable(nodeId) { if(isFinalizedView) return; const n=findNodeById(rcaData,nodeId); if(n&&n.type==='cause'){n.isNonChangeable=!n.isNonChangeable; renderRcaDiagram();renderCauseEffectTable();} }
-        function createActionButton(text, className, onClickHandler) { const b=document.createElement('button');b.classList.add('action-button',...className.split(' '));b.textContent=text;b.addEventListener('click',onClickHandler);return b; }
-        function promptAddNode(parentId, parentNodeContentDiv, nodeTypeToAdd, placeholderText) { if(isFinalizedView)return; const iC=parentNodeContentDiv.querySelector('.input-group-container');if(!iC)return;iC.innerHTML=''; const iG=document.createElement('div');iG.classList.add('input-group'); const nI=document.createElement('input');nI.type='text';nI.placeholder=placeholderText;nI.classList.add('input-field'); const sB=document.createElement('button');sB.textContent='儲存';sB.classList.add('action-button','save-button','w-full','mt-2'); sB.onclick=()=>{const nT=nI.value.trim();if(nT){addNodeToData(parentId,nT,nodeTypeToAdd);}else{alert('描述不能為空！');}}; nI.addEventListener('keypress',(e)=>{if(e.key==='Enter')sB.click();}); iG.appendChild(nI);iG.appendChild(sB);iC.appendChild(iG);nI.focus(); }
-        function addNodeToData(parentId, nodeText, nodeType) { const pN=findNodeById(rcaData,parentId); if(pN){const nN=createNode(nodeText,nodeType,parentId);pN.children.push(nN);renderRcaDiagram();renderCauseEffectTable();}}
-        function removeNode(nodeIdToRemove) { if(isFinalizedView)return; if(rcaData&&rcaData.id===nodeIdToRemove){alert('不能移除主要問題根源節點！');return;} function fR(n,idR){if(!n)return null;n.children=n.children.map(c=>fR(c,idR)).filter(c=>c!==null); function rASF(cN){if(!cN)return;if(cN.andSourceNodeIds&&cN.andSourceNodeIds.includes(idR)){cN.andSourceNodeIds=cN.andSourceNodeIds.filter(sId=>sId!==idR);}if(cN.children){cN.children.forEach(rASF);}}if(rcaData)rASF(rcaData); return(n.id===idR)?null:n;} rcaData=fR(rcaData,nodeIdToRemove); if(!rcaData){problemInputArea.style.display='flex';diagramTitle.style.display='none';toolButtonsContainer.style.display='none';causeEffectTableSection.style.display='none';} renderRcaDiagram();renderCauseEffectTable(); }
-        function findNodeById(node, id) { if(!node)return null;if(node.id===id)return node;if(node.children){for(const c of node.children){const f=findNodeById(c,id);if(f)return f;}}return null;}
-        function handleToggleCauseEffectTable() { const iH=causeEffectTableSection.style.display==='none';causeEffectTableSection.style.display=iH?'block':'none';toggleTableButton.textContent=iH?'隱藏原因效果表':'顯示原因效果表';if(iH)renderCauseEffectTable(); }
-        function getCauseEffectTableData() { const tRD=[]; function cDR(n){if(!n)return;if(n.type==='cause'){const{hasPositiveChild:hP,hasNegativeChild:hN}=checkChildrenEffects(n);let cT='';if(n.isNonChangeable)cT='NC';else if(hP&&hN)cT='N+P';else if(hN)cT='N';else if(hP)cT='P';else cT='N'; if(cT!=='P'){const pE=n.children.filter(c=>c.type==='positive-effect').map(c=>c.text).join('; ')||'一 (無)';const nE=n.children.filter(c=>c.type==='negative-effect').map(c=>c.text).join('; ')||'一 (無)';tRD.push({cause:n.text,type:cT,positive:pE,negative:nE});}}if(n.children)n.children.forEach(cDR);}if(rcaData)cDR(rcaData);return tRD;}
-        function renderCauseEffectTable() { if(!rcaData){causeEffectTableBody.innerHTML='<tr><td colspan="4" class="text-center text-gray-500">請先設定主要負面效果並建立分析圖。</td></tr>';return;}const tD=getCauseEffectTableData();causeEffectTableBody.innerHTML='';if(tD.length===0){causeEffectTableBody.innerHTML='<tr><td colspan="4" class="text-center text-gray-500">目前圖表中無符合條件的原因可顯示於表格。</td></tr>';return;}tD.forEach(rD=>{const r=causeEffectTableBody.insertRow();r.insertCell().textContent=rD.cause;r.insertCell().textContent=rD.type;r.insertCell().textContent=rD.positive;r.insertCell().textContent=rD.negative;});}
-        function exportDiagramAsPNG() { const dRA=document.getElementById('diagram-render-area');if(!dRA||diagramContainer.children.length===0){alert('圖表為空或找不到圖表元素！');return;} const aIGN=diagramContainer.querySelectorAll('.input-group-container .input-group');aIGN.forEach(g=>g.style.display='none'); svgLayer.setAttribute('width',diagramContainer.scrollWidth);svgLayer.setAttribute('height',diagramContainer.scrollHeight);svgLayer.setAttribute('viewBox',`0 0 ${diagramContainer.scrollWidth} ${diagramContainer.scrollHeight}`); html2canvas(dRA,{scale:1.5,useCORS:true,backgroundColor:'#ffffff',logging:true,onclone:(cD)=>{const cS=cD.getElementById('svg-connector-layer');const cDgm=cD.getElementById('rca-diagram-container');if(cS&&cDgm){cS.setAttribute('width',cDgm.scrollWidth);cS.setAttribute('height',cDgm.scrollHeight);cS.setAttribute('viewBox',`0 0 ${cDgm.scrollWidth} ${cDgm.scrollHeight}`);}if(isFinalizedView){const cADs=cD.querySelectorAll('.rca-node-actions');cADs.forEach(d=>d.style.display='none');const cICs=cD.querySelectorAll('.input-group-container');cICs.forEach(d=>d.style.display='none');}}}).then(c=>{aIGN.forEach(g=>g.style.display='flex');const i=c.toDataURL('image/png');const l=document.createElement('a');l.download='rca-plus-diagram.png';l.href=i;l.click();}).catch(e=>{console.error('匯出圖表失敗:',e);alert('匯出圖表失敗，請檢查控制台錯誤訊息。');aIGN.forEach(g=>g.style.display='flex');});}
+        // --- SVG 連接線繪製邏輯 ---
+        function drawAllSvgConnectors() {
+            svgLayer.innerHTML = ''; 
+            if (!rcaData) return;
+            const diagramRect = diagramContainer.getBoundingClientRect(); 
+            const svgRect = svgLayer.getBoundingClientRect(); 
+            
+            svgLayer.setAttribute('width', diagramContainer.scrollWidth);
+            svgLayer.setAttribute('height', diagramContainer.scrollHeight);
+            svgLayer.setAttribute('viewBox', `0 0 ${diagramContainer.scrollWidth} ${diagramContainer.scrollHeight}`);
 
+            function drawRecursive(node) {
+                const nodeElement = document.getElementById(node.id);
+                if (!nodeElement) return;
+
+                if (node.andSourceNodeIds && node.andSourceNodeIds.length > 0) {
+                    const targetRect = nodeElement.getBoundingClientRect();
+                    const targetX = targetRect.left - diagramRect.left + diagramContainer.scrollLeft + targetRect.width / 2;
+                    const targetY = targetRect.top - diagramRect.top + diagramContainer.scrollTop; 
+                    const mergePointYOffset = 40; 
+                    const mergePoint = { x: targetX, y: targetY - mergePointYOffset };
+                    drawSvgCircle(mergePoint.x, mergePoint.y, 6, '#6d28d9'); 
+                    node.andSourceNodeIds.forEach(sourceId => {
+                        const sourceElement = document.getElementById(sourceId);
+                        if (sourceElement) {
+                            const sourceRect = sourceElement.getBoundingClientRect();
+                            const sourceConnX = sourceRect.left - diagramRect.left + diagramContainer.scrollLeft + sourceRect.width / 2;
+                            const sourceConnY = sourceRect.top - diagramRect.top + diagramContainer.scrollTop + sourceRect.height; 
+                            drawSvgLine(sourceConnX, sourceConnY, mergePoint.x, mergePoint.y, '#6b7280');
+                        }
+                    });
+                    drawSvgLine(mergePoint.x, mergePoint.y, targetX, targetY, '#6b7280'); 
+                } else if (node.parentId) { 
+                    const parentElement = document.getElementById(node.parentId);
+                    if (parentElement) {
+                        const parentRect = parentElement.getBoundingClientRect();
+                        const childRect = nodeElement.getBoundingClientRect();
+                        const startX = parentRect.left - diagramRect.left + diagramContainer.scrollLeft + parentRect.width / 2;
+                        const startY = parentRect.top - diagramRect.top + diagramContainer.scrollTop + parentRect.height;
+                        const endX = childRect.left - diagramRect.left + diagramContainer.scrollLeft + childRect.width / 2;
+                        const endY = childRect.top - diagramRect.top + diagramContainer.scrollTop;
+                        drawSvgLine(startX, startY, endX, endY, '#9ca3af');
+                    }
+                }
+                if (node.children) node.children.forEach(drawRecursive);
+            }
+            drawRecursive(rcaData);
+        }
+
+        function drawSvgLine(x1, y1, x2, y2, color = 'black', strokeWidth = 2) {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+            line.setAttribute('stroke', color); line.setAttribute('stroke-width', strokeWidth);
+            svgLayer.appendChild(line);
+        }
+
+        function drawSvgCircle(cx, cy, r, fillColor = 'black') {
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', cx); circle.setAttribute('cy', cy);
+            circle.setAttribute('r', r); circle.setAttribute('fill', fillColor);
+            svgLayer.appendChild(circle);
+        }
+        
+        // --- 其他輔助函數 ---
+        function checkChildrenEffects(nodeData) {
+            let hasPositiveChild = false; let hasNegativeChild = false;
+            if (nodeData.children) {
+                for (const child of nodeData.children) {
+                    if (child.type === 'positive-effect') hasPositiveChild = true;
+                    if (child.type === 'negative-effect') hasNegativeChild = true;
+                    if (hasPositiveChild && hasNegativeChild) break;
+                }
+            }
+            return { hasPositiveChild, hasNegativeChild };
+        }
+
+        function toggleNonChangeable(nodeId) {
+            if (isFinalizedView) return; 
+            const node = findNodeById(rcaData, nodeId);
+            if (node && node.type === 'cause') {
+                node.isNonChangeable = !node.isNonChangeable;
+                renderRcaDiagram(); renderCauseEffectTable();
+            }
+        }
+        
+        function createActionButton(text, className, onClickHandler) {
+            const button = document.createElement('button'); 
+            button.classList.add('action-button', ...className.split(' ')); 
+            button.textContent = text; 
+            button.addEventListener('click', onClickHandler); return button;
+        }
+        
+        function promptAddNode(parentId, parentNodeContentDiv, nodeTypeToAdd, placeholderText) {
+            if (isFinalizedView) return; 
+            const inputContainer = parentNodeContentDiv.querySelector('.input-group-container');
+            if (!inputContainer) return; 
+            inputContainer.innerHTML = ''; 
+            const inputGroup = document.createElement('div');
+            inputGroup.classList.add('input-group');
+            const nodeInput = document.createElement('input');
+            nodeInput.type = 'text'; nodeInput.placeholder = placeholderText;
+            nodeInput.classList.add('input-field');
+            const saveButton = document.createElement('button');
+            saveButton.textContent = '儲存';
+            saveButton.classList.add('action-button', 'save-button', 'w-full', 'mt-2');
+            saveButton.onclick = () => {
+                const nodeText = nodeInput.value.trim();
+                if (nodeText) { addNodeToData(parentId, nodeText, nodeTypeToAdd); } 
+                else { alert('描述不能為空！'); }
+            };
+            nodeInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') saveButton.click(); });
+            inputGroup.appendChild(nodeInput); inputGroup.appendChild(saveButton);
+            inputContainer.appendChild(inputGroup); nodeInput.focus();
+        }
+
+        function addNodeToData(parentId, nodeText, nodeType) {
+            const parentNode = findNodeById(rcaData, parentId); 
+            if (parentNode) {
+                const newNode = createNode(nodeText, nodeType, parentId);
+                parentNode.children.push(newNode);
+                renderRcaDiagram(); renderCauseEffectTable();
+            }
+        }
+
+        function removeNode(nodeIdToRemove) {
+            if (isFinalizedView) return; 
+            if (rcaData && rcaData.id === nodeIdToRemove) { alert('不能移除主要問題根源節點！'); return; }
+            function filterRecursive(node, idToRemove) {
+                if (!node) return null;
+                node.children = node.children.map(child => filterRecursive(child, idToRemove)).filter(child => child !== null);
+                function removeAndSourceFromEntireTree(currentNode, removedId) { 
+                    if (!currentNode) return;
+                    if (currentNode.andSourceNodeIds && currentNode.andSourceNodeIds.includes(removedId)) {
+                        currentNode.andSourceNodeIds = currentNode.andSourceNodeIds.filter(srcId => srcId !== removedId);
+                    }
+                    if (currentNode.children) {
+                        currentNode.children.forEach(child => removeAndSourceFromEntireTree(child, removedId));
+                    }
+                }
+                if (node.id === idToRemove) { 
+                    removeAndSourceFromEntireTree(rcaData, idToRemove); 
+                    return null; 
+                }
+                return node;
+            }
+            rcaData = filterRecursive(rcaData, nodeIdToRemove);
+            
+            if (!rcaData) { 
+                 problemInputArea.style.display = 'flex'; 
+                 diagramTitle.style.display = 'none';
+                 toolButtonsContainer.style.display = 'none';
+                 causeEffectTableSection.style.display = 'none';
+            }
+            renderRcaDiagram(); renderCauseEffectTable();
+        }
+        
+        function findNodeById(node, id) {
+            if (!node) return null;
+            if (node.id === id) return node;
+            if (node.children) {
+                for (const child of node.children) {
+                    const found = findNodeById(child, id);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+
+        function handleToggleCauseEffectTable() {
+            const isHidden = causeEffectTableSection.style.display === 'none';
+            causeEffectTableSection.style.display = isHidden ? 'block' : 'none';
+            toggleTableButton.textContent = isHidden ? '隱藏原因效果表' : '顯示原因效果表';
+            if (isHidden) renderCauseEffectTable();
+        }
+
+        function getCauseEffectTableData() {
+            const tableRowsData = [];
+            function collectDataRecursive(node) {
+                if (!node) return;
+                if (node.type === 'cause') {
+                    const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(node);
+                    let causeType = '';
+                    if (node.isNonChangeable) causeType = 'NC';
+                    else if (hasPositiveChild && hasNegativeChild) causeType = 'N+P';
+                    else if (hasNegativeChild) causeType = 'N';
+                    else if (hasPositiveChild) causeType = 'P'; 
+                    else causeType = 'N'; 
+                    
+                    if (causeType !== 'P') {
+                         const positiveEffects = node.children.filter(c => c.type === 'positive-effect').map(c => c.text).join('; ') || '一 (無)';
+                         const negativeEffects = node.children.filter(c => c.type === 'negative-effect').map(c => c.text).join('; ') || '一 (無)';
+                         tableRowsData.push({ cause: node.text, type: causeType, positive: positiveEffects, negative: negativeEffects });
+                    }
+                }
+                if (node.children) node.children.forEach(collectDataRecursive);
+            }
+            if (rcaData) collectDataRecursive(rcaData);
+            return tableRowsData;
+        }
+
+        function renderCauseEffectTable() {
+            if (!rcaData) { 
+                causeEffectTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500">請先設定主要負面效果並建立分析圖。</td></tr>';
+                return;
+            }
+            const tableData = getCauseEffectTableData();
+            causeEffectTableBody.innerHTML = ''; 
+            if (tableData.length === 0) {
+                causeEffectTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500">目前圖表中無符合條件的原因可顯示於表格。</td></tr>';
+                return;
+            }
+            tableData.forEach(rowData => {
+                const row = causeEffectTableBody.insertRow();
+                row.insertCell().textContent = rowData.cause;
+                row.insertCell().textContent = rowData.type;
+                row.insertCell().textContent = rowData.positive;
+                row.insertCell().textContent = rowData.negative;
+            });
+        }
+
+        function exportDiagramAsPNG() {
+            const diagramRenderArea = document.getElementById('diagram-render-area');
+            if (!diagramRenderArea || diagramContainer.children.length === 0) { alert('圖表為空或找不到圖表元素！'); return; }
+            
+            const activeInputGroupsInNodes = diagramContainer.querySelectorAll('.input-group-container .input-group');
+            activeInputGroupsInNodes.forEach(group => group.style.display = 'none'); 
+
+            drawAllSvgConnectors(); 
+
+            html2canvas(diagramRenderArea, { 
+                scale: 1.5, useCORS: true, backgroundColor: '#ffffff', logging: true, 
+                onclone: (clonedDoc) => {
+                    const clonedSvg = clonedDoc.getElementById('svg-connector-layer');
+                    const clonedDiagram = clonedDoc.getElementById('rca-diagram-container');
+                    if (clonedSvg && clonedDiagram) {
+                        clonedSvg.setAttribute('width', clonedDiagram.scrollWidth);
+                        clonedSvg.setAttribute('height', clonedDiagram.scrollHeight);
+                        clonedSvg.setAttribute('viewBox', `0 0 ${clonedDiagram.scrollWidth} ${clonedDiagram.scrollHeight}`);
+                    }
+                    if (isFinalizedView) {
+                        const clonedActionDivs = clonedDoc.querySelectorAll('.rca-node-actions');
+                        clonedActionDivs.forEach(div => div.style.display = 'none');
+                        const clonedInputContainers = clonedDoc.querySelectorAll('.input-group-container');
+                        clonedInputContainers.forEach(div => div.style.display = 'none');
+                    }
+                }
+            })
+            .then(canvas => {
+                activeInputGroupsInNodes.forEach(group => group.style.display = 'flex'); 
+                const image = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = 'rca-plus-diagram.png';
+                link.href = image;
+                link.click();
+            }).catch(err => {
+                console.error('匯出圖表失敗:', err);
+                alert('匯出圖表失敗，請檢查控制台錯誤訊息。');
+                activeInputGroupsInNodes.forEach(group => group.style.display = 'flex');
+            });
+        }
         initialize();
     </script>
 </body>
