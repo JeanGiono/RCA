@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RCA+ 矛盾分析繪圖工具 </title>
+    <title>RCA+ 矛盾分析繪圖工具 (圖示位置修正)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -39,62 +39,145 @@
         }
         #rca-diagram-container {
             display: inline-block; 
-            min-width: 100%; 
             text-align: center; 
             position: relative; 
             z-index: 1; 
         }
 
-        .rca-node-wrapper { /* ... (styles remain the same) ... */ }
-        .rca-node { /* ... (styles remain the same) ... */ }
-        .rca-node-content { /* ... (styles remain the same) ... */ }
-        .rca-node-header { /* ... (styles remain the same) ... */ }
-        .rca-node-icon { /* ... (styles remain the same) ... */ }
-        .nc-badge { /* ... (styles remain the same) ... */ }
-        .rca-node-text { /* ... (styles remain the same) ... */ }
-        .selected-items-list { /* ... (styles remain the same) ... */ }
-        .rca-node-initial-problem { /* ... (styles remain the same) ... */ }
-        .rca-node-cause { /* ... (styles remain the same) ... */ }
-        .rca-node-positive-effect { /* ... (styles remain the same) ... */ }
-        .rca-node-negative-effect { /* ... (styles remain the same) ... */ }
-        .rca-children-container { /* ... (styles remain the same) ... */ }
-        .rca-node-actions { /* ... (styles remain the same) ... */ }
-        .action-button { /* ... (styles remain the same) ... */ }
-        .input-group-container { /* ... (styles remain the same) ... */ }
-        .input-group { /* ... (styles remain the same) ... */ }
-        .input-field { /* ... (styles remain the same) ... */ }
-        .save-button { /* ... (styles remain the same) ... */ }
-        .save-edit-button { /* ... (styles remain the same) ... */ }
-        .data-table-section { /* ... (styles remain the same) ... */ }
-        .data-table { /* ... (styles remain the same) ... */ }
-        .modal { /* ... (styles remain the same) ... */ }
-        .modal-content { /* ... (styles remain the same) ... */ }
-        .modal-close-button { /* ... (styles remain the same) ... */ }
-        .modal-options-container label { /* ... (styles remain the same) ... */ }
-        .modal-options-container h4 { /* ... (styles remain the same) ... */ }
-        .principle-solution-input { /* ... (styles remain the same) ... */ }
-        
-        /* Copying unchanged styles for brevity */
-        .rca-node-wrapper { display: inline-flex; flex-direction: column; align-items: center; margin: 0 1rem; vertical-align: top; }
-        .rca-node { border: 2px solid #4b5563; padding: 0.6rem 1.1rem; margin-top: 30px; margin-bottom: 15px; box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; align-items: flex-start; min-width: 180px; max-width: 350px; text-align: left; border-radius: 0.375rem; position: relative; z-index: 1; background-color: #ffffff; word-wrap: break-word; }
-        .rca-node-content { display: flex; flex-direction: column; gap: 0.4rem; width: 100%; }
-        .rca-node-header { display: flex; align-items: center; gap: 0.4rem; width: 100%; position: relative;}
-        .rca-node-icon { font-weight: bold; font-size: 0.85em; padding: 0.2em 0.4em; border-radius: 50%; color: white; position: absolute; top: -12px; right: -12px; min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border: 2px solid white; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-        .nc-badge { font-size: 0.65em; font-weight: bold; color: #374151; background-color: #e5e7eb; padding: 0.15rem 0.35rem; border-radius: 0.25rem; margin-left: 0.5rem; align-self: center; }
-        .rca-node-text { font-weight: 500; font-size: 0.9rem; flex-grow: 1; }
-        .selected-items-list { font-size: 0.75rem; color: #374151; margin-top: 0.5rem; padding-top: 0.375rem; border-top: 1px dashed #d1d5db; width: 100%; }
-        .selected-items-list strong { color: #111827; display: block; margin-bottom: 0.25rem; }
-        .selected-items-list ul { list-style-type: disc; margin-left: 1.25rem; padding-left: 0.25rem; } 
-        .selected-items-list li { margin-bottom: 0.25rem; }
+        .rca-node-wrapper {
+            display: inline-flex; 
+            flex-direction: column; 
+            align-items: center; 
+            margin: 0 1rem; 
+            vertical-align: top; 
+        }
+        .rca-node {
+            border: 2px solid #4b5563; 
+            padding: 0.6rem 1.1rem; 
+            margin-top: 30px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+            display: inline-flex; 
+            flex-direction: column; 
+            align-items: center; 
+            max-width: 350px; 
+            border-radius: 0.375rem; 
+            position: relative; /* Crucial for absolute positioning of the icon */
+            z-index: 1; 
+            background-color: #ffffff; 
+            overflow-wrap: break-word; 
+        }
+        .rca-node-content { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 0.4rem; 
+            width: 100%; 
+            align-items: center; 
+        }
+        .rca-node-header { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 0.4rem; 
+            width: 100%; 
+            position: relative; 
+            margin-bottom: 0.25rem; 
+        }
+        .rca-node-icon { /* This is the corner (+/-) icon */
+            font-weight: bold; font-size: 0.85em; 
+            padding: 0.2em 0.4em; border-radius: 50%; 
+            color: white;
+            position: absolute;
+            top: 0.4rem;  /* Position from the top padding edge of .rca-node */
+            right: 0.4rem; /* Position from the right padding edge of .rca-node */
+            min-width: 22px; 
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid white; 
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            z-index: 5; 
+        }
+        .nc-badge { 
+            font-size: 0.65em; font-weight: bold; color: #374151; 
+            background-color: #e5e7eb; padding: 0.15rem 0.35rem; 
+            border-radius: 0.25rem; 
+            align-self: center; 
+        }
+        .rca-node-text { 
+            font-weight: 500; 
+            font-size: 0.9rem; 
+            text-align: center; 
+            width: 9em; 
+            overflow-wrap: break-word; 
+            line-height: 1.4; 
+            /* Add padding to the right to ensure text doesn't go under the icon if icon is large */
+            padding-right: 1.5em; /* Adjust if icon size/position changes, approx icon width + space */
+        }
+        .selected-items-list { 
+            font-size: 0.75rem; 
+            color: #374151; 
+            margin-top: 0.5rem; 
+            padding-top: 0.375rem; 
+            border-top: 1px dashed #d1d5db; 
+            width: 100%; 
+            text-align: left; 
+        }
+        .selected-items-list strong { 
+            color: #111827; 
+            display: block; 
+            margin-bottom: 0.25rem; 
+        }
+        .selected-items-list ul { 
+            list-style-type: disc; 
+            margin-left: 1.25rem; 
+            padding-left: 0.25rem; 
+        } 
+        .selected-items-list li { 
+            margin-bottom: 0.25rem; 
+        }
         .selected-items-list .solution-text { color: #059669; margin-left: 0.3rem; font-style: italic;}
-        .rca-node-initial-problem { background-color: #fee2e2; border-color: #ef4444; } .rca-node-initial-problem .rca-node-icon { background-color: #ef4444; }
-        .rca-node-cause { background-color: #fef9c3; border-color: #f59e0b; } .rca-node-cause .rca-node-icon.contradictory { background-color: #8b5cf6; }
-        .rca-node-positive-effect { background-color: #dbeafe; border-color: #3b82f6; border-radius: 50px; padding: 0.6rem 1.2rem; min-width: 120px; } .rca-node-positive-effect .rca-node-header { justify-content: center; } .rca-node-positive-effect .rca-node-icon { background-color: #2563eb; }
-        .rca-node-negative-effect { background-color: #ffedd5; border-color: #f97316; border-radius: 50px; padding: 0.6rem 1.2rem; min-width: 120px; } .rca-node-negative-effect .rca-node-header { justify-content: center; } .rca-node-negative-effect .rca-node-icon { background-color: #f97316; }
-        .rca-children-container { display: flex; flex-direction: row; justify-content: center; align-items: flex-start; margin-top: 15px; position: relative; padding-top: 25px; width: max-content; }
-        .rca-node-actions { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.5rem; border-top: 1px solid #e5e7eb; padding-top: 0.5rem; }
+
+        .rca-node-initial-problem { background-color: #fee2e2; border-color: #ef4444; }
+        .rca-node-initial-problem .rca-node-icon { background-color: #ef4444; }
+        .rca-node-cause { background-color: #fef9c3; border-color: #f59e0b; }
+        .rca-node-cause .rca-node-icon.contradictory { background-color: #8b5cf6; }
+        .rca-node-positive-effect { background-color: #dbeafe; border-color: #3b82f6; border-radius: 50px; padding: 0.6rem 1.2rem; }
+        .rca-node-positive-effect .rca-node-icon { background-color: #2563eb; }
+        .rca-node-negative-effect { background-color: #ffedd5; border-color: #f97316; border-radius: 50px; padding: 0.6rem 1.2rem; }
+        .rca-node-negative-effect .rca-node-icon { background-color: #f97316; }
+        .rca-node-positive-effect .rca-node-text,
+        .rca-node-negative-effect .rca-node-text {
+            width: auto; 
+            max-width: 12em; 
+            padding-right: 2em; /* Ensure space for icon in pill nodes */
+        }
+
+        .rca-children-container { 
+            display: flex; 
+            flex-direction: row; 
+            justify-content: center; 
+            align-items: flex-start; 
+            margin-top: 15px; 
+            position: relative; 
+            padding-top: 25px; 
+            width: max-content; 
+        }
+        
+        .rca-node-actions { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 0.25rem; 
+            margin-top: 0.5rem; 
+            border-top: 1px solid #e5e7eb; 
+            padding-top: 0.5rem; 
+            width: 100%; 
+            justify-content: center; 
+        }
         .action-button { background-color: #6b7280; color: white; padding: 0.375rem 0.75rem; border-radius: 0.25rem; font-size: 0.75rem; border: none; cursor: pointer; transition: background-color 0.2s; }
         .action-button:hover:not(:disabled) { background-color: #4b5563; } .action-button:disabled { background-color: #9ca3af; cursor: not-allowed; }
+        /* ... other action button styles remain the same ... */
         .action-button.add-cause { background-color: #3b82f6; } .action-button.add-cause:hover:not(:disabled) { background-color: #2563eb; }
         .action-button.add-positive { background-color: #10b981; } .action-button.add-positive:hover:not(:disabled) { background-color: #059669; }
         .action-button.add-negative { background-color: #f97316; } .action-button.add-negative:hover:not(:disabled) { background-color: #ea580c; }
@@ -106,11 +189,14 @@
         .action-button.finalize-diagram { background-color: #059669; } .action-button.finalize-diagram:hover:not(:disabled) { background-color: #047857; }
         .action-button.edit-diagram { background-color: #d97706; } .action-button.edit-diagram:hover:not(:disabled) { background-color: #b45309; }
         .remove-button { background-color: #ef4444; } .remove-button:hover:not(:disabled) { background-color: #dc2626; }
-        .input-group-container { margin-top: 0.5rem; }
+        
+        .input-group-container { margin-top: 0.5rem; width: calc(100% - 1rem); }
         .input-group { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.25rem; background-color: #f9fafb; }
         .input-field { border: 1px solid #d1d5db; padding: 0.5rem; border-radius: 0.25rem; font-size: 0.875rem; width: 100%; }
         .save-button { background-color: #065f46; color: white; } .save-button:hover:not(:disabled) { background-color: #047857; }
         .save-edit-button { background-color: #065f46; color: white; } .save-edit-button:hover:not(:disabled) { background-color: #047857; }
+
+        /* Unchanged styles from v4 */
         .data-table-section { margin-top: 2rem; }
         .data-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         .data-table th, .data-table td { border: 1px solid #d1d5db; padding: 0.5rem; font-size: 0.875rem; text-align: center; vertical-align: middle; }
@@ -124,71 +210,23 @@
         .modal-options-container h4 { font-weight:600; margin-top: 0.75rem; margin-bottom: 0.25rem; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.25rem; }
         .modal-options-container h4:first-child { margin-top: 0; }
         .principle-solution-input { width: calc(100% - 2rem); margin-left: 1.5rem; margin-top: 0.25rem; margin-bottom: 0.5rem; padding: 0.25rem 0.5rem; border: 1px solid #d1d5db; border-radius: 0.25rem; font-size: 0.8rem; }
-
-        .zoom-controls {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
-        .zoom-controls span {
-            font-size: 0.875rem;
-            color: #4b5563; 
-            min-width: 50px; 
-            text-align: center;
-        }
-        /* Dropdown Menu Styles */
-        .dropdown {
-            position: relative;
-            display: inline-block;
-        }
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: #f9f9f9;
-            min-width: 230px; /* Adjusted width */
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 10; /* Ensure dropdown is above other content */
-            border-radius: 0.375rem; /* Tailwind rounded-md */
-            padding: 0.5rem 0; /* Tailwind py-2 */
-        }
-        .dropdown-content button, .dropdown-content label { /* label for file input */
-            color: black;
-            padding: 0.75rem 1rem; /* Tailwind px-4 py-3 */
-            text-decoration: none;
-            display: block;
-            text-align: left;
-            background: none;
-            border: none;
-            width: 100%;
-            font-size: 0.875rem; /* Tailwind text-sm */
-            cursor: pointer;
-        }
-        .dropdown-content button:hover, .dropdown-content label:hover {
-            background-color: #e5e7eb; /* Tailwind gray-200 */
-        }
-        .dropdown-content button:disabled {
-            color: #9ca3af; /* Tailwind gray-400 */
-            cursor: not-allowed;
-            background-color: #f9f9f9; /* Keep original background for disabled */
-        }
-        .dropdown-content button i, .dropdown-content label i {
-            margin-right: 0.5rem; /* Tailwind mr-2 */
-            width: 1.25rem; /* Tailwind w-5, for icon alignment */
-            text-align: center;
-        }
-        .dropdown-trigger-button {
-             background-color: #1f2937; /* Tailwind gray-800 */
-        }
-        .dropdown-trigger-button:hover:not(:disabled) {
-            background-color: #374151; /* Tailwind gray-700 */
-        }
+        .zoom-controls { display: flex; gap: 0.5rem; align-items: center; }
+        .zoom-controls span { font-size: 0.875rem; color: #4b5563; min-width: 50px; text-align: center; }
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content { display: none; position: absolute; background-color: #f9f9f9; min-width: 230px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 10; border-radius: 0.375rem; padding: 0.5rem 0; }
+        .dropdown-content button, .dropdown-content label { color: black; padding: 0.75rem 1rem; text-decoration: none; display: block; text-align: left; background: none; border: none; width: 100%; font-size: 0.875rem; cursor: pointer; }
+        .dropdown-content button:hover, .dropdown-content label:hover { background-color: #e5e7eb; }
+        .dropdown-content button:disabled { color: #9ca3af; cursor: not-allowed; background-color: #f9f9f9; }
+        .dropdown-content button i, .dropdown-content label i { margin-right: 0.5rem; width: 1.25rem; text-align: center; }
+        .dropdown-trigger-button { background-color: #1f2937; }
+        .dropdown-trigger-button:hover:not(:disabled) { background-color: #374151; }
 
     </style>
 </head>
 <body class="p-4 md:p-8">
     <div class="container mx-auto max-w-7xl"> 
         <header class="mb-6 text-center">
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-700">RCA+ 矛盾分析繪圖工具 (檔案選單與縮放)</h1>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-700">RCA+ 矛盾分析繪圖工具 (圖示位置修正)</h1>
             <p class="text-gray-500 mt-1">視覺化根本原因、正面/負面效果，支援「且」關係連接、矛盾點標示、效果參數與發明原理。新增檔案選單、上一步、下一步與畫布縮放功能。</p>
         </header>
 
@@ -214,7 +252,6 @@
                             <input type="file" id="file-input-for-load" accept=".json" style="display: none;">
                         </div>
                     </div>
-                    
                     <button id="undo-button" class="action-button bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-md">
                         <i class="fas fa-undo"></i> 上一步
                     </button>
@@ -254,7 +291,6 @@
                 <tbody id="cause-effect-table-body"></tbody>
             </table>
         </section>
-
         <section id="solution-table-section" style="display: none;" class="data-table-section bg-white p-4 md:p-6 rounded-lg shadow">
             <h2 class="text-xl font-semibold text-gray-700 mb-3">4. 矛盾點之創意改善方案表</h2>
             <table class="data-table">
@@ -262,53 +298,52 @@
                 <tbody id="solution-table-body"></tbody>
             </table>
         </section>
-    </div>
-
-    <div id="and-source-modal" class="modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center" style="display: none;">
-        <div class="modal-content mx-auto p-5 border w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white">
-            <button class="modal-close-button" onclick="document.getElementById('and-source-modal').style.display='none'; currentAndTargetNodeId = null;">&times;</button>
-            <div class="mt-3">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 text-center" id="and-source-modal-title">為效果設定 AND 輸入源</h3>
-                <div class="mt-4 px-2 py-3 max-h-72 overflow-y-auto modal-options-container" id="and-source-options-container"></div>
-                <div class="items-center px-4 py-3 mt-4 text-right">
-                    <button id="cancel-and-sources-button" class="action-button mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">取消</button>
-                    <button id="save-and-sources-button" class="action-button px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-700">儲存AND來源</button>
+        <div id="and-source-modal" class="modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center" style="display: none;">
+            <div class="modal-content mx-auto p-5 border w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white">
+                <button class="modal-close-button" onclick="document.getElementById('and-source-modal').style.display='none'; currentAndTargetNodeId = null;">&times;</button>
+                <div class="mt-3">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 text-center" id="and-source-modal-title">為效果設定 AND 輸入源</h3>
+                    <div class="mt-4 px-2 py-3 max-h-72 overflow-y-auto modal-options-container" id="and-source-options-container"></div>
+                    <div class="items-center px-4 py-3 mt-4 text-right">
+                        <button id="cancel-and-sources-button" class="action-button mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">取消</button>
+                        <button id="save-and-sources-button" class="action-button px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-700">儲存AND來源</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div id="effect-parameter-modal" class="modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center" style="display: none;">
-        <div class="modal-content mx-auto p-5 border w-11/12 md:w-1/2 lg:w-2/5 shadow-lg rounded-md bg-white">
-            <button class="modal-close-button" onclick="document.getElementById('effect-parameter-modal').style.display='none'; currentParameterTargetNodeId = null;">&times;</button>
-            <div class="mt-3">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 text-center" id="effect-parameter-modal-title">設定效果參數</h3>
-                <div class="mt-4 px-2 py-3 max-h-96 overflow-y-auto modal-options-container" id="effect-parameter-options-container"></div>
-                <div class="items-center px-4 py-3 mt-4 text-right">
-                    <button id="cancel-effect-parameters-button" class="action-button mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">取消</button>
-                    <button id="save-effect-parameters-button" class="action-button px-4 py-2 bg-sky-500 text-white rounded-md hover:bg-sky-700">儲存參數</button>
+        <div id="effect-parameter-modal" class="modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center" style="display: none;">
+            <div class="modal-content mx-auto p-5 border w-11/12 md:w-1/2 lg:w-2/5 shadow-lg rounded-md bg-white">
+                <button class="modal-close-button" onclick="document.getElementById('effect-parameter-modal').style.display='none'; currentParameterTargetNodeId = null;">&times;</button>
+                <div class="mt-3">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 text-center" id="effect-parameter-modal-title">設定效果參數</h3>
+                    <div class="mt-4 px-2 py-3 max-h-96 overflow-y-auto modal-options-container" id="effect-parameter-options-container"></div>
+                    <div class="items-center px-4 py-3 mt-4 text-right">
+                        <button id="cancel-effect-parameters-button" class="action-button mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">取消</button>
+                        <button id="save-effect-parameters-button" class="action-button px-4 py-2 bg-sky-500 text-white rounded-md hover:bg-sky-700">儲存參數</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div id="inventive-principle-modal" class="modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center" style="display: none;">
-        <div class="modal-content mx-auto p-5 border w-11/12 md:w-1/2 lg:w-2/5 shadow-lg rounded-md bg-white">
-            <button class="modal-close-button" onclick="document.getElementById('inventive-principle-modal').style.display='none'; currentPrincipleTargetNodeId = null;">&times;</button>
-            <div class="mt-3">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 text-center" id="inventive-principle-modal-title">選擇發明原理與改善方案</h3>
-                <div class="mt-4 px-2 py-3 max-h-96 overflow-y-auto modal-options-container" id="inventive-principle-options-container"></div>
-                <div class="items-center px-4 py-3 mt-4 text-right">
-                    <button id="cancel-inventive-principles-button" class="action-button mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">取消</button>
-                    <button id="save-inventive-principles-button" class="action-button px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-700">儲存原理與方案</button>
+        <div id="inventive-principle-modal" class="modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center" style="display: none;">
+            <div class="modal-content mx-auto p-5 border w-11/12 md:w-1/2 lg:w-2/5 shadow-lg rounded-md bg-white">
+                <button class="modal-close-button" onclick="document.getElementById('inventive-principle-modal').style.display='none'; currentPrincipleTargetNodeId = null;">&times;</button>
+                <div class="mt-3">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 text-center" id="inventive-principle-modal-title">選擇發明原理與改善方案</h3>
+                    <div class="mt-4 px-2 py-3 max-h-96 overflow-y-auto modal-options-container" id="inventive-principle-options-container"></div>
+                    <div class="items-center px-4 py-3 mt-4 text-right">
+                        <button id="cancel-inventive-principles-button" class="action-button mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">取消</button>
+                        <button id="save-inventive-principles-button" class="action-button px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-700">儲存原理與方案</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- Helper function for deep copying ---
-        function deepCopy(obj) { /* ... (same as before) ... */ }
-
-        // --- 全局變數 ---
+        // --- JavaScript code remains the same as v4 ---
+        // --- All JS functions from previous version (v4) are included here for completeness. ---
+        // --- For brevity in this explanation, their code is not repeated line-by-line here but is in the full HTML output. ---
+        function deepCopy(obj) { return JSON.parse(JSON.stringify(obj)); }
         let rcaData = null; 
         let nodeIdCounter = 0;
         let currentAndTargetNodeId = null; 
@@ -319,13 +354,9 @@
         const ZOOM_STEP = 0.1;
         const MIN_ZOOM = 0.2;
         const MAX_ZOOM = 3.0;
-
-        // --- History Management for Undo/Redo ---
         let historyStack = [];
         let historyIndex = -1; 
         const MAX_HISTORY_STATES = 50; 
-
-        // --- DOM 元素引用 ---
         const problemInput = document.getElementById('problem-statement-input');
         const setProblemButton = document.getElementById('set-problem-button');
         const diagramRenderArea = document.getElementById('diagram-render-area'); 
@@ -335,30 +366,23 @@
         const diagramTitle = document.getElementById('diagram-title');
         const problemInputArea = document.getElementById('problem-input-area');
         const toolButtonsContainer = document.getElementById('tool-buttons');
-        
-        // File Menu Elements
         const fileMenuButton = document.getElementById('file-menu-button');
         const fileDropdownContent = document.getElementById('file-dropdown-content');
-        const saveDiagramButton = document.getElementById('save-diagram-button'); // Now inside dropdown
-        const loadDiagramButton = document.getElementById('load-diagram-button'); // Now inside dropdown
-        const saveToFileButton = document.getElementById('save-to-file-button');   // Now inside dropdown
-        const loadFromFileLabel = document.getElementById('load-from-file-label'); // Label for file input
+        const saveDiagramButton = document.getElementById('save-diagram-button'); 
+        const loadDiagramButton = document.getElementById('load-diagram-button'); 
+        const saveToFileButton = document.getElementById('save-to-file-button');   
+        const loadFromFileLabel = document.getElementById('load-from-file-label'); 
         const fileInputForLoad = document.getElementById('file-input-for-load');
-
         const undoButton = document.getElementById('undo-button');
         const redoButton = document.getElementById('redo-button');
-
         const zoomOutButton = document.getElementById('zoom-out-button'); 
         const zoomInButton = document.getElementById('zoom-in-button');   
         const resetZoomButton = document.getElementById('reset-zoom-button'); 
         const zoomLevelDisplay = document.getElementById('zoom-level-display'); 
-
         const finalizeDiagramButton = document.getElementById('finalize-diagram-button'); 
         const exportDiagramButton = document.getElementById('export-diagram-button');
         const toggleCauseEffectTableButton = document.getElementById('toggle-cause-effect-table-button');
         const toggleSolutionTableButton = document.getElementById('toggle-solution-table-button'); 
-        
-        // Modals and Tables (references remain the same)
         const causeEffectTableSection = document.getElementById('cause-effect-table-section');
         const causeEffectTableBody = document.getElementById('cause-effect-table-body');
         const solutionTableSection = document.getElementById('solution-table-section'); 
@@ -378,143 +402,42 @@
         const inventivePrincipleModalTitle = document.getElementById('inventive-principle-modal-title');
         const saveInventivePrinciplesButton = document.getElementById('save-inventive-principles-button');
         const cancelInventivePrinciplesButton = document.getElementById('cancel-inventive-principles-button');
-
-        // --- Data Lists (Effect Parameters, Inventive Principles) ---
-        const EFFECT_PARAMETERS = { /* ... (same as before) ... */ };
-        const INVENTIVE_PRINCIPLES = [ /* ... (same as before) ... */ ];
-        deepCopy = obj => JSON.parse(JSON.stringify(obj)); // Simplified for brevity
+        const EFFECT_PARAMETERS = {}; const INVENTIVE_PRINCIPLES = [];
         EFFECT_PARAMETERS["活動"] = ["活動效用性", "活動可變性", "活動費用", "活動時間", "活動複雜性", "活動方便性", "活動安全性", "活動可靠性"];
         EFFECT_PARAMETERS["系統"] = ["系統有效性", "系統可變性", "系統費用", "系統時間", "系統複雜性", "系統方便性", "系統安全性", "系統可靠性", "對系統的有害影響", "系統產生的有害影響", "組織壓力", "組織穩定性"];
         EFFECT_PARAMETERS["其他"] = ["內部風險", "外部風險", "信息共享", "信息損失", "信息流", "回饋", "物料流", "適應性/多功能性", "顧客壓力", "顧客穩定性", "環境穩定性"];
         INVENTIVE_PRINCIPLES.push("分割", "取出/分離", "改變局部特性", "非對稱性", "合併/整合", "多用性/多功能", "套疊/巢狀結構", "反制行動", "預先反制行動", "預先行動", "事先補償/預防", "消除緊張", "另一方向/反向操作", "非直線姓", "動態化", "稍微少些或多些(的動作)", "另外維度/空間", "共鳴(協調)", "週期行動", "連續的有利作用", "快速行動", "轉有害為有利", "回饋", "中介物/媒介", "自助/自我服務", "使用複製品或模型", "廉價與短期[拋棄式]", "替換系統運作原理/使用其他原理", "流動性和靈活性", "改變邊界條件", "孔洞和網路", "改變外觀/可見度", "同質性", "丟棄與恢復", "改變特性", "模範轉移", "相對變化", "增強的環境", "鈍性(惰性)環境", "組合(複合)結構");
-
-
-        // --- 初始化函數 ---
         function initialize() {
             setProblemButton.addEventListener('click', handleSetInitialProblem);
             problemInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSetInitialProblem(); });
-            
-            // File Menu Logic
-            fileMenuButton.addEventListener('click', (event) => {
-                event.stopPropagation(); // Prevent click from closing menu immediately
-                fileDropdownContent.style.display = fileDropdownContent.style.display === 'block' ? 'none' : 'block';
-                updateButtonStates(); // Update disabled states when menu opens
-            });
-            // Close dropdown if clicked outside
-            window.addEventListener('click', (event) => {
-                if (!fileMenuButton.contains(event.target) && !fileDropdownContent.contains(event.target)) {
-                    fileDropdownContent.style.display = 'none';
-                }
-            });
-
-            // Attach event listeners to dropdown items
+            fileMenuButton.addEventListener('click', (event) => { event.stopPropagation(); fileDropdownContent.style.display = fileDropdownContent.style.display === 'block' ? 'none' : 'block'; updateButtonStates(); });
+            window.addEventListener('click', (event) => { if (!fileMenuButton.contains(event.target) && !fileDropdownContent.contains(event.target)) { fileDropdownContent.style.display = 'none'; } });
             saveDiagramButton.addEventListener('click', () => { handleSaveToLocalStorage(); fileDropdownContent.style.display = 'none'; });
             loadDiagramButton.addEventListener('click', () => { handleLoadFromLocalStorage(); fileDropdownContent.style.display = 'none'; });
             saveToFileButton.addEventListener('click', () => { handleSaveToFile(); fileDropdownContent.style.display = 'none'; });
-            loadFromFileLabel.addEventListener('click', () => { fileInputForLoad.click(); /* Don't hide menu yet, wait for file selection */ });
+            loadFromFileLabel.addEventListener('click', () => { fileInputForLoad.click(); });
             fileInputForLoad.addEventListener('change', (event) => { handleLoadFromFile(event); fileDropdownContent.style.display = 'none'; });
-
-
             undoButton.addEventListener('click', handleUndo);
             redoButton.addEventListener('click', handleRedo);
-
             zoomInButton.addEventListener('click', () => applyZoom(currentZoom + ZOOM_STEP));
             zoomOutButton.addEventListener('click', () => applyZoom(currentZoom - ZOOM_STEP));
             resetZoomButton.addEventListener('click', () => applyZoom(1.0));
-
             finalizeDiagramButton.addEventListener('click', handleToggleFinalizeView); 
             exportDiagramButton.addEventListener('click', exportDiagramAsPNG);
             toggleCauseEffectTableButton.addEventListener('click', handleToggleCauseEffectTable);
             toggleSolutionTableButton.addEventListener('click', handleToggleSolutionTable); 
-            
             saveAndSourcesButton.addEventListener('click', handleSaveAndSources);
             cancelAndSourcesButton.addEventListener('click', () => { andSourceModal.style.display = 'none'; currentAndTargetNodeId = null; });
-            
             saveEffectParametersButton.addEventListener('click', handleSaveEffectParameters);
             cancelEffectParametersButton.addEventListener('click', () => { effectParameterModal.style.display = 'none'; currentParameterTargetNodeId = null; });
-            
             saveInventivePrinciplesButton.addEventListener('click', handleSaveInventivePrinciples);
             cancelInventivePrinciplesButton.addEventListener('click', () => { inventivePrincipleModal.style.display = 'none'; currentPrincipleTargetNodeId = null; });
-            
             new ResizeObserver(drawAllSvgConnectors).observe(scalableContentWrapper); 
             applyZoom(1.0, true); 
             updateButtonStates(); 
         }
-
-        // --- Zoom Functionality ---
-        function applyZoom(newZoomLevel, isInitial = false) { /* ... (same as before) ... */ }
-
-        // --- History and State Management Functions ---
-        function updateButtonStates() {
-            // Undo/Redo
-            undoButton.disabled = historyIndex <= 0;
-            redoButton.disabled = historyIndex >= historyStack.length - 1;
-
-            // File operations (inside dropdown)
-            if (fileDropdownContent.style.display === 'block') { // Only update if visible
-                saveDiagramButton.disabled = !rcaData;
-                loadDiagramButton.disabled = !localStorage.getItem('rcaDiagramData');
-                saveToFileButton.disabled = !rcaData;
-            }
-            // Main file menu button is never disabled by data state
-            // loadFromFileLabel is never disabled by data state
-
-            // Zoom buttons
-            zoomInButton.disabled = currentZoom >= MAX_ZOOM;
-            zoomOutButton.disabled = currentZoom <= MIN_ZOOM;
-            resetZoomButton.disabled = currentZoom === 1.0;
-
-            // Other tool buttons
-            const noData = !rcaData;
-            exportDiagramButton.disabled = noData;
-            finalizeDiagramButton.disabled = noData;
-            toggleCauseEffectTableButton.disabled = noData;
-            toggleSolutionTableButton.disabled = noData;
-        }
-
-        function pushStateToHistory(currentState, clearRedoStack = true) { /* ... (same as before) ... */ }
-        function restoreStateFromHistory(historyEntry) { /* ... (same as before) ... */ }
-        function handleUndo() { /* ... (same as before) ... */ }
-        function handleRedo() { /* ... (same as before) ... */ }
-        function processLoadedData(dataString) { /* ... (same as before) ... */ }
-        function handleSaveToLocalStorage() { /* ... (same as before) ... */ }
-        function handleLoadFromLocalStorage() { /* ... (same as before) ... */ }
-        function handleSaveToFile() { /* ... (same as before) ... */ }
-        function handleLoadFromFile(event) { /* ... (same as before) ... */ }
-        function recalculateNodeIdCounter(currentData) { /* ... (same as before) ... */ }
-        function handleSetInitialProblem() { /* ... (same as before) ... */ }
-        function handleToggleFinalizeView() { /* ... (same as before) ... */ }
-        function createNode(text, type, parentId, isNonChangeable = false) { /* ... (same as before) ... */ }
-        function renderRcaDiagram() { /* ... (same as before) ... */ }
-        function createNodeElement(nodeData) { /* ... (same as before) ... */ }
-        function promptEditNode(nodeId, parentNodeContentDiv) { /* ... (same as before) ... */ }
-        function openAndSourceModal(targetNodeId) { /* ... (same as before) ... */ }
-        function isDescendant(parentNode, childNodeIdToFind) { /* ... (same as before) ... */ }
-        function handleSaveAndSources() { /* ... (same as before) ... */ }
-        function openEffectParameterModal(targetNodeId) { /* ... (same as before) ... */ }
-        function handleSaveEffectParameters() { /* ... (same as before) ... */ }
-        function openInventivePrincipleModal(targetNodeId) { /* ... (same as before) ... */ }
-        function handleSaveInventivePrinciples() { /* ... (same as before) ... */ }
-        function drawAllSvgConnectors() { /* ... (same as before, with zoom adjustments) ... */ }
-        function drawSvgLine(x1, y1, x2, y2, color = 'black', strokeWidth = 2) { /* ... (same as before, with zoom adjustments) ... */ }
-        function drawSvgCircle(cx, cy, r, fillColor = 'black') { /* ... (same as before, with zoom adjustments) ... */ }
-        function checkChildrenEffects(nodeData) { /* ... (same as before) ... */ }
-        function toggleNonChangeable(nodeId) { /* ... (same as before) ... */ }
-        function createActionButton(text, className, onClickHandler) { /* ... (same as before) ... */ }
-        function promptAddNode(parentId, parentNodeContentDiv, nodeTypeToAdd, placeholderText) { /* ... (same as before) ... */ }
-        function addNodeToData(parentId, nodeText, nodeType) { /* ... (same as before) ... */ }
-        function removeNode(nodeIdToRemove) { /* ... (same as before) ... */ }
-        function findNodeById(node, id) { /* ... (same as before) ... */ }
-        function handleToggleCauseEffectTable() { /* ... (same as before) ... */ }
-        function getCauseEffectTableData() { /* ... (same as before) ... */ }
-        function renderCauseEffectTable() { /* ... (same as before) ... */ }
-        function handleToggleSolutionTable() { /* ... (same as before) ... */ }
-        function renderSolutionTable() { /* ... (same as before) ... */ }
-        function getSolutionTableData() { /* ... (same as before) ... */ }
-        function exportDiagramAsPNG() { /* ... (same as before) ... */ }
-
-        // --- Copying unchanged JS functions for brevity ---
         applyZoom = function(newZoomLevel, isInitial = false) { currentZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoomLevel)); scalableContentWrapper.style.transform = `scale(${currentZoom})`; zoomLevelDisplay.textContent = `${Math.round(currentZoom * 100)}%`; if (!isInitial && rcaData) { requestAnimationFrame(drawAllSvgConnectors); } updateButtonStates(); };
+        updateButtonStates = function() { undoButton.disabled = historyIndex <= 0; redoButton.disabled = historyIndex >= historyStack.length - 1; if (fileDropdownContent.style.display === 'block') { saveDiagramButton.disabled = !rcaData; loadDiagramButton.disabled = !localStorage.getItem('rcaDiagramData'); saveToFileButton.disabled = !rcaData; } zoomInButton.disabled = currentZoom >= MAX_ZOOM; zoomOutButton.disabled = currentZoom <= MIN_ZOOM; resetZoomButton.disabled = currentZoom === 1.0; const noData = !rcaData; exportDiagramButton.disabled = noData; finalizeDiagramButton.disabled = noData; toggleCauseEffectTableButton.disabled = noData; toggleSolutionTableButton.disabled = noData; };
         pushStateToHistory = function(currentState, clearRedoStack = true) { if (!currentState) { updateButtonStates(); return; } const stateCopy = deepCopy(currentState); if (!stateCopy) { console.error("Failed to copy state for history."); return; } if (clearRedoStack) { historyStack = historyStack.slice(0, historyIndex + 1); } historyStack.push({ data: stateCopy, counter: nodeIdCounter, zoom: currentZoom }); historyIndex = historyStack.length - 1; if (historyStack.length > MAX_HISTORY_STATES) { historyStack.shift(); historyIndex--; } updateButtonStates(); };
         restoreStateFromHistory = function(historyEntry) { if (historyEntry && historyEntry.data) { rcaData = deepCopy(historyEntry.data); nodeIdCounter = historyEntry.counter; recalculateNodeIdCounter(rcaData); renderRcaDiagram(); renderCauseEffectTable(); renderSolutionTable(); applyZoom(historyEntry.zoom); } else { console.error("Failed to retrieve state from history."); return false; } return true; };
         handleUndo = function() { if (historyIndex > 0) { historyIndex--; if (!restoreStateFromHistory(historyStack[historyIndex])) { historyIndex++; } } updateButtonStates(); };
@@ -529,7 +452,7 @@
         handleToggleFinalizeView = function() { isFinalizedView = !isFinalizedView; if (isFinalizedView) { finalizeDiagramButton.textContent = '編輯圖表'; finalizeDiagramButton.classList.remove('finalize-diagram'); finalizeDiagramButton.classList.add('edit-diagram'); } else { finalizeDiagramButton.textContent = '完成圖表'; finalizeDiagramButton.classList.remove('edit-diagram'); finalizeDiagramButton.classList.add('finalize-diagram'); } renderRcaDiagram(); };
         createNode = function(text, type, parentId, isNonChangeable = false) { nodeIdCounter++; const node = { id: `node-${nodeIdCounter}`, text: text, type: type, parentId: parentId, children: [], andSourceNodeIds: [], effectParameters: [], inventivePrinciples: [] }; if (type === 'cause') node.isNonChangeable = isNonChangeable; return node; };
         renderRcaDiagram = function() { diagramContainer.innerHTML = ''; if (rcaData) { diagramContainer.appendChild(createNodeElement(rcaData)); } requestAnimationFrame(drawAllSvgConnectors); };
-        createNodeElement = function(nodeData) { const nodeWrapper = document.createElement('div'); nodeWrapper.classList.add('rca-node-wrapper'); const nodeDiv = document.createElement('div'); nodeDiv.classList.add('rca-node', `rca-node-${nodeData.type}`); nodeDiv.id = nodeData.id; nodeDiv.dataset.nodeId = nodeData.id; const contentDiv = document.createElement('div'); contentDiv.classList.add('rca-node-content'); const headerDiv = document.createElement('div'); headerDiv.classList.add('rca-node-header'); const iconSpan = document.createElement('span'); iconSpan.classList.add('rca-node-icon'); const textSpan = document.createElement('span'); textSpan.classList.add('rca-node-text'); textSpan.textContent = nodeData.text; headerDiv.appendChild(textSpan); if (nodeData.type === 'cause' && nodeData.isNonChangeable) { const ncBadge = document.createElement('span'); ncBadge.classList.add('nc-badge'); ncBadge.textContent = 'NC'; headerDiv.appendChild(ncBadge); } headerDiv.appendChild(iconSpan); contentDiv.appendChild(headerDiv); if (nodeData.effectParameters && nodeData.effectParameters.length > 0) { const paramsDiv = document.createElement('div'); paramsDiv.classList.add('selected-items-list'); paramsDiv.innerHTML = `<strong>效果參數:</strong> <ul>${nodeData.effectParameters.map(p => `<li>${p}</li>`).join('')}</ul>`; contentDiv.appendChild(paramsDiv); } if (nodeData.inventivePrinciples && nodeData.inventivePrinciples.length > 0) { const principlesDiv = document.createElement('div'); principlesDiv.classList.add('selected-items-list'); let principlesHtml = '<strong>發明原理:</strong> <ul>'; nodeData.inventivePrinciples.forEach(ip => { principlesHtml += `<li>${ip.name}${ip.solution ? `<span class="solution-text">- ${ip.solution.substring(0, 20)}${ip.solution.length > 20 ? '...' : ''}</span>` : ''}</li>`; }); principlesHtml += '</ul>'; principlesDiv.innerHTML = principlesHtml; contentDiv.appendChild(principlesDiv); } iconSpan.style.display = 'flex'; if (nodeData.type === 'initial-problem') iconSpan.textContent = '(-)'; else if (nodeData.type === 'cause') { const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(nodeData); if (hasPositiveChild && hasNegativeChild) { iconSpan.textContent = '+/-'; iconSpan.classList.add('contradictory'); } else { iconSpan.style.display = 'none'; } } else if (nodeData.type === 'positive-effect') iconSpan.textContent = '(+)'; else if (nodeData.type === 'negative-effect') iconSpan.textContent = '(-)'; else { iconSpan.style.display = 'none'; } if (!isFinalizedView) { const actionsDiv = document.createElement('div'); actionsDiv.classList.add('rca-node-actions'); actionsDiv.appendChild(createActionButton('修訂此項', 'edit-node', () => promptEditNode(nodeData.id, contentDiv))); if (nodeData.type === 'initial-problem') { actionsDiv.appendChild(createActionButton('新增原因', 'add-cause', () => promptAddNode(nodeData.id, contentDiv, 'cause', '輸入原因描述'))); } else if (nodeData.type === 'cause') { actionsDiv.appendChild(createActionButton('新增子原因', 'add-cause', () => promptAddNode(nodeData.id, contentDiv, 'cause', '輸入子原因描述'))); actionsDiv.appendChild(createActionButton('(+) 正面效果', 'add-positive', () => promptAddNode(nodeData.id, contentDiv, 'positive-effect', '輸入此原因帶來的正面效果'))); actionsDiv.appendChild(createActionButton('(-) 負面效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入此原因導致的負面效果'))); const ncButtonText = nodeData.isNonChangeable ? '取消NC標記' : '設為NC'; actionsDiv.appendChild(createActionButton(ncButtonText, 'toggle-nc', () => toggleNonChangeable(nodeData.id))); actionsDiv.appendChild(createActionButton('選擇發明原理', 'set-principles', () => openInventivePrincipleModal(nodeData.id))); if (nodeData.parentId) { actionsDiv.appendChild(createActionButton('移除此原因', 'remove-button', () => removeNode(nodeData.id))); } } else if (nodeData.type === 'positive-effect' || nodeData.type === 'negative-effect') { actionsDiv.appendChild(createActionButton('(+) 新增正面子效果', 'add-positive', () => promptAddNode(nodeData.id, contentDiv, 'positive-effect', '輸入正面子效果描述'))); actionsDiv.appendChild(createActionButton('(-) 新增負面子效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入負面子效果描述'))); actionsDiv.appendChild(createActionButton('設定效果參數', 'set-parameters', () => openEffectParameterModal(nodeData.id))); actionsDiv.appendChild(createActionButton('設定AND輸入源', 'set-and-sources', () => openAndSourceModal(nodeData.id))); actionsDiv.appendChild(createActionButton('移除效果', 'remove-button', () => removeNode(nodeData.id))); } contentDiv.appendChild(actionsDiv); const inputContainer = document.createElement('div'); inputContainer.classList.add('input-group-container'); contentDiv.appendChild(inputContainer); } nodeDiv.appendChild(contentDiv); nodeWrapper.appendChild(nodeDiv); if (nodeData.children && nodeData.children.length > 0) { const childrenContainer = document.createElement('div'); childrenContainer.classList.add('rca-children-container'); nodeData.children.forEach(childNode => childrenContainer.appendChild(createNodeElement(childNode))); nodeWrapper.appendChild(childrenContainer); } return nodeWrapper; };
+        createNodeElement = function(nodeData) { const nodeWrapper = document.createElement('div'); nodeWrapper.classList.add('rca-node-wrapper'); const nodeDiv = document.createElement('div'); nodeDiv.classList.add('rca-node', `rca-node-${nodeData.type}`); nodeDiv.id = nodeData.id; nodeDiv.dataset.nodeId = nodeData.id; const contentDiv = document.createElement('div'); contentDiv.classList.add('rca-node-content'); const headerDiv = document.createElement('div'); headerDiv.classList.add('rca-node-header'); const iconSpan = document.createElement('span'); iconSpan.classList.add('rca-node-icon'); const textSpan = document.createElement('span'); textSpan.classList.add('rca-node-text'); textSpan.textContent = nodeData.text; headerDiv.appendChild(textSpan); if (nodeData.type === 'cause' && nodeData.isNonChangeable) { const ncBadge = document.createElement('span'); ncBadge.classList.add('nc-badge'); ncBadge.textContent = 'NC'; headerDiv.appendChild(ncBadge); } /* Icon is now part of .rca-node directly, not headerDiv */ contentDiv.appendChild(headerDiv); nodeDiv.appendChild(iconSpan); /* Icon moved here */ if (nodeData.effectParameters && nodeData.effectParameters.length > 0) { const paramsDiv = document.createElement('div'); paramsDiv.classList.add('selected-items-list'); paramsDiv.innerHTML = `<strong>效果參數:</strong> <ul>${nodeData.effectParameters.map(p => `<li>${p}</li>`).join('')}</ul>`; contentDiv.appendChild(paramsDiv); } if (nodeData.inventivePrinciples && nodeData.inventivePrinciples.length > 0) { const principlesDiv = document.createElement('div'); principlesDiv.classList.add('selected-items-list'); let principlesHtml = '<strong>發明原理:</strong> <ul>'; nodeData.inventivePrinciples.forEach(ip => { principlesHtml += `<li>${ip.name}${ip.solution ? `<span class="solution-text">- ${ip.solution.substring(0, 20)}${ip.solution.length > 20 ? '...' : ''}</span>` : ''}</li>`; }); principlesHtml += '</ul>'; principlesDiv.innerHTML = principlesHtml; contentDiv.appendChild(principlesDiv); } iconSpan.style.display = 'flex'; if (nodeData.type === 'initial-problem') iconSpan.textContent = '(-)'; else if (nodeData.type === 'cause') { const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(nodeData); if (hasPositiveChild && hasNegativeChild) { iconSpan.textContent = '+/-'; iconSpan.classList.add('contradictory'); } else { iconSpan.style.display = 'none'; } } else if (nodeData.type === 'positive-effect') iconSpan.textContent = '(+)'; else if (nodeData.type === 'negative-effect') iconSpan.textContent = '(-)'; else { iconSpan.style.display = 'none'; } if (!isFinalizedView) { const actionsDiv = document.createElement('div'); actionsDiv.classList.add('rca-node-actions'); actionsDiv.appendChild(createActionButton('修訂此項', 'edit-node', () => promptEditNode(nodeData.id, contentDiv))); if (nodeData.type === 'initial-problem') { actionsDiv.appendChild(createActionButton('新增原因', 'add-cause', () => promptAddNode(nodeData.id, contentDiv, 'cause', '輸入原因描述'))); } else if (nodeData.type === 'cause') { actionsDiv.appendChild(createActionButton('新增子原因', 'add-cause', () => promptAddNode(nodeData.id, contentDiv, 'cause', '輸入子原因描述'))); actionsDiv.appendChild(createActionButton('(+) 正面效果', 'add-positive', () => promptAddNode(nodeData.id, contentDiv, 'positive-effect', '輸入此原因帶來的正面效果'))); actionsDiv.appendChild(createActionButton('(-) 負面效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入此原因導致的負面效果'))); const ncButtonText = nodeData.isNonChangeable ? '取消NC標記' : '設為NC'; actionsDiv.appendChild(createActionButton(ncButtonText, 'toggle-nc', () => toggleNonChangeable(nodeData.id))); actionsDiv.appendChild(createActionButton('選擇發明原理', 'set-principles', () => openInventivePrincipleModal(nodeData.id))); if (nodeData.parentId) { actionsDiv.appendChild(createActionButton('移除此原因', 'remove-button', () => removeNode(nodeData.id))); } } else if (nodeData.type === 'positive-effect' || nodeData.type === 'negative-effect') { actionsDiv.appendChild(createActionButton('(+) 新增正面子效果', 'add-positive', () => promptAddNode(nodeData.id, contentDiv, 'positive-effect', '輸入正面子效果描述'))); actionsDiv.appendChild(createActionButton('(-) 新增負面子效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入負面子效果描述'))); actionsDiv.appendChild(createActionButton('設定效果參數', 'set-parameters', () => openEffectParameterModal(nodeData.id))); actionsDiv.appendChild(createActionButton('設定AND輸入源', 'set-and-sources', () => openAndSourceModal(nodeData.id))); actionsDiv.appendChild(createActionButton('移除效果', 'remove-button', () => removeNode(nodeData.id))); } contentDiv.appendChild(actionsDiv); const inputContainer = document.createElement('div'); inputContainer.classList.add('input-group-container'); contentDiv.appendChild(inputContainer); } nodeDiv.appendChild(contentDiv); nodeWrapper.appendChild(nodeDiv); if (nodeData.children && nodeData.children.length > 0) { const childrenContainer = document.createElement('div'); childrenContainer.classList.add('rca-children-container'); nodeData.children.forEach(childNode => childrenContainer.appendChild(createNodeElement(childNode))); nodeWrapper.appendChild(childrenContainer); } return nodeWrapper; };
         promptEditNode = function(nodeId, parentNodeContentDiv) { if (isFinalizedView) return; const nodeToEdit = findNodeById(rcaData, nodeId); if (!nodeToEdit) return; const inputContainer = parentNodeContentDiv.querySelector('.input-group-container'); if (!inputContainer) { console.error("Input container not found for node:", nodeId); return; } document.querySelectorAll('.input-group').forEach(ig => ig.remove()); inputContainer.innerHTML = ''; const inputGroup = document.createElement('div'); inputGroup.classList.add('input-group'); const nodeInput = document.createElement('input'); nodeInput.type = 'text'; nodeInput.value = nodeToEdit.text; nodeInput.classList.add('input-field'); const saveEditButton = document.createElement('button'); saveEditButton.textContent = '儲存修訂'; saveEditButton.classList.add('action-button', 'save-edit-button', 'w-full', 'mt-2'); saveEditButton.onclick = () => { const newText = nodeInput.value.trim(); if (newText) { nodeToEdit.text = newText; pushStateToHistory(rcaData); renderRcaDiagram(); renderCauseEffectTable(); renderSolutionTable(); inputContainer.innerHTML = ''; } else { alert('描述不能為空！'); } }; nodeInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') saveEditButton.click(); }); const cancelEditButton = document.createElement('button'); cancelEditButton.textContent = '取消修訂'; cancelEditButton.classList.add('action-button', 'bg-gray-400', 'hover:bg-gray-500', 'w-full', 'mt-1'); cancelEditButton.onclick = () => { inputContainer.innerHTML = ''; }; inputGroup.appendChild(nodeInput); inputGroup.appendChild(saveEditButton); inputGroup.appendChild(cancelEditButton); inputContainer.appendChild(inputGroup); nodeInput.focus(); nodeInput.select(); };
         openAndSourceModal = function(targetNodeId) { if (isFinalizedView) return; currentAndTargetNodeId = targetNodeId; const targetNode = findNodeById(rcaData, targetNodeId); if (!targetNode) return; andSourceModalTitle.textContent = `為效果 "${targetNode.text}" 設定 AND 輸入源`; andSourceOptionsContainer.innerHTML = ''; const availableCauses = []; function findCausesRecursive(node) { if (!node) return; if (node.type === 'cause') availableCauses.push(node); if (node.children) node.children.forEach(findCausesRecursive); } if (rcaData) findCausesRecursive(rcaData); if (availableCauses.length === 0) { andSourceOptionsContainer.innerHTML = '<p class="text-gray-500 text-center">圖表中尚無可用的原因節點。</p>'; } else { availableCauses.forEach(causeNode => { if (causeNode.id === targetNode.id || isDescendant(targetNode, causeNode.id) || causeNode.id === targetNode.parentId) return; const div = document.createElement('div'); div.classList.add('flex', 'items-center', 'my-2', 'p-2', 'hover:bg-gray-100', 'rounded'); const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.id = `and-source-chk-${causeNode.id}`; checkbox.value = causeNode.id; checkbox.classList.add('form-checkbox', 'h-5', 'w-5', 'text-blue-600', 'rounded', 'border-gray-300'); if (targetNode.andSourceNodeIds && targetNode.andSourceNodeIds.includes(causeNode.id)) { checkbox.checked = true; } const label = document.createElement('label'); label.htmlFor = `and-source-chk-${causeNode.id}`; label.textContent = `${causeNode.text} (ID: ${causeNode.id.split('-')[1]})`; label.classList.add('ml-3', 'text-sm', 'text-gray-700', 'flex-grow'); div.appendChild(checkbox); div.appendChild(label); andSourceOptionsContainer.appendChild(div); }); if (andSourceOptionsContainer.childElementCount === 0) { andSourceOptionsContainer.innerHTML = '<p class="text-gray-500 text-center">無有效的 AND 輸入源選項。</p>'; } } andSourceModal.style.display = 'flex'; };
         isDescendant = function(parentNode, childNodeIdToFind) { if (!parentNode || !parentNode.children || parentNode.children.length === 0) return false; for (const child of parentNode.children) { if (child.id === childNodeIdToFind) return true; if (isDescendant(child, childNodeIdToFind)) return true; } return false; };
@@ -556,7 +479,6 @@
         getSolutionTableData = function() { const solutionData = []; function collectSolutionsRecursive(node) { if (!node) return; if (node.type === 'cause') { const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(node); if (hasPositiveChild && hasNegativeChild && node.inventivePrinciples && node.inventivePrinciples.length > 0) { node.inventivePrinciples.forEach(ip => { if (ip.solution && ip.solution.trim() !== '') { solutionData.push({ contradictoryCause: node.text, principle: ip.name, solution: ip.solution }); } }); } } if (node.children) { node.children.forEach(collectSolutionsRecursive); } } if (rcaData) { collectSolutionsRecursive(rcaData); } return solutionData; };
         exportDiagramAsPNG = function() { const diagramRenderAreaElement = document.getElementById('diagram-render-area'); if (!diagramRenderAreaElement || !rcaData || diagramContainer.children.length === 0) { alert('圖表為空或找不到圖表元素！'); return; } const activeInputGroups = diagramContainer.querySelectorAll('.input-group'); activeInputGroups.forEach(group => group.style.display = 'none'); const originalZoom = currentZoom; applyZoom(1.0); requestAnimationFrame(() => { drawAllSvgConnectors(); html2canvas(scalableContentWrapper, { scale: 1.5, useCORS: true, backgroundColor: '#ffffff', logging: false, width: scalableContentWrapper.scrollWidth, height: scalableContentWrapper.scrollHeight, onclone: (clonedDoc) => { const clonedScalableWrapper = clonedDoc.getElementById('scalable-content-wrapper'); if(clonedScalableWrapper) { clonedScalableWrapper.style.transform = 'scale(1.0)'; } if (isFinalizedView) { const clonedActionDivs = clonedDoc.querySelectorAll('.rca-node-actions'); clonedActionDivs.forEach(div => div.style.display = 'none'); } const clonedInputContainers = clonedDoc.querySelectorAll('.input-group-container'); clonedInputContainers.forEach(div => div.style.display = 'none'); } }).then(canvas => { activeInputGroups.forEach(group => group.style.display = 'flex'); applyZoom(originalZoom); const image = canvas.toDataURL('image/png'); const link = document.createElement('a'); link.download = 'rca-plus-diagram.png'; link.href = image; link.click(); }).catch(err => { console.error('匯出圖表失敗:', err); alert('匯出圖表失敗，請檢查控制台錯誤訊息。'); activeInputGroups.forEach(group => group.style.display = 'flex'); applyZoom(originalZoom); }); }); };
         
-        // --- 執行初始化 ---
         initialize();
     </script>
 </body>
