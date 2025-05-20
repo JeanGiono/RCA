@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RCA+ 矛盾分析繪圖工具 </title>
+    <title>RCA+ 矛盾分析繪圖工具 (修正版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 
     <style>
         body {
@@ -31,7 +33,7 @@
             position: relative;
             transform-origin: top left;
             display: inline-block; 
-            padding: 20px; 
+            padding: 20px; /* This padding is crucial for connector calculations */
             cursor: grab; 
         }
         #scalable-content-wrapper:active {
@@ -39,8 +41,8 @@
         }
         #svg-connector-layer {
             position: absolute; 
-            top: 20px; 
-            left: 20px;
+            top: 20px; /* Aligns with scalable-content-wrapper's padding */
+            left: 20px;/* Aligns with scalable-content-wrapper's padding */
             pointer-events: none; 
             z-index: 0; 
         }
@@ -57,6 +59,7 @@
             align-items: center; 
             margin: 0 1rem; 
             vertical-align: top; 
+            transition: margin 0.3s ease-in-out; 
         }
         .rca-node {
             border: 2px solid #4b5563; 
@@ -86,7 +89,7 @@
             align-items: center; 
             justify-content: center; 
             gap: 0.4rem; 
-            width: 100%; /* Header takes full width of content area */
+            width: 100%;
             position: relative; 
             margin-bottom: 0.25rem; 
         }
@@ -104,14 +107,14 @@
             justify-content: center;
             border: 2px solid white; 
             box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-            z-index: 10; /* Ensure icon is above other content within the node */
+            z-index: 10; 
         }
         .nc-badge { 
             font-size: 0.65em; font-weight: bold; color: #374151; 
             background-color: #e5e7eb; padding: 0.15rem 0.35rem; 
             border-radius: 0.25rem; 
             align-self: center; 
-            margin-left: 0.25rem; /* Add a small margin if next to text */
+            margin-left: 0.25rem; 
         }
         .rca-node-text { 
             font-weight: 500; 
@@ -119,22 +122,19 @@
             text-align: center; 
             overflow-wrap: break-word; 
             line-height: 1.4; 
-            box-sizing: border-box; /* Important for padding calculation */
+            box-sizing: border-box; 
         }
-        /* Default styling for rca-node-text (rectangular nodes) */
         .rca-node:not(.rca-node-positive-effect):not(.rca-node-negative-effect) .rca-node-text {
             width: 9em; 
-            padding-right: 2.5em; /* Space for icon */
-            display: inline-block; /* Allows width and padding */
+            padding-right: 2.5em; 
+            display: inline-block; 
             vertical-align: middle;
         }
-        /* Styling for rca-node-text within pill-shaped effect nodes */
         .rca-node-positive-effect .rca-node-text,
         .rca-node-negative-effect .rca-node-text {
-            display: block; /* Take full width of header */
+            display: block; 
             width: 100%;    
-            padding-right: 3em; /* Increased padding for icon, adjust as needed */
-                                 /* e.g., if icon is ~26px wide, 3em of 0.9rem font is ~43px */
+            padding-right: 3em; 
         }
 
         .selected-items-list { 
@@ -169,7 +169,6 @@
         .rca-node-positive-effect .rca-node-icon { background-color: #2563eb; }
         .rca-node-negative-effect { background-color: #ffedd5; border-color: #f97316; border-radius: 50px; padding: 0.6rem 1.2rem; }
         .rca-node-negative-effect .rca-node-icon { background-color: #f97316; }
-
 
         .rca-children-container { 
             display: flex; 
@@ -240,8 +239,8 @@
 <body class="p-4 md:p-8">
     <div class="container mx-auto max-w-7xl"> 
         <header class="mb-6 text-center">
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-700">RCA+ 矛盾分析繪圖工具 (圖示定位修正 II)</h1>
-            <p class="text-gray-500 mt-1">視覺化根本原因、正面/負面效果，支援「且」關係連接、矛盾點標示、效果參數與發明原理。新增檔案選單、上一步、下一步與畫布縮放功能。</p>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-700">RCA+ 矛盾分析繪圖工具 (修正版)</h1>
+            <p class="text-gray-500 mt-1">視覺化根本原因、正面/負面效果，支援「且」關係連接、矛盾點標示、效果參數與發明原理。新增檔案選單、上一步、下一步、畫布縮放、自動調整節點與 PDF 匯出功能。</p>
         </header>
 
         <section id="controls-section" class="mb-6 p-4 bg-white rounded-lg shadow">
@@ -281,8 +280,19 @@
                 </div>
                 <div class="flex flex-wrap gap-2 justify-center">
                     <button id="finalize-diagram-button" class="action-button finalize-diagram text-white font-semibold py-2 px-4 rounded-md">完成圖表</button>
-                    <button id="export-diagram-button" class="action-button bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-md">匯出圖表 (PNG)</button>
-                    <button id="toggle-cause-effect-table-button" class="action-button bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-4 rounded-md">顯示原因效果表</button>
+                    <button id="auto-adjust-layout-button" class="action-button bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-4 rounded-md">
+                        <i class="fas fa-project-diagram"></i> 自動調整節點
+                    </button>
+                    <div class="dropdown">
+                        <button id="export-menu-button" class="action-button dropdown-trigger-button bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-md">
+                            <i class="fas fa-download"></i> 匯出 <i class="fas fa-caret-down ml-1"></i>
+                        </button>
+                        <div id="export-dropdown-content" class="dropdown-content">
+                            <button id="export-png-button"><i class="fas fa-image"></i> 匯出圖檔 (PNG)</button>
+                            <button id="export-pdf-button"><i class="fas fa-file-pdf"></i> 匯出 PDF 報告</button>
+                        </div>
+                    </div>
+                    <button id="toggle-cause-effect-table-button" class="action-button bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-4 rounded-md">顯示原因效果表</button>
                     <button id="toggle-solution-table-button" class="action-button bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md">顯示改善方案表</button>
                 </div>
             </div>
@@ -354,8 +364,7 @@
     </div>
 
     <script>
-        // --- JavaScript code remains the same as v9, only CSS was primarily changed for icon/text alignment ---
-        // --- All JS functions from previous version (v9) are included here for completeness. ---
+        // --- Global Variables and Constants ---
         function deepCopy(obj) { return JSON.parse(JSON.stringify(obj)); }
         let rcaData = null; 
         let nodeIdCounter = 0;
@@ -375,6 +384,8 @@
         let touchStartY = 0;
         const LONG_PRESS_DURATION = 700; 
         const MAX_TOUCH_MOVE_THRESHOLD = 10; 
+
+        // --- DOM Element References ---
         const problemInput = document.getElementById('problem-statement-input');
         const setProblemButton = document.getElementById('set-problem-button');
         const diagramRenderArea = document.getElementById('diagram-render-area'); 
@@ -384,6 +395,7 @@
         const diagramTitle = document.getElementById('diagram-title');
         const problemInputArea = document.getElementById('problem-input-area');
         const toolButtonsContainer = document.getElementById('tool-buttons');
+        
         const fileMenuButton = document.getElementById('file-menu-button');
         const fileDropdownContent = document.getElementById('file-dropdown-content');
         const saveDiagramButton = document.getElementById('save-diagram-button'); 
@@ -391,20 +403,30 @@
         const saveToFileButton = document.getElementById('save-to-file-button');   
         const loadFromFileLabel = document.getElementById('load-from-file-label'); 
         const fileInputForLoad = document.getElementById('file-input-for-load');
+        
         const undoButton = document.getElementById('undo-button');
         const redoButton = document.getElementById('redo-button');
+        
         const zoomOutButton = document.getElementById('zoom-out-button'); 
         const zoomInButton = document.getElementById('zoom-in-button');   
         const resetZoomButton = document.getElementById('reset-zoom-button'); 
         const zoomLevelDisplay = document.getElementById('zoom-level-display'); 
+        
         const finalizeDiagramButton = document.getElementById('finalize-diagram-button'); 
-        const exportDiagramButton = document.getElementById('export-diagram-button');
+        const autoAdjustLayoutButton = document.getElementById('auto-adjust-layout-button'); 
+
+        const exportMenuButton = document.getElementById('export-menu-button');
+        const exportDropdownContent = document.getElementById('export-dropdown-content');
+        const exportPngButton = document.getElementById('export-png-button');
+        const exportPdfButton = document.getElementById('export-pdf-button');
+
         const toggleCauseEffectTableButton = document.getElementById('toggle-cause-effect-table-button');
         const toggleSolutionTableButton = document.getElementById('toggle-solution-table-button'); 
         const causeEffectTableSection = document.getElementById('cause-effect-table-section');
         const causeEffectTableBody = document.getElementById('cause-effect-table-body');
         const solutionTableSection = document.getElementById('solution-table-section'); 
         const solutionTableBody = document.getElementById('solution-table-body'); 
+        
         const andSourceModal = document.getElementById('and-source-modal');
         const andSourceOptionsContainer = document.getElementById('and-source-options-container');
         const andSourceModalTitle = document.getElementById('and-source-modal-title');
@@ -420,6 +442,7 @@
         const inventivePrincipleModalTitle = document.getElementById('inventive-principle-modal-title');
         const saveInventivePrinciplesButton = document.getElementById('save-inventive-principles-button');
         const cancelInventivePrinciplesButton = document.getElementById('cancel-inventive-principles-button');
+        
         const EFFECT_PARAMETERS = {}; 
         const INVENTIVE_PRINCIPLES = [];
         EFFECT_PARAMETERS["活動"] = ["活動效用性", "活動可變性", "活動費用", "活動時間", "活動複雜性", "活動方便性", "活動安全性", "活動可靠性"];
@@ -430,32 +453,62 @@
         function initialize() {
             setProblemButton.addEventListener('click', handleSetInitialProblem);
             problemInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSetInitialProblem(); });
-            fileMenuButton.addEventListener('click', (event) => { event.stopPropagation(); fileDropdownContent.style.display = fileDropdownContent.style.display === 'block' ? 'none' : 'block'; updateButtonStates(); });
-            window.addEventListener('click', (event) => { if (!fileMenuButton.contains(event.target) && !fileDropdownContent.contains(event.target)) { fileDropdownContent.style.display = 'none'; } });
+            
+            fileMenuButton.addEventListener('click', (event) => { 
+                event.stopPropagation(); 
+                fileDropdownContent.style.display = fileDropdownContent.style.display === 'block' ? 'none' : 'block';
+                exportDropdownContent.style.display = 'none'; 
+                updateButtonStates(); 
+            });
             saveDiagramButton.addEventListener('click', () => { handleSaveToLocalStorage(); fileDropdownContent.style.display = 'none'; });
             loadDiagramButton.addEventListener('click', () => { handleLoadFromLocalStorage(); fileDropdownContent.style.display = 'none'; });
             saveToFileButton.addEventListener('click', () => { handleSaveToFile(); fileDropdownContent.style.display = 'none'; });
             loadFromFileLabel.addEventListener('click', () => { fileInputForLoad.click(); });
             fileInputForLoad.addEventListener('change', (event) => { handleLoadFromFile(event); fileDropdownContent.style.display = 'none'; });
+
             undoButton.addEventListener('click', handleUndo);
             redoButton.addEventListener('click', handleRedo);
+
             zoomInButton.addEventListener('click', () => applyZoom(currentZoom + ZOOM_STEP));
             zoomOutButton.addEventListener('click', () => applyZoom(currentZoom - ZOOM_STEP));
             resetZoomButton.addEventListener('click', () => applyZoom(1.0));
+
             finalizeDiagramButton.addEventListener('click', handleToggleFinalizeView); 
-            exportDiagramButton.addEventListener('click', exportDiagramAsPNG);
+            autoAdjustLayoutButton.addEventListener('click', autoAdjustNodeLayout); 
+
+            exportMenuButton.addEventListener('click', (event) => {
+                event.stopPropagation();
+                exportDropdownContent.style.display = exportDropdownContent.style.display === 'block' ? 'none' : 'block';
+                fileDropdownContent.style.display = 'none'; 
+                updateButtonStates();
+            });
+            exportPngButton.addEventListener('click', () => { exportDiagramAsPNG(); exportDropdownContent.style.display = 'none'; });
+            exportPdfButton.addEventListener('click', () => { exportDiagramAndTablesAsPDF(); exportDropdownContent.style.display = 'none'; });
+
             toggleCauseEffectTableButton.addEventListener('click', handleToggleCauseEffectTable);
             toggleSolutionTableButton.addEventListener('click', handleToggleSolutionTable); 
+            
             saveAndSourcesButton.addEventListener('click', handleSaveAndSources);
             cancelAndSourcesButton.addEventListener('click', () => { andSourceModal.style.display = 'none'; currentAndTargetNodeId = null; });
             saveEffectParametersButton.addEventListener('click', handleSaveEffectParameters);
             cancelEffectParametersButton.addEventListener('click', () => { effectParameterModal.style.display = 'none'; currentParameterTargetNodeId = null; });
             saveInventivePrinciplesButton.addEventListener('click', handleSaveInventivePrinciples);
             cancelInventivePrinciplesButton.addEventListener('click', () => { inventivePrincipleModal.style.display = 'none'; currentPrincipleTargetNodeId = null; });
-            new ResizeObserver(drawAllSvgConnectors).observe(scalableContentWrapper); 
+            
+            window.addEventListener('click', (event) => { 
+                if (!fileMenuButton.contains(event.target) && !fileDropdownContent.contains(event.target)) { 
+                    fileDropdownContent.style.display = 'none'; 
+                }
+                if (!exportMenuButton.contains(event.target) && !exportDropdownContent.contains(event.target)) {
+                    exportDropdownContent.style.display = 'none';
+                }
+            });
+
+            new ResizeObserver(() => drawAllSvgConnectors()).observe(scalableContentWrapper); 
             toolButtonsContainer.style.display = 'flex'; 
             applyZoom(1.0, true); 
             updateButtonStates(); 
+            
             scalableContentWrapper.addEventListener('contextmenu', handleDiagramContextMenu);
             scalableContentWrapper.addEventListener('touchstart', handleDiagramTouchStart, { passive: false });
             scalableContentWrapper.addEventListener('touchmove', handleDiagramTouchMove, { passive: true });
@@ -468,23 +521,147 @@
         function handleDiagramTouchStart(event) { if (event.touches.length === 1) { touchStartX = event.touches[0].clientX; touchStartY = event.touches[0].clientY; clearTimeout(longPressTimer); longPressTimer = setTimeout(() => { const touch = event.touches[0] || event.changedTouches[0]; if (touch) { const deltaX = Math.abs(touch.clientX - touchStartX); const deltaY = Math.abs(touch.clientY - touchStartY); if (deltaX <= MAX_TOUCH_MOVE_THRESHOLD && deltaY <= MAX_TOUCH_MOVE_THRESHOLD) { triggerDownloadForLongPress(); } } else { clearTimeout(longPressTimer); } }, LONG_PRESS_DURATION); } else { clearTimeout(longPressTimer); } }
         function handleDiagramTouchMove(event) { if (longPressTimer && event.touches.length === 1) { const deltaX = Math.abs(event.touches[0].clientX - touchStartX); const deltaY = Math.abs(event.touches[0].clientY - touchStartY); if (deltaX > MAX_TOUCH_MOVE_THRESHOLD || deltaY > MAX_TOUCH_MOVE_THRESHOLD) { clearTimeout(longPressTimer); longPressTimer = null; } } }
         function handleDiagramTouchEnd() { clearTimeout(longPressTimer); longPressTimer = null; }
-        function applyZoom(newZoomLevel, avoidRedraw = false) { currentZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoomLevel)); scalableContentWrapper.style.transform = `scale(${currentZoom})`; zoomLevelDisplay.textContent = `${Math.round(currentZoom * 100)}%`; if (!avoidRedraw && rcaData) { requestAnimationFrame(drawAllSvgConnectors); } updateButtonStates(); }
-        function updateButtonStates() { const noData = !rcaData; const noLocalStorageData = !localStorage.getItem('rcaDiagramData'); undoButton.disabled = historyIndex <= 0; redoButton.disabled = historyIndex >= historyStack.length - 1; saveDiagramButton.disabled = noData; loadDiagramButton.disabled = noLocalStorageData; saveToFileButton.disabled = noData; zoomInButton.disabled = currentZoom >= MAX_ZOOM; zoomOutButton.disabled = currentZoom <= MIN_ZOOM; resetZoomButton.disabled = currentZoom === 1.0; exportDiagramButton.disabled = noData; finalizeDiagramButton.disabled = noData; toggleCauseEffectTableButton.disabled = noData; toggleSolutionTableButton.disabled = noData; }
+        
+        function applyZoom(newZoomLevel, avoidRedraw = false) { currentZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoomLevel)); scalableContentWrapper.style.transform = `scale(${currentZoom})`; zoomLevelDisplay.textContent = `${Math.round(currentZoom * 100)}%`; if (!avoidRedraw && rcaData) { requestAnimationFrame(() => drawAllSvgConnectors()); } updateButtonStates(); }
+        
+        function updateButtonStates() { 
+            const noData = !rcaData; 
+            const noLocalStorageData = !localStorage.getItem('rcaDiagramData'); 
+            undoButton.disabled = historyIndex <= 0; 
+            redoButton.disabled = historyIndex >= historyStack.length - 1; 
+            saveDiagramButton.disabled = noData; 
+            loadDiagramButton.disabled = noLocalStorageData; 
+            saveToFileButton.disabled = noData; 
+            zoomInButton.disabled = currentZoom >= MAX_ZOOM; 
+            zoomOutButton.disabled = currentZoom <= MIN_ZOOM; 
+            resetZoomButton.disabled = currentZoom === 1.0; 
+            
+            exportPngButton.disabled = noData;
+            exportPdfButton.disabled = noData;
+            exportMenuButton.disabled = noData; 
+
+            finalizeDiagramButton.disabled = noData; 
+            autoAdjustLayoutButton.disabled = noData; 
+            toggleCauseEffectTableButton.disabled = noData; 
+            toggleSolutionTableButton.disabled = noData; 
+        }
+        
         function pushStateToHistory(currentState, clearRedoStack = true) { if (!currentState) { updateButtonStates(); return; } const stateCopy = deepCopy(currentState); if (!stateCopy) { console.error("Failed to copy state for history."); return; } if (clearRedoStack) { historyStack = historyStack.slice(0, historyIndex + 1); } historyStack.push({ data: stateCopy, counter: nodeIdCounter, zoom: currentZoom }); historyIndex = historyStack.length - 1; if (historyStack.length > MAX_HISTORY_STATES) { historyStack.shift(); historyIndex--; } updateButtonStates(); }
         function restoreStateFromHistory(historyEntry) { if (historyEntry && historyEntry.data) { rcaData = deepCopy(historyEntry.data); nodeIdCounter = historyEntry.counter; recalculateNodeIdCounter(rcaData); renderRcaDiagram(); renderCauseEffectTable(); renderSolutionTable(); applyZoom(historyEntry.zoom, true); } else { console.error("Failed to retrieve state from history."); return false; } return true; } 
         function handleUndo() { if (historyIndex > 0) { historyIndex--; if (!restoreStateFromHistory(historyStack[historyIndex])) { historyIndex++; } } updateButtonStates(); }
         function handleRedo() { if (historyIndex < historyStack.length - 1) { historyIndex++; if (!restoreStateFromHistory(historyStack[historyIndex])) { historyIndex--; } } updateButtonStates(); }
+        
         function processLoadedData(dataString) { try { const parsedJson = JSON.parse(dataString); if (parsedJson && typeof parsedJson.diagramData !== 'undefined' && typeof parsedJson.counter !== 'undefined') { rcaData = parsedJson.diagramData; nodeIdCounter = parseInt(parsedJson.counter); if (isNaN(nodeIdCounter)) nodeIdCounter = 0; recalculateNodeIdCounter(rcaData); historyStack = []; historyIndex = -1; pushStateToHistory(rcaData, true); problemInputArea.style.display = 'none'; diagramTitle.style.display = 'block'; toolButtonsContainer.style.display = 'flex'; renderRcaDiagram(); renderCauseEffectTable(); renderSolutionTable(); applyZoom(parsedJson.zoomLevel || 1.0, true); alert('圖表進度已成功載入！'); return true; } else { alert('載入失敗：檔案格式不正確或資料不完整。'); return false; } } catch (e) { console.error("Error loading data:", e); alert('載入失敗：檔案內容可能不是有效的JSON格式，或已損毀。\n' + e.message); return false; } finally { updateButtonStates(); } } 
         function handleSaveToLocalStorage() { if (rcaData) { try { const dataToSave = { diagramData: rcaData, counter: nodeIdCounter, zoomLevel: currentZoom }; localStorage.setItem('rcaDiagramData', JSON.stringify(dataToSave)); alert('圖表進度已儲存至瀏覽器！'); } catch (e) { console.error("Error saving to localStorage:", e); alert('儲存失敗，可能是瀏覽器儲存空間已滿或功能受限。'); } } else { alert('沒有圖表資料可儲存。'); } updateButtonStates(); }
         function handleLoadFromLocalStorage() { const savedDataString = localStorage.getItem('rcaDiagramData'); if (savedDataString) { processLoadedData(savedDataString); } else { alert('瀏覽器中沒有儲存的圖表進度。'); } }
         function handleSaveToFile() { if (!rcaData) { alert('沒有圖表資料可儲存至檔案。'); return; } const dataToSave = { diagramData: rcaData, counter: nodeIdCounter, zoomLevel: currentZoom }; const jsonData = JSON.stringify(dataToSave, null, 2); const blob = new Blob([jsonData], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `rca-diagram-data-${new Date().toISOString().slice(0,10)}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url); alert('圖表資料已準備下載。'); }
         function handleLoadFromFile(event) { const file = event.target.files[0]; if (file) { if (file.type === "application/json") { const reader = new FileReader(); reader.onload = (e) => { const fileContent = e.target.result; processLoadedData(fileContent); fileInputForLoad.value = ''; }; reader.onerror = (e) => { alert('讀取檔案時發生錯誤。'); console.error("FileReader error:", e); fileInputForLoad.value = ''; }; reader.readAsText(file); } else { alert('載入失敗：請選擇一個有效的 .json 檔案。'); fileInputForLoad.value = ''; } } }
         function recalculateNodeIdCounter(currentData) { let maxId = 0; function findMaxIdRecursive(node) { if (!node) return; if (node.id && typeof node.id === 'string') { const idNum = parseInt(node.id.replace('node-', '')); if (!isNaN(idNum) && idNum > maxId) { maxId = idNum; } } if (node.children) { node.children.forEach(findMaxIdRecursive); } } if (currentData) { findMaxIdRecursive(currentData); } nodeIdCounter = maxId; }
+        
         function handleSetInitialProblem() { const problemText = problemInput.value.trim(); if (!problemText) { alert('請輸入主要負面效果！'); return; } nodeIdCounter = 0; rcaData = createNode(problemText, 'initial-problem', null); historyStack = []; historyIndex = -1; pushStateToHistory(rcaData); isFinalizedView = false; finalizeDiagramButton.textContent = '完成圖表'; finalizeDiagramButton.classList.remove('edit-diagram'); finalizeDiagramButton.classList.add('finalize-diagram'); problemInputArea.style.display = 'none'; diagramTitle.style.display = 'block'; toolButtonsContainer.style.display = 'flex'; applyZoom(1.0, true); renderRcaDiagram(); renderCauseEffectTable(); renderSolutionTable(); updateButtonStates(); } 
         function handleToggleFinalizeView() { isFinalizedView = !isFinalizedView; if (isFinalizedView) { finalizeDiagramButton.textContent = '編輯圖表'; finalizeDiagramButton.classList.remove('finalize-diagram'); finalizeDiagramButton.classList.add('edit-diagram'); } else { finalizeDiagramButton.textContent = '完成圖表'; finalizeDiagramButton.classList.remove('edit-diagram'); finalizeDiagramButton.classList.add('finalize-diagram'); } renderRcaDiagram(); }
         function createNode(text, type, parentId, isNonChangeable = false) { nodeIdCounter++; const node = { id: `node-${nodeIdCounter}`, text: text, type: type, parentId: parentId, children: [], andSourceNodeIds: [], effectParameters: [], inventivePrinciples: [] }; if (type === 'cause') node.isNonChangeable = isNonChangeable; return node; }
-        function renderRcaDiagram() { diagramContainer.innerHTML = ''; if (rcaData) { diagramContainer.appendChild(createNodeElement(rcaData)); } requestAnimationFrame(drawAllSvgConnectors); }
-        function createNodeElement(nodeData) { const nodeWrapper = document.createElement('div'); nodeWrapper.classList.add('rca-node-wrapper'); const nodeDiv = document.createElement('div'); nodeDiv.classList.add('rca-node', `rca-node-${nodeData.type}`); nodeDiv.id = nodeData.id; nodeDiv.dataset.nodeId = nodeData.id; const contentDiv = document.createElement('div'); contentDiv.classList.add('rca-node-content'); const headerDiv = document.createElement('div'); headerDiv.classList.add('rca-node-header'); const iconSpan = document.createElement('span'); iconSpan.classList.add('rca-node-icon'); const textSpan = document.createElement('span'); textSpan.classList.add('rca-node-text'); textSpan.textContent = nodeData.text; headerDiv.appendChild(textSpan); if (nodeData.type === 'cause' && nodeData.isNonChangeable) { const ncBadge = document.createElement('span'); ncBadge.classList.add('nc-badge'); ncBadge.textContent = 'NC'; headerDiv.appendChild(ncBadge); } contentDiv.appendChild(headerDiv); nodeDiv.appendChild(iconSpan); if (nodeData.effectParameters && nodeData.effectParameters.length > 0) { const paramsDiv = document.createElement('div'); paramsDiv.classList.add('selected-items-list'); paramsDiv.innerHTML = `<strong>效果參數:</strong> <ul>${nodeData.effectParameters.map(p => `<li>${p}</li>`).join('')}</ul>`; contentDiv.appendChild(paramsDiv); } if (nodeData.inventivePrinciples && nodeData.inventivePrinciples.length > 0) { const principlesDiv = document.createElement('div'); principlesDiv.classList.add('selected-items-list'); let principlesHtml = '<strong>發明原理:</strong> <ul>'; nodeData.inventivePrinciples.forEach(ip => { principlesHtml += `<li>${ip.name}${ip.solution ? `<span class="solution-text">- ${ip.solution.substring(0, 20)}${ip.solution.length > 20 ? '...' : ''}</span>` : ''}</li>`; }); principlesHtml += '</ul>'; principlesDiv.innerHTML = principlesHtml; contentDiv.appendChild(principlesDiv); } iconSpan.style.display = 'flex'; if (nodeData.type === 'initial-problem') iconSpan.textContent = '(-)'; else if (nodeData.type === 'cause') { const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(nodeData); if (hasPositiveChild && hasNegativeChild) { iconSpan.textContent = '+/-'; iconSpan.classList.add('contradictory'); } else { iconSpan.style.display = 'none'; } } else if (nodeData.type === 'positive-effect') iconSpan.textContent = '(+)'; else if (nodeData.type === 'negative-effect') iconSpan.textContent = '(-)'; else { iconSpan.style.display = 'none'; } if (!isFinalizedView) { const actionsDiv = document.createElement('div'); actionsDiv.classList.add('rca-node-actions'); actionsDiv.appendChild(createActionButton('修訂此項', 'edit-node', () => promptEditNode(nodeData.id, contentDiv))); if (nodeData.type === 'initial-problem') { actionsDiv.appendChild(createActionButton('新增原因', 'add-cause', () => promptAddNode(nodeData.id, contentDiv, 'cause', '輸入原因描述'))); } else if (nodeData.type === 'cause') { actionsDiv.appendChild(createActionButton('新增子原因', 'add-cause', () => promptAddNode(nodeData.id, contentDiv, 'cause', '輸入子原因描述'))); actionsDiv.appendChild(createActionButton('(+) 正面效果', 'add-positive', () => promptAddNode(nodeData.id, contentDiv, 'positive-effect', '輸入此原因帶來的正面效果'))); actionsDiv.appendChild(createActionButton('(-) 負面效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入此原因導致的負面效果'))); const ncButtonText = nodeData.isNonChangeable ? '取消NC標記' : '設為NC'; actionsDiv.appendChild(createActionButton(ncButtonText, 'toggle-nc', () => toggleNonChangeable(nodeData.id))); actionsDiv.appendChild(createActionButton('選擇發明原理', 'set-principles', () => openInventivePrincipleModal(nodeData.id))); if (nodeData.parentId) { actionsDiv.appendChild(createActionButton('移除此原因', 'remove-button', () => removeNode(nodeData.id))); } } else if (nodeData.type === 'positive-effect' || nodeData.type === 'negative-effect') { actionsDiv.appendChild(createActionButton('(+) 新增正面子效果', 'add-positive', () => promptAddNode(nodeData.id, contentDiv, 'positive-effect', '輸入正面子效果描述'))); actionsDiv.appendChild(createActionButton('(-) 新增負面子效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入負面子效果描述'))); actionsDiv.appendChild(createActionButton('設定效果參數', 'set-parameters', () => openEffectParameterModal(nodeData.id))); actionsDiv.appendChild(createActionButton('設定AND輸入源', 'set-and-sources', () => openAndSourceModal(nodeData.id))); actionsDiv.appendChild(createActionButton('移除效果', 'remove-button', () => removeNode(nodeData.id))); } contentDiv.appendChild(actionsDiv); const inputContainer = document.createElement('div'); inputContainer.classList.add('input-group-container'); contentDiv.appendChild(inputContainer); } nodeDiv.appendChild(contentDiv); nodeWrapper.appendChild(nodeDiv); if (nodeData.children && nodeData.children.length > 0) { const childrenContainer = document.createElement('div'); childrenContainer.classList.add('rca-children-container'); nodeData.children.forEach(childNode => childrenContainer.appendChild(createNodeElement(childNode))); nodeWrapper.appendChild(childrenContainer); } return nodeWrapper; }
+        
+        function renderRcaDiagram() { 
+            diagramContainer.innerHTML = ''; 
+            if (rcaData) { 
+                diagramContainer.appendChild(createNodeElement(rcaData)); 
+            } 
+            requestAnimationFrame(() => drawAllSvgConnectors()); 
+        }
+        function createNodeElement(nodeData) { 
+            const nodeWrapper = document.createElement('div'); 
+            nodeWrapper.classList.add('rca-node-wrapper'); 
+            const nodeDiv = document.createElement('div'); 
+            nodeDiv.classList.add('rca-node', `rca-node-${nodeData.type}`); 
+            nodeDiv.id = nodeData.id; 
+            nodeDiv.dataset.nodeId = nodeData.id; 
+            const contentDiv = document.createElement('div'); 
+            contentDiv.classList.add('rca-node-content'); 
+            const headerDiv = document.createElement('div'); 
+            headerDiv.classList.add('rca-node-header'); 
+            const iconSpan = document.createElement('span'); 
+            iconSpan.classList.add('rca-node-icon'); 
+            const textSpan = document.createElement('span'); 
+            textSpan.classList.add('rca-node-text'); 
+            textSpan.textContent = nodeData.text; 
+            headerDiv.appendChild(textSpan); 
+            if (nodeData.type === 'cause' && nodeData.isNonChangeable) { 
+                const ncBadge = document.createElement('span'); 
+                ncBadge.classList.add('nc-badge'); 
+                ncBadge.textContent = 'NC'; 
+                headerDiv.appendChild(ncBadge); 
+            } 
+            contentDiv.appendChild(headerDiv); 
+            nodeDiv.appendChild(iconSpan); 
+            if (nodeData.effectParameters && nodeData.effectParameters.length > 0) { 
+                const paramsDiv = document.createElement('div'); 
+                paramsDiv.classList.add('selected-items-list'); 
+                paramsDiv.innerHTML = `<strong>效果參數:</strong> <ul>${nodeData.effectParameters.map(p => `<li>${p}</li>`).join('')}</ul>`; 
+                contentDiv.appendChild(paramsDiv); 
+            } 
+            if (nodeData.inventivePrinciples && nodeData.inventivePrinciples.length > 0) { 
+                const principlesDiv = document.createElement('div'); 
+                principlesDiv.classList.add('selected-items-list'); 
+                let principlesHtml = '<strong>發明原理:</strong> <ul>'; 
+                nodeData.inventivePrinciples.forEach(ip => { 
+                    principlesHtml += `<li>${ip.name}${ip.solution ? `<span class="solution-text">- ${ip.solution.substring(0, 20)}${ip.solution.length > 20 ? '...' : ''}</span>` : ''}</li>`; 
+                }); 
+                principlesHtml += '</ul>'; 
+                principlesDiv.innerHTML = principlesHtml; 
+                contentDiv.appendChild(principlesDiv); 
+            } 
+            iconSpan.style.display = 'flex'; 
+            if (nodeData.type === 'initial-problem') iconSpan.textContent = '(-)'; 
+            else if (nodeData.type === 'cause') { 
+                const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(nodeData); 
+                if (hasPositiveChild && hasNegativeChild) { 
+                    iconSpan.textContent = '+/-'; 
+                    iconSpan.classList.add('contradictory'); 
+                } else { iconSpan.style.display = 'none'; } 
+            } else if (nodeData.type === 'positive-effect') iconSpan.textContent = '(+)'; 
+            else if (nodeData.type === 'negative-effect') iconSpan.textContent = '(-)'; 
+            else { iconSpan.style.display = 'none'; } 
+            
+            if (!isFinalizedView) { 
+                const actionsDiv = document.createElement('div'); 
+                actionsDiv.classList.add('rca-node-actions'); 
+                actionsDiv.appendChild(createActionButton('修訂此項', 'edit-node', () => promptEditNode(nodeData.id, contentDiv))); 
+                if (nodeData.type === 'initial-problem') { 
+                    actionsDiv.appendChild(createActionButton('新增原因', 'add-cause', () => promptAddNode(nodeData.id, contentDiv, 'cause', '輸入原因描述'))); 
+                } else if (nodeData.type === 'cause') { 
+                    actionsDiv.appendChild(createActionButton('新增子原因', 'add-cause', () => promptAddNode(nodeData.id, contentDiv, 'cause', '輸入子原因描述'))); 
+                    actionsDiv.appendChild(createActionButton('(+) 正面效果', 'add-positive', () => promptAddNode(nodeData.id, contentDiv, 'positive-effect', '輸入此原因帶來的正面效果'))); 
+                    actionsDiv.appendChild(createActionButton('(-) 負面效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入此原因導致的負面效果'))); 
+                    const ncButtonText = nodeData.isNonChangeable ? '取消NC標記' : '設為NC'; 
+                    actionsDiv.appendChild(createActionButton(ncButtonText, 'toggle-nc', () => toggleNonChangeable(nodeData.id))); 
+                    actionsDiv.appendChild(createActionButton('選擇發明原理', 'set-principles', () => openInventivePrincipleModal(nodeData.id))); 
+                    if (nodeData.parentId) { 
+                        actionsDiv.appendChild(createActionButton('移除此原因', 'remove-button', () => removeNode(nodeData.id))); 
+                    } 
+                } else if (nodeData.type === 'positive-effect' || nodeData.type === 'negative-effect') { 
+                    actionsDiv.appendChild(createActionButton('(+) 新增正面子效果', 'add-positive', () => promptAddNode(nodeData.id, contentDiv, 'positive-effect', '輸入正面子效果描述'))); 
+                    actionsDiv.appendChild(createActionButton('(-) 新增負面子效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入負面子效果描述'))); 
+                    actionsDiv.appendChild(createActionButton('設定效果參數', 'set-parameters', () => openEffectParameterModal(nodeData.id))); 
+                    actionsDiv.appendChild(createActionButton('設定AND輸入源', 'set-and-sources', () => openAndSourceModal(nodeData.id))); 
+                    actionsDiv.appendChild(createActionButton('移除效果', 'remove-button', () => removeNode(nodeData.id))); 
+                } 
+                contentDiv.appendChild(actionsDiv); 
+                const inputContainer = document.createElement('div'); 
+                inputContainer.classList.add('input-group-container'); 
+                contentDiv.appendChild(inputContainer); 
+            } 
+            nodeDiv.appendChild(contentDiv); 
+            nodeWrapper.appendChild(nodeDiv); 
+            if (nodeData.children && nodeData.children.length > 0) { 
+                const childrenContainer = document.createElement('div'); 
+                childrenContainer.classList.add('rca-children-container'); 
+                nodeData.children.forEach(childNode => childrenContainer.appendChild(createNodeElement(childNode))); 
+                nodeWrapper.appendChild(childrenContainer); 
+            } 
+            return nodeWrapper; 
+        }
+        
         function promptEditNode(nodeId, parentNodeContentDiv) { if (isFinalizedView) return; const nodeToEdit = findNodeById(rcaData, nodeId); if (!nodeToEdit) return; const inputContainer = parentNodeContentDiv.querySelector('.input-group-container'); if (!inputContainer) { console.error("Input container not found for node:", nodeId); return; } document.querySelectorAll('.input-group').forEach(ig => ig.remove()); inputContainer.innerHTML = ''; const inputGroup = document.createElement('div'); inputGroup.classList.add('input-group'); const nodeInput = document.createElement('input'); nodeInput.type = 'text'; nodeInput.value = nodeToEdit.text; nodeInput.classList.add('input-field'); const saveEditButton = document.createElement('button'); saveEditButton.textContent = '儲存修訂'; saveEditButton.classList.add('action-button', 'save-edit-button', 'w-full', 'mt-2'); saveEditButton.onclick = () => { const newText = nodeInput.value.trim(); if (newText) { nodeToEdit.text = newText; pushStateToHistory(rcaData); renderRcaDiagram(); renderCauseEffectTable(); renderSolutionTable(); inputContainer.innerHTML = ''; } else { alert('描述不能為空！'); } }; nodeInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') saveEditButton.click(); }); const cancelEditButton = document.createElement('button'); cancelEditButton.textContent = '取消修訂'; cancelEditButton.classList.add('action-button', 'bg-gray-400', 'hover:bg-gray-500', 'w-full', 'mt-1'); cancelEditButton.onclick = () => { inputContainer.innerHTML = ''; }; inputGroup.appendChild(nodeInput); inputGroup.appendChild(saveEditButton); inputGroup.appendChild(cancelEditButton); inputContainer.appendChild(inputGroup); nodeInput.focus(); nodeInput.select(); }
         function openAndSourceModal(targetNodeId) { if (isFinalizedView) return; currentAndTargetNodeId = targetNodeId; const targetNode = findNodeById(rcaData, targetNodeId); if (!targetNode) return; andSourceModalTitle.textContent = `為效果 "${targetNode.text}" 設定 AND 輸入源`; andSourceOptionsContainer.innerHTML = ''; const availableCauses = []; function findCausesRecursive(node) { if (!node) return; if (node.type === 'cause') availableCauses.push(node); if (node.children) node.children.forEach(findCausesRecursive); } if (rcaData) findCausesRecursive(rcaData); if (availableCauses.length === 0) { andSourceOptionsContainer.innerHTML = '<p class="text-gray-500 text-center">圖表中尚無可用的原因節點。</p>'; } else { availableCauses.forEach(causeNode => { if (causeNode.id === targetNode.id || isDescendant(targetNode, causeNode.id) || causeNode.id === targetNode.parentId) return; const div = document.createElement('div'); div.classList.add('flex', 'items-center', 'my-2', 'p-2', 'hover:bg-gray-100', 'rounded'); const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.id = `and-source-chk-${causeNode.id}`; checkbox.value = causeNode.id; checkbox.classList.add('form-checkbox', 'h-5', 'w-5', 'text-blue-600', 'rounded', 'border-gray-300'); if (targetNode.andSourceNodeIds && targetNode.andSourceNodeIds.includes(causeNode.id)) { checkbox.checked = true; } const label = document.createElement('label'); label.htmlFor = `and-source-chk-${causeNode.id}`; label.textContent = `${causeNode.text} (ID: ${causeNode.id.split('-')[1]})`; label.classList.add('ml-3', 'text-sm', 'text-gray-700', 'flex-grow'); div.appendChild(checkbox); div.appendChild(label); andSourceOptionsContainer.appendChild(div); }); if (andSourceOptionsContainer.childElementCount === 0) { andSourceOptionsContainer.innerHTML = '<p class="text-gray-500 text-center">無有效的 AND 輸入源選項。</p>'; } } andSourceModal.style.display = 'flex'; }
         function isDescendant(parentNode, childNodeIdToFind) { if (!parentNode || !parentNode.children || parentNode.children.length === 0) return false; for (const child of parentNode.children) { if (child.id === childNodeIdToFind) return true; if (isDescendant(child, childNodeIdToFind)) return true; } return false; }
@@ -493,9 +670,121 @@
         function handleSaveEffectParameters() { if (!currentParameterTargetNodeId) return; const targetNode = findNodeById(rcaData, currentParameterTargetNodeId); if (!targetNode) return; const selectedParameters = []; const checkboxes = effectParameterOptionsContainer.querySelectorAll('input[type="checkbox"]:checked'); checkboxes.forEach(chk => selectedParameters.push(chk.value)); targetNode.effectParameters = selectedParameters; pushStateToHistory(rcaData); effectParameterModal.style.display = 'none'; currentParameterTargetNodeId = null; renderRcaDiagram(); }
         function openInventivePrincipleModal(targetNodeId) { if (isFinalizedView) return; currentPrincipleTargetNodeId = targetNodeId; const targetNode = findNodeById(rcaData, targetNodeId); if (!targetNode || targetNode.type !== 'cause') return; inventivePrincipleModalTitle.textContent = `為原因 "${targetNode.text}" 選擇發明原理與改善方案`; inventivePrincipleOptionsContainer.innerHTML = ''; INVENTIVE_PRINCIPLES.forEach(principleName => { const principleContainer = document.createElement('div'); principleContainer.classList.add('my-2', 'p-2', 'border-b', 'border-gray-200'); const div = document.createElement('div'); div.classList.add('flex', 'items-center'); const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; const checkboxId = `principle-chk-${principleName.replace(/\s|\/|[\(\)\[\]]/g, '-')}`; checkbox.id = checkboxId; checkbox.value = principleName; checkbox.classList.add('form-checkbox', 'h-4', 'w-4', 'text-pink-600', 'rounded', 'border-gray-300', 'focus:ring-pink-500'); const existingPrinciple = targetNode.inventivePrinciples.find(p => p.name === principleName); if (existingPrinciple) { checkbox.checked = true; } const label = document.createElement('label'); label.htmlFor = checkboxId; label.textContent = principleName; label.classList.add('ml-2', 'text-sm', 'text-gray-700', 'font-medium'); div.appendChild(checkbox); div.appendChild(label); principleContainer.appendChild(div); const solutionInput = document.createElement('input'); solutionInput.type = 'text'; solutionInput.placeholder = '輸入此原理的改善方案...'; solutionInput.dataset.principleName = principleName; solutionInput.classList.add('principle-solution-input', 'input-field', 'mt-1'); solutionInput.value = existingPrinciple && existingPrinciple.solution ? existingPrinciple.solution : ''; solutionInput.style.display = checkbox.checked ? 'block' : 'none'; checkbox.onchange = () => { solutionInput.style.display = checkbox.checked ? 'block' : 'none'; if (!checkbox.checked) solutionInput.value = ''; }; principleContainer.appendChild(solutionInput); inventivePrincipleOptionsContainer.appendChild(principleContainer); }); inventivePrincipleModal.style.display = 'flex'; }
         function handleSaveInventivePrinciples() { if (!currentPrincipleTargetNodeId) return; const targetNode = findNodeById(rcaData, currentPrincipleTargetNodeId); if (!targetNode) return; const selectedPrinciples = []; const principleContainers = inventivePrincipleOptionsContainer.querySelectorAll('div.my-2 > div.flex > input[type="checkbox"]'); principleContainers.forEach(chk => { if (chk.checked) { const principleName = chk.value; const solutionInput = chk.closest('.my-2').querySelector('input[type="text"][data-principle-name]'); selectedPrinciples.push({ name: principleName, solution: solutionInput ? solutionInput.value.trim() : '' }); } }); targetNode.inventivePrinciples = selectedPrinciples; pushStateToHistory(rcaData); inventivePrincipleModal.style.display = 'none'; currentPrincipleTargetNodeId = null; renderRcaDiagram(); renderSolutionTable(); }
-        function drawAllSvgConnectors(targetSvgLayer = svgLayer, targetDiagramContainer = diagramContainer, targetScalableWrapper = scalableContentWrapper, zoom = currentZoom) { targetSvgLayer.innerHTML = ''; if (!rcaData || !targetDiagramContainer.querySelector(`#${rcaData.id}`) || !targetScalableWrapper) { targetSvgLayer.setAttribute('width', 0); targetSvgLayer.setAttribute('height', 0); return; } const unscaledDiagramWidth = targetDiagramContainer.scrollWidth; const unscaledDiagramHeight = targetDiagramContainer.scrollHeight; targetSvgLayer.setAttribute('width', unscaledDiagramWidth); targetSvgLayer.setAttribute('height', unscaledDiagramHeight); targetSvgLayer.setAttribute('viewBox', `0 0 ${unscaledDiagramWidth} ${unscaledDiagramHeight}`); const lineVerticalOffset = 25; const scalableWrapperRect = targetScalableWrapper.getBoundingClientRect(); function drawRecursive(parentNodeData, currentContainer) { const parentElement = currentContainer.querySelector(`#${parentNodeData.id}`); if (!parentElement) return; const parentRect = parentElement.getBoundingClientRect(); const parentBottomCenterX_svg = (parentRect.left - scalableWrapperRect.left + parentRect.width / 2) / zoom; const parentBottomY_svg = (parentRect.top - scalableWrapperRect.top + parentRect.height) / zoom; const parentTopY_svg = (parentRect.top - scalableWrapperRect.top) / zoom; const parentCenterX_svg = parentBottomCenterX_svg; if (parentNodeData.andSourceNodeIds && parentNodeData.andSourceNodeIds.length > 0) { const mergePointYOffset = 40; const mergePoint_svg = { x: parentCenterX_svg, y: parentTopY_svg - mergePointYOffset }; if(mergePoint_svg.y < 0) mergePoint_svg.y = 10; _drawSvgCircle(targetSvgLayer, mergePoint_svg.x, mergePoint_svg.y, 6, '#6d28d9', zoom); parentNodeData.andSourceNodeIds.forEach(sourceId => { const sourceElement = currentContainer.querySelector(`#${sourceId}`); if (sourceElement) { const sourceRect = sourceElement.getBoundingClientRect(); const sourceConnX_svg = (sourceRect.left - scalableWrapperRect.left + sourceRect.width / 2) / zoom; const sourceConnY_svg = (sourceRect.top - scalableWrapperRect.top + sourceRect.height) / zoom; if (sourceConnY_svg < mergePoint_svg.y) { _drawSvgLine(targetSvgLayer, sourceConnX_svg, sourceConnY_svg, mergePoint_svg.x, mergePoint_svg.y, '#6b7280', 2, zoom); } else { const sourceTopY_svg = (sourceRect.top - scalableWrapperRect.top) / zoom; _drawSvgLine(targetSvgLayer, sourceConnX_svg, sourceTopY_svg, mergePoint_svg.x, mergePoint_svg.y, '#6b7280', 2, zoom); } } }); if (parentTopY_svg > mergePoint_svg.y) { _drawSvgLine(targetSvgLayer, mergePoint_svg.x, mergePoint_svg.y, parentCenterX_svg, parentTopY_svg, '#6b7280', 2, zoom); } } const standardChildren = parentNodeData.children.filter(c => !(c.andSourceNodeIds && c.andSourceNodeIds.length > 0 && c.andSourceNodeIds.includes(parentNodeData.id))); if (standardChildren.length > 0) { const horizontalLineY_svg = parentBottomY_svg + lineVerticalOffset; _drawSvgLine(targetSvgLayer, parentBottomCenterX_svg, parentBottomY_svg, parentBottomCenterX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); if (standardChildren.length > 1) { const firstChildElement = currentContainer.querySelector(`#${standardChildren[0].id}`); const lastChildElement = currentContainer.querySelector(`#${standardChildren[standardChildren.length - 1].id}`); if (firstChildElement && lastChildElement) { const firstChildRect = firstChildElement.getBoundingClientRect(); const lastChildRect = lastChildElement.getBoundingClientRect(); const hLineStartX_svg = (firstChildRect.left - scalableWrapperRect.left + firstChildRect.width / 2) / zoom; const hLineEndX_svg = (lastChildRect.left - scalableWrapperRect.left + lastChildRect.width / 2) / zoom; if (Math.abs(hLineStartX_svg - hLineEndX_svg) > 1) { _drawSvgLine(targetSvgLayer, hLineStartX_svg, horizontalLineY_svg, hLineEndX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); } } } else if (standardChildren.length === 1) { const childElement = currentContainer.querySelector(`#${standardChildren[0].id}`); if (childElement) { const childRect = childElement.getBoundingClientRect(); const childCenterX_svg = (childRect.left - scalableWrapperRect.left + childRect.width / 2) / zoom; if (Math.abs(parentBottomCenterX_svg - childCenterX_svg) > 1) { _drawSvgLine(targetSvgLayer, parentBottomCenterX_svg, horizontalLineY_svg, childCenterX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); } } } standardChildren.forEach(childNode => { const childElement = currentContainer.querySelector(`#${childNode.id}`); if (childElement) { const childRect = childElement.getBoundingClientRect(); const childCenterX_svg = (childRect.left - scalableWrapperRect.left + childRect.width / 2) / zoom; const childTopY_svg = (childRect.top - scalableWrapperRect.top) / zoom; if (childTopY_svg > horizontalLineY_svg) { _drawSvgLine(targetSvgLayer, childCenterX_svg, horizontalLineY_svg, childCenterX_svg, childTopY_svg, '#9ca3af', 2, zoom); } } }); } if (parentNodeData.children) { parentNodeData.children.forEach(childNode => drawRecursive(childNode, currentContainer)); } } if(rcaData) drawRecursive(rcaData, targetDiagramContainer); }
+        
+        // --- SVG Connector Drawing (MODIFIED for padding) ---
+        function drawAllSvgConnectors(
+            targetSvgLayer = svgLayer, 
+            targetDiagramContainer = diagramContainer, 
+            targetScalableWrapper = scalableContentWrapper, 
+            zoom = currentZoom
+        ) { 
+            targetSvgLayer.innerHTML = ''; 
+            if (!rcaData || !targetDiagramContainer.querySelector(`#${rcaData.id}`) || !targetScalableWrapper) { 
+                targetSvgLayer.setAttribute('width', 0); 
+                targetSvgLayer.setAttribute('height', 0); 
+                return; 
+            } 
+            
+            // Get padding of the scalableContentWrapper
+            const wrapperStyle = getComputedStyle(targetScalableWrapper);
+            const wrapperPaddingLeft = parseFloat(wrapperStyle.paddingLeft) || 0;
+            const wrapperPaddingTop = parseFloat(wrapperStyle.paddingTop) || 0;
+
+            const unscaledDiagramWidth = targetDiagramContainer.scrollWidth; 
+            const unscaledDiagramHeight = targetDiagramContainer.scrollHeight; 
+            targetSvgLayer.setAttribute('width', unscaledDiagramWidth); 
+            targetSvgLayer.setAttribute('height', unscaledDiagramHeight); 
+            targetSvgLayer.setAttribute('viewBox', `0 0 ${unscaledDiagramWidth} ${unscaledDiagramHeight}`); 
+            
+            const lineVerticalOffset = 25; 
+            const scalableWrapperRect = targetScalableWrapper.getBoundingClientRect(); 
+
+            function drawRecursive(parentNodeData, currentContainer) { 
+                const parentElement = currentContainer.querySelector(`#${parentNodeData.id}`); 
+                if (!parentElement) return; 
+                
+                const parentRect = parentElement.getBoundingClientRect(); 
+                // MODIFIED: Account for wrapper padding in coordinate calculations
+                const parentBottomCenterX_svg = (parentRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + parentRect.width / 2) / zoom; 
+                const parentBottomY_svg = (parentRect.top - (scalableWrapperRect.top + wrapperPaddingTop) + parentRect.height) / zoom; 
+                const parentTopY_svg = (parentRect.top - (scalableWrapperRect.top + wrapperPaddingTop)) / zoom; 
+                const parentCenterX_svg = parentBottomCenterX_svg; 
+
+                if (parentNodeData.andSourceNodeIds && parentNodeData.andSourceNodeIds.length > 0) { 
+                    const mergePointYOffset = 40; 
+                    const mergePoint_svg = { x: parentCenterX_svg, y: parentTopY_svg - mergePointYOffset }; 
+                    if(mergePoint_svg.y < 0) mergePoint_svg.y = 10; 
+                    _drawSvgCircle(targetSvgLayer, mergePoint_svg.x, mergePoint_svg.y, 6, '#6d28d9', zoom); 
+                    parentNodeData.andSourceNodeIds.forEach(sourceId => { 
+                        const sourceElement = currentContainer.querySelector(`#${sourceId}`); 
+                        if (sourceElement) { 
+                            const sourceRect = sourceElement.getBoundingClientRect(); 
+                            // MODIFIED: Account for wrapper padding
+                            const sourceConnX_svg = (sourceRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + sourceRect.width / 2) / zoom; 
+                            const sourceConnY_svg = (sourceRect.top - (scalableWrapperRect.top + wrapperPaddingTop) + sourceRect.height) / zoom; 
+                            if (sourceConnY_svg < mergePoint_svg.y) { 
+                                _drawSvgLine(targetSvgLayer, sourceConnX_svg, sourceConnY_svg, mergePoint_svg.x, mergePoint_svg.y, '#6b7280', 2, zoom); 
+                            } else { 
+                                // MODIFIED: Account for wrapper padding
+                                const sourceTopY_svg = (sourceRect.top - (scalableWrapperRect.top + wrapperPaddingTop)) / zoom; 
+                                _drawSvgLine(targetSvgLayer, sourceConnX_svg, sourceTopY_svg, mergePoint_svg.x, mergePoint_svg.y, '#6b7280', 2, zoom); 
+                            } 
+                        } 
+                    }); 
+                    if (parentTopY_svg > mergePoint_svg.y) { 
+                        _drawSvgLine(targetSvgLayer, mergePoint_svg.x, mergePoint_svg.y, parentCenterX_svg, parentTopY_svg, '#6b7280', 2, zoom); 
+                    } 
+                } 
+                const standardChildren = parentNodeData.children.filter(c => !(c.andSourceNodeIds && c.andSourceNodeIds.length > 0 && c.andSourceNodeIds.includes(parentNodeData.id))); 
+                if (standardChildren.length > 0) { 
+                    const horizontalLineY_svg = parentBottomY_svg + lineVerticalOffset; 
+                    _drawSvgLine(targetSvgLayer, parentBottomCenterX_svg, parentBottomY_svg, parentBottomCenterX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); 
+                    if (standardChildren.length > 1) { 
+                        const firstChildElement = currentContainer.querySelector(`#${standardChildren[0].id}`); 
+                        const lastChildElement = currentContainer.querySelector(`#${standardChildren[standardChildren.length - 1].id}`); 
+                        if (firstChildElement && lastChildElement) { 
+                            const firstChildRect = firstChildElement.getBoundingClientRect(); 
+                            const lastChildRect = lastChildElement.getBoundingClientRect(); 
+                            // MODIFIED: Account for wrapper padding
+                            const hLineStartX_svg = (firstChildRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + firstChildRect.width / 2) / zoom; 
+                            const hLineEndX_svg = (lastChildRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + lastChildRect.width / 2) / zoom; 
+                            if (Math.abs(hLineStartX_svg - hLineEndX_svg) > 1) { 
+                                _drawSvgLine(targetSvgLayer, hLineStartX_svg, horizontalLineY_svg, hLineEndX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); 
+                            } 
+                        } 
+                    } else if (standardChildren.length === 1) { 
+                        const childElement = currentContainer.querySelector(`#${standardChildren[0].id}`); 
+                        if (childElement) { 
+                            const childRect = childElement.getBoundingClientRect(); 
+                            // MODIFIED: Account for wrapper padding
+                            const childCenterX_svg = (childRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + childRect.width / 2) / zoom; 
+                            if (Math.abs(parentBottomCenterX_svg - childCenterX_svg) > 1) { 
+                                _drawSvgLine(targetSvgLayer, parentBottomCenterX_svg, horizontalLineY_svg, childCenterX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); 
+                            } 
+                        } 
+                    } 
+                    standardChildren.forEach(childNode => { 
+                        const childElement = currentContainer.querySelector(`#${childNode.id}`); 
+                        if (childElement) { 
+                            const childRect = childElement.getBoundingClientRect(); 
+                            // MODIFIED: Account for wrapper padding
+                            const childCenterX_svg = (childRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + childRect.width / 2) / zoom; 
+                            const childTopY_svg = (childRect.top - (scalableWrapperRect.top + wrapperPaddingTop)) / zoom; 
+                            if (childTopY_svg > horizontalLineY_svg) { 
+                                _drawSvgLine(targetSvgLayer, childCenterX_svg, horizontalLineY_svg, childCenterX_svg, childTopY_svg, '#9ca3af', 2, zoom); 
+                            } 
+                        } 
+                    }); 
+                } 
+                if (parentNodeData.children) { 
+                    parentNodeData.children.forEach(childNode => drawRecursive(childNode, currentContainer)); 
+                } 
+            } 
+            if(rcaData) drawRecursive(rcaData, targetDiagramContainer); 
+        }
         function _drawSvgLine(svg, x1, y1, x2, y2, color = 'black', strokeWidth = 2, zoomFactor = 1) { if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) { return; } const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', x1); line.setAttribute('y1', y1); line.setAttribute('x2', x2); line.setAttribute('y2', y2); line.setAttribute('stroke', color); line.setAttribute('stroke-width', strokeWidth / zoomFactor); svg.appendChild(line); }
         function _drawSvgCircle(svg, cx, cy, r, fillColor = 'black', zoomFactor = 1) { if (isNaN(cx) || isNaN(cy) || isNaN(r)) { return; } const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); circle.setAttribute('cx', cx); circle.setAttribute('cy', cy); circle.setAttribute('r', r / zoomFactor); circle.setAttribute('fill', fillColor); svg.appendChild(circle); }
+        
         function checkChildrenEffects(nodeData) { let hasPositiveChild = false; let hasNegativeChild = false; if (nodeData.children) { for (const child of nodeData.children) { if (child.type === 'positive-effect') hasPositiveChild = true; if (child.type === 'negative-effect') hasNegativeChild = true; if (hasPositiveChild && hasNegativeChild) break; } } return { hasPositiveChild, hasNegativeChild }; }
         function toggleNonChangeable(nodeId) { if (isFinalizedView) return; const node = findNodeById(rcaData, nodeId); if (node && node.type === 'cause') { node.isNonChangeable = !node.isNonChangeable; pushStateToHistory(rcaData); renderRcaDiagram(); renderCauseEffectTable(); } }
         function createActionButton(text, className, onClickHandler) { const button = document.createElement('button'); button.classList.add('action-button', ...className.split(' ')); button.textContent = text; button.addEventListener('click', onClickHandler); return button; }
@@ -503,24 +792,53 @@
         function addNodeToData(parentId, nodeText, nodeType) { const parentNode = findNodeById(rcaData, parentId); if (parentNode) { const newNode = createNode(nodeText, nodeType, parentId); parentNode.children.push(newNode); pushStateToHistory(rcaData); renderRcaDiagram(); renderCauseEffectTable(); renderSolutionTable(); } }
         function removeNode(nodeIdToRemove) { if (isFinalizedView) return; if (rcaData && rcaData.id === nodeIdToRemove) { alert('不能移除主要問題根源節點！'); return; } let nodeRemoved = false; function filterRecursive(node, idToRemove) { if (!node) return null; if (node.id === idToRemove) { nodeRemoved = true; function removeAndSourceFromEntireTree(currentNodeData, removedId) { if (!currentNodeData) return; if (currentNodeData.andSourceNodeIds && currentNodeData.andSourceNodeIds.includes(removedId)) { currentNodeData.andSourceNodeIds = currentNodeData.andSourceNodeIds.filter(srcId => srcId !== removedId); } if (currentNodeData.children) { currentNodeData.children.forEach(child => removeAndSourceFromEntireTree(child, removedId)); } } removeAndSourceFromEntireTree(rcaData, idToRemove); return null; } if (node.children) { node.children = node.children.map(child => filterRecursive(child, idToRemove)).filter(child => child !== null); } return node; } rcaData = filterRecursive(rcaData, nodeIdToRemove); if (nodeRemoved) { pushStateToHistory(rcaData); } if (!rcaData) { problemInputArea.style.display = 'flex'; diagramTitle.style.display = 'none'; toolButtonsContainer.style.display = 'flex'; causeEffectTableSection.style.display = 'none'; solutionTableSection.style.display = 'none'; historyStack = []; historyIndex = -1; applyZoom(1.0); } renderRcaDiagram(); renderCauseEffectTable(); renderSolutionTable(); updateButtonStates(); }
         function findNodeById(node, id) { if (!node) return null; if (node.id === id) return node; if (node.children) { for (const child of node.children) { const found = findNodeById(child, id); if (found) return found; } } return null; }
+        
         function handleToggleCauseEffectTable() { const isHidden = causeEffectTableSection.style.display === 'none'; causeEffectTableSection.style.display = isHidden ? 'block' : 'none'; toggleCauseEffectTableButton.textContent = isHidden ? '隱藏原因效果表' : '顯示原因效果表'; if (isHidden) renderCauseEffectTable(); }
         function getCauseEffectTableData() { const tableRowsData = []; function collectDataRecursive(node) { if (!node) return; if (node.type === 'cause') { const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(node); let causeType = ''; if (node.isNonChangeable) causeType = 'NC'; else if (hasPositiveChild && hasNegativeChild) causeType = 'N+P (矛盾)'; else if (hasNegativeChild) causeType = 'N (純負面)'; else if (hasPositiveChild) causeType = 'P (純正面)'; else causeType = '未定義效果'; if (causeType !== 'P (純正面)' || (hasPositiveChild || hasNegativeChild)) { const positiveEffects = node.children.filter(c => c.type === 'positive-effect').map(c => c.text).join('; ') || '無'; const negativeEffects = node.children.filter(c => c.type === 'negative-effect').map(c => c.text).join('; ') || '無'; tableRowsData.push({ cause: node.text, type: causeType, positive: positiveEffects, negative: negativeEffects }); } } if (node.children) node.children.forEach(collectDataRecursive); } if (rcaData) collectDataRecursive(rcaData); return tableRowsData; }
         function renderCauseEffectTable() { if (!rcaData) { causeEffectTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500">請先設定主要負面效果並建立分析圖。</td></tr>'; return; } const tableData = getCauseEffectTableData(); causeEffectTableBody.innerHTML = ''; if (tableData.length === 0) { causeEffectTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500">目前圖表中沒有定義直接帶有正面或負面效果的原因 (且非純粹正面原因)。</td></tr>'; return; } tableData.forEach(rowData => { const row = causeEffectTableBody.insertRow(); row.insertCell().textContent = rowData.cause; row.insertCell().textContent = rowData.type; row.insertCell().textContent = rowData.positive; row.insertCell().textContent = rowData.negative; }); }
         function handleToggleSolutionTable() { const isHidden = solutionTableSection.style.display === 'none'; solutionTableSection.style.display = isHidden ? 'block' : 'none'; toggleSolutionTableButton.textContent = isHidden ? '隱藏改善方案表' : '顯示改善方案表'; if (isHidden) { renderSolutionTable(); } }
         function renderSolutionTable() { if (!rcaData) { solutionTableBody.innerHTML = '<tr><td colspan="3" class="text-center text-gray-500">請先設定主要負面效果並建立分析圖。</td></tr>'; return; } const tableData = getSolutionTableData(); solutionTableBody.innerHTML = ''; if (tableData.length === 0) { let message = '目前沒有矛盾原因已選擇發明原理並填寫改善方案。'; let hasContradictoryCause = false; function findContradictory(node) { if (!node) return; if (node.type === 'cause') { const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(node); if (hasPositiveChild && hasNegativeChild) { hasContradictoryCause = true; return; } } if (node.children && !hasContradictoryCause) node.children.forEach(findContradictory); } if (rcaData) findContradictory(rcaData); if (!hasContradictoryCause) { message = '提示：圖表中尚無「矛盾原因」(即同時直接導致正面及負面效果的原因)。請先建立矛盾原因。'; } else { message = '提示：已找到矛盾原因，但尚未為其「選擇發明原理」並填寫「改善方案」。'; } solutionTableBody.innerHTML = `<tr><td colspan="3" class="text-center text-gray-500">${message}</td></tr>`; return; } const groupedSolutions = {}; tableData.forEach(item => { if (!groupedSolutions[item.contradictoryCause]) { groupedSolutions[item.contradictoryCause] = []; } groupedSolutions[item.contradictoryCause].push({ principle: item.principle, solution: item.solution }); }); Object.keys(groupedSolutions).forEach(causeText => { const solutionsForCause = groupedSolutions[causeText]; solutionsForCause.forEach((solutionItem, index) => { const row = solutionTableBody.insertRow(); if (index === 0) { const causeCell = row.insertCell(); causeCell.textContent = causeText; causeCell.rowSpan = solutionsForCause.length; } row.insertCell().textContent = solutionItem.principle; row.insertCell().textContent = solutionItem.solution; }); }); }
-        function getSolutionTableData() { const solutionData = []; function collectSolutionsRecursive(node) { if (!node) return; if (node.type === 'cause') { const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(node); if (hasPositiveChild && hasNegativeChild && node.inventivePrinciples && node.inventivePrinciples.length > 0) { node.inventivePrinciples.forEach(ip => { if (ip.solution && ip.solution.trim() !== '') { solutionData.push({ contradictoryCause: node.text, principle: ip.name, solution: ip.solution }); } }); } } if (node.children) { node.children.forEach(collectSolutionsRecursive); } } if (rcaData) { collectSolutionsRecursive(rcaData); } return solutionData; }
+        function getSolutionTableData() { const solutionData = []; function collectSolutionsRecursive(node) { if (!node) return; if (node.type === 'cause') { const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(node); if (hasPositiveChild && hasNegativeChild && node.inventivePrinciples && node.inventivePrinciples.length > 0) { node.inventivePrinciples.forEach(ip => { if (ip.solution && ip.solution.trim() !== '') { solutionData.push({ contradictoryCause: node.text, principle: ip.name, solution: ip.solution }); } }); } } if (node.children) node.children.forEach(collectSolutionsRecursive); } if (rcaData) { collectSolutionsRecursive(rcaData); } return solutionData; }
         
+        function autoAdjustNodeLayout() {
+            if (!rcaData || isFinalizedView) {
+                alert('請先建立圖表或結束「完成圖表」模式以調整節點位置。');
+                return;
+            }
+            const nodeWrappers = Array.from(diagramContainer.querySelectorAll('.rca-node-wrapper'));
+            const MIN_SPACING = 20; 
+            for (let i = 0; i < nodeWrappers.length; i++) {
+                const wrapper1 = nodeWrappers[i];
+                const rect1 = wrapper1.getBoundingClientRect();
+                for (let j = i + 1; j < nodeWrappers.length; j++) {
+                    const wrapper2 = nodeWrappers[j];
+                    if (wrapper1.parentNode !== wrapper2.parentNode || wrapper1.parentNode.classList.contains('rca-diagram-container')) {
+                        continue; 
+                    }
+                    const rect2 = wrapper2.getBoundingClientRect();
+                    const overlapX = Math.max(0, Math.min(rect1.right, rect2.right) - Math.max(rect1.left, rect2.left));
+                    const verticalAlign = Math.abs(rect1.top - rect2.top) < rect1.height / 2; 
+                    if (verticalAlign && overlapX > -MIN_SPACING) { 
+                        const adjustment = (overlapX > 0 ? overlapX : 0) + MIN_SPACING; 
+                        let currentMarginLeft = parseFloat(getComputedStyle(wrapper2).marginLeft) || 0;
+                        wrapper2.style.marginLeft = (currentMarginLeft + adjustment) + 'px';
+                        wrapper2.getBoundingClientRect(); 
+                    }
+                }
+            }
+            requestAnimationFrame(() => drawAllSvgConnectors());
+            alert('嘗試自動調整節點位置。您可能需要多次點擊或手動微調以獲得最佳效果。');
+        }
+
         async function exportDiagramAsPNG() {
             if (!rcaData || !scalableContentWrapper || !diagramContainer || diagramContainer.children.length === 0) {
                 alert('圖表為空或找不到圖表元素！');
                 return;
             }
-
             const activeInputGroups = diagramContainer.querySelectorAll('.input-group');
             activeInputGroups.forEach(group => group.style.display = 'none');
-            if (fileDropdownContent.style.display === 'block') {
-                fileDropdownContent.style.display = 'none';
-            }
+            if (fileDropdownContent.style.display === 'block') fileDropdownContent.style.display = 'none';
+            if (exportDropdownContent.style.display === 'block') exportDropdownContent.style.display = 'none';
 
             const originalRenderAreaScrollX = diagramRenderArea.scrollLeft;
             const originalRenderAreaScrollY = diagramRenderArea.scrollTop;
@@ -538,12 +856,12 @@
             const exportContainer = document.createElement('div');
             exportContainer.id = 'export-temp-container';
             exportContainer.style.position = 'absolute';
-            exportContainer.style.left = '-99999px';
+            exportContainer.style.left = '-99999px'; 
             exportContainer.style.top = '-99999px';
-            exportContainer.style.backgroundColor = '#ffffff';
-            exportContainer.style.padding = '0';
+            exportContainer.style.backgroundColor = '#ffffff'; 
+            exportContainer.style.padding = '0'; 
             exportContainer.style.margin = '0';
-            exportContainer.style.overflow = 'hidden';
+            exportContainer.style.overflow = 'hidden'; 
 
             const contentWidth = scalableContentWrapper.scrollWidth;
             const contentHeight = scalableContentWrapper.scrollHeight;
@@ -553,16 +871,17 @@
             const clonedScalableContent = scalableContentWrapper.cloneNode(true);
             clonedScalableContent.style.transform = 'scale(1.0)'; 
             clonedScalableContent.style.margin = '0'; 
-            clonedScalableContent.style.padding = getComputedStyle(scalableContentWrapper).padding; // Preserve original padding
+            clonedScalableContent.style.padding = getComputedStyle(scalableContentWrapper).padding; 
             clonedScalableContent.style.backgroundColor = '#ffffff'; 
             clonedScalableContent.style.cursor = 'default'; 
 
             const clonedActionDivs = clonedScalableContent.querySelectorAll('.rca-node-actions');
-            if (isFinalizedView) {
+            if (isFinalizedView) { 
                 clonedActionDivs.forEach(div => div.style.display = 'none');
             }
             const clonedInputContainers = clonedScalableContent.querySelectorAll('.input-group-container');
-            clonedInputContainers.forEach(div => div.style.display = 'none');
+            clonedInputContainers.forEach(div => div.style.display = 'none'); 
+            
             const clonedNodes = clonedScalableContent.querySelectorAll('.rca-node');
             clonedNodes.forEach(node => node.style.boxShadow = 'none'); 
 
@@ -574,25 +893,23 @@
             
             if (clonedDiagramContainer && clonedSvgLayer) {
                  await new Promise(resolve => requestAnimationFrame(() => {
-                    // Pass the cloned elements to drawAllSvgConnectors
                     drawAllSvgConnectors(clonedSvgLayer, clonedDiagramContainer, clonedScalableContent, 1.0);
                     resolve();
                 }));
             }
-
-            await new Promise(resolve => setTimeout(resolve, 300)); // Slightly increased delay
+            await new Promise(resolve => setTimeout(resolve, 300)); 
 
             try {
-                const canvas = await html2canvas(exportContainer, {
-                    scale: 1.5,
+                const canvas = await html2canvas(exportContainer, { 
+                    scale: 1.5, 
                     useCORS: true,
                     backgroundColor: '#ffffff', 
-                    logging: false,
-                    width: contentWidth,
-                    height: contentHeight,
-                    x: 0, y: 0,
-                    scrollX: 0, scrollY: 0,
-                    windowWidth: contentWidth, windowHeight: contentHeight,
+                    logging: false, 
+                    width: contentWidth, 
+                    height: contentHeight, 
+                    x: 0, y: 0, 
+                    scrollX: 0, scrollY: 0, 
+                    windowWidth: contentWidth, windowHeight: contentHeight, 
                 });
                 const image = canvas.toDataURL('image/png');
                 const link = document.createElement('a');
@@ -603,13 +920,220 @@
                 console.error('匯出圖表失敗:', err);
                 alert('匯出圖表失敗，請檢查控制台錯誤訊息。');
             } finally {
-                document.body.removeChild(exportContainer);
-                activeInputGroups.forEach(group => group.style.display = 'flex');
+                document.body.removeChild(exportContainer); 
+                activeInputGroups.forEach(group => group.style.display = 'flex'); 
                 applyZoom(originalZoom, true); 
                 diagramRenderArea.scrollLeft = originalRenderAreaScrollX;
                 diagramRenderArea.scrollTop = originalRenderAreaScrollY;
-                requestAnimationFrame(drawAllSvgConnectors);
+                requestAnimationFrame(() => drawAllSvgConnectors());
             }
+        }
+        
+        async function exportDiagramAndTablesAsPDF() {
+            if (!rcaData) {
+                alert('圖表為空，無法匯出 PDF。');
+                return;
+            }
+            // Check if jsPDF and autoTable are loaded
+            if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
+                alert('PDF 匯出功能所需組件 (jsPDF) 未載入。請檢查網路連線或稍後再試。');
+                console.error('jsPDF library is not loaded.');
+                return;
+            }
+             if (typeof window.jspdf.jsPDF.autoTable !== 'function') {
+                alert('PDF 表格匯出功能所需組件 (jsPDF-AutoTable) 未載入。請檢查網路連線或稍後再試。');
+                console.error('jsPDF-AutoTable plugin is not loaded.');
+                return;
+            }
+
+            alert('正在準備 PDF 報告，請稍候...');
+            exportPngButton.disabled = true;
+            exportPdfButton.disabled = true;
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'pt', 'a4'); 
+            pdf.setFont("Helvetica", "normal"); // Set a standard font
+
+            pdf.setFontSize(18);
+            pdf.text('RCA+ 分析報告', 40, 40);
+
+            try {
+                const activeInputGroups = diagramContainer.querySelectorAll('.input-group');
+                activeInputGroups.forEach(group => group.style.display = 'none');
+                const originalZoom = currentZoom;
+                applyZoom(1.0, true); 
+                await new Promise(resolve => requestAnimationFrame(() => {
+                    drawAllSvgConnectors(svgLayer, diagramContainer, scalableContentWrapper, 1.0);
+                    resolve();
+                }));
+                
+                const exportContainer = document.createElement('div');
+                exportContainer.id = 'pdf-export-temp-container';
+                exportContainer.style.position = 'absolute';
+                exportContainer.style.left = '-99999px';
+                exportContainer.style.top = '-99999px';
+                exportContainer.style.backgroundColor = '#ffffff';
+                exportContainer.style.padding = '0';
+                exportContainer.style.margin = '0';
+                exportContainer.style.overflow = 'hidden';
+
+                const contentWidth = scalableContentWrapper.scrollWidth;
+                const contentHeight = scalableContentWrapper.scrollHeight;
+                exportContainer.style.width = contentWidth + 'px';
+                exportContainer.style.height = contentHeight + 'px';
+                
+                const clonedScalableContent = scalableContentWrapper.cloneNode(true);
+                clonedScalableContent.style.transform = 'scale(1.0)';
+                clonedScalableContent.style.margin = '0';
+                clonedScalableContent.style.padding = getComputedStyle(scalableContentWrapper).padding;
+                clonedScalableContent.style.backgroundColor = '#ffffff';
+                clonedScalableContent.style.cursor = 'default';
+
+                const clonedActionDivs = clonedScalableContent.querySelectorAll('.rca-node-actions');
+                 if (isFinalizedView) { 
+                    clonedActionDivs.forEach(div => div.style.display = 'none');
+                }
+                const clonedInputContainers = clonedScalableContent.querySelectorAll('.input-group-container');
+                clonedInputContainers.forEach(div => div.style.display = 'none');
+                const clonedNodes = clonedScalableContent.querySelectorAll('.rca-node');
+                clonedNodes.forEach(node => node.style.boxShadow = 'none');
+
+                exportContainer.appendChild(clonedScalableContent);
+                document.body.appendChild(exportContainer);
+                
+                const clonedDiagramContainer = clonedScalableContent.querySelector('#rca-diagram-container');
+                const clonedSvgLayer = clonedScalableContent.querySelector('#svg-connector-layer');
+                if (clonedDiagramContainer && clonedSvgLayer) {
+                    await new Promise(resolve => requestAnimationFrame(() => {
+                        drawAllSvgConnectors(clonedSvgLayer, clonedDiagramContainer, clonedScalableContent, 1.0);
+                        resolve();
+                    }));
+                }
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                const canvas = await html2canvas(exportContainer, {
+                    scale: 1, 
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    width: contentWidth,
+                    height: contentHeight,
+                    x: 0, y: 0, scrollX: 0, scrollY: 0,
+                    windowWidth: contentWidth, windowHeight: contentHeight
+                });
+                const imgData = canvas.toDataURL('image/png');
+                
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfPageWidth = pdf.internal.pageSize.getWidth() - 80; 
+                const pdfPageHeight = pdf.internal.pageSize.getHeight() - 120; 
+                
+                let imgWidth = imgProps.width;
+                let imgHeight = imgProps.height;
+                let ratio = imgWidth / imgHeight;
+
+                if (imgWidth > pdfPageWidth) {
+                    imgWidth = pdfPageWidth;
+                    imgHeight = imgWidth / ratio;
+                }
+                if (imgHeight > pdfPageHeight) {
+                    imgHeight = pdfPageHeight;
+                    imgWidth = imgHeight * ratio;
+                }
+                
+                pdf.addImage(imgData, 'PNG', 40, 70, imgWidth, imgHeight);
+
+                document.body.removeChild(exportContainer);
+                activeInputGroups.forEach(group => group.style.display = 'flex');
+                applyZoom(originalZoom, true); 
+                requestAnimationFrame(() => drawAllSvgConnectors());
+
+            } catch (err) {
+                console.error('產生圖表圖片失敗 (PDF):', err);
+                pdf.addPage();
+                pdf.text('無法產生圖表圖片。', 40, 40);
+                 // Restore UI elements even on error during image generation
+                const activeInputGroups = diagramContainer.querySelectorAll('.input-group');
+                activeInputGroups.forEach(group => group.style.display = 'flex');
+                const originalZoom = currentZoom; // Assuming currentZoom wasn't changed if error happened early
+                applyZoom(originalZoom, true);
+                requestAnimationFrame(() => drawAllSvgConnectors());
+            }
+
+            let lastTableY = 70 + (pdf.getImageProperties(pdf.lastAutoTable)?.height || 0); // Estimate based on image height
+
+            const causeEffectData = getCauseEffectTableData();
+            if (causeEffectData.length > 0) {
+                pdf.addPage(); // Always add a new page for the first table for clarity
+                lastTableY = 40; // Reset Y for new page
+                pdf.setFontSize(16);
+                pdf.text('原因效果表', 40, lastTableY);
+                lastTableY += 20;
+                pdf.autoTable({
+                    startY: lastTableY,
+                    head: [['原因', '原因類型', '正面效果', '負面效果']],
+                    body: causeEffectData.map(row => [row.cause, row.type, row.positive, row.negative]),
+                    styles: { font: "Helvetica", fontStyle: 'normal' }, 
+                    headStyles: { fillColor: [22, 160, 133] },
+                    margin: { top: lastTableY, right: 40, bottom: 40, left: 40 },
+                    didDrawPage: function (data) {
+                        lastTableY = data.cursor.y; // Update Y after drawing
+                         if (data.pageNumber > 1 && data.settings.startY !== undefined) { // Reset Y for new page by autotable
+                            lastTableY = data.settings.margin.top;
+                            pdf.setFontSize(16); // Re-set title for new page if table spans
+                            pdf.text('原因效果表 (續)', 40, lastTableY - 20);
+                        }
+                    }
+                });
+                lastTableY = pdf.lastAutoTable.finalY || lastTableY;
+            } else {
+                pdf.addPage();
+                lastTableY = 40;
+                pdf.setFontSize(12);
+                pdf.text('原因效果表: 無資料', 40, lastTableY);
+                lastTableY += 20;
+            }
+
+            const solutionData = getSolutionTableData();
+            if (solutionData.length > 0) {
+                if (lastTableY + 80 > pdf.internal.pageSize.getHeight()) { // Check if new page needed
+                     pdf.addPage();
+                     lastTableY = 40;
+                } else {
+                    lastTableY += 40; // Add some space before the next table
+                }
+                pdf.setFontSize(16);
+                pdf.text('矛盾點之創意改善方案表', 40, lastTableY);
+                lastTableY += 20;
+                pdf.autoTable({
+                    startY: lastTableY,
+                    head: [['矛盾原因', '發明原理', '改善方案']],
+                    body: solutionData.map(row => [row.contradictoryCause, row.principle, row.solution]),
+                    styles: { font: "Helvetica", fontStyle: 'normal' },
+                    headStyles: { fillColor: [41, 128, 185] },
+                    margin: { top: lastTableY, right: 40, bottom: 40, left: 40 },
+                     didDrawPage: function (data) {
+                        lastTableY = data.cursor.y;
+                        if (data.pageNumber > 1 && data.settings.startY !== undefined) {
+                            lastTableY = data.settings.margin.top;
+                            pdf.setFontSize(16);
+                            pdf.text('矛盾點之創意改善方案表 (續)', 40, lastTableY - 20);
+                        }
+                    }
+                });
+            } else {
+                 if (lastTableY + 60 > pdf.internal.pageSize.getHeight()) {
+                     pdf.addPage();
+                     lastTableY = 40;
+                } else {
+                    lastTableY += 20;
+                }
+                pdf.setFontSize(12);
+                pdf.text('矛盾點之創意改善方案表: 無資料', 40, lastTableY);
+            }
+
+            pdf.save('RCA-Plus-Report.pdf');
+            alert('PDF 報告已產生並開始下載。');
+            exportPngButton.disabled = !rcaData;
+            exportPdfButton.disabled = !rcaData;
         }
         
         initialize();
