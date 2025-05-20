@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RCA+ 矛盾分析繪圖工具 (圖示位置修正)</title>
+    <title>RCA+ 矛盾分析繪圖工具 (專業版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -62,7 +62,7 @@
             align-items: center; 
             max-width: 350px; 
             border-radius: 0.375rem; 
-            position: relative; /* Crucial for absolute positioning of the icon */
+            position: relative;
             z-index: 1; 
             background-color: #ffffff; 
             overflow-wrap: break-word; 
@@ -72,24 +72,24 @@
             flex-direction: column; 
             gap: 0.4rem; 
             width: 100%; 
-            align-items: center; 
+            align-items: center; /* Centers the blocks (header, lists, actions) horizontally */
         }
         .rca-node-header { 
             display: flex; 
             align-items: center; 
-            justify-content: center; 
+            justify-content: center; /* Header text and NC badge are centered */
             gap: 0.4rem; 
             width: 100%; 
             position: relative; 
             margin-bottom: 0.25rem; 
         }
-        .rca-node-icon { /* This is the corner (+/-) icon */
+        .rca-node-icon {
             font-weight: bold; font-size: 0.85em; 
             padding: 0.2em 0.4em; border-radius: 50%; 
             color: white;
             position: absolute;
-            top: 0.4rem;  /* Position from the top padding edge of .rca-node */
-            right: 0.4rem; /* Position from the right padding edge of .rca-node */
+            top: 0.4rem; 
+            right: 0.4rem;
             min-width: 22px; 
             height: 22px;
             display: flex;
@@ -108,12 +108,11 @@
         .rca-node-text { 
             font-weight: 500; 
             font-size: 0.9rem; 
-            text-align: center; 
+            text-align: center; /* Main node text is centered */
             width: 9em; 
             overflow-wrap: break-word; 
             line-height: 1.4; 
-            /* Add padding to the right to ensure text doesn't go under the icon if icon is large */
-            padding-right: 1.5em; /* Adjust if icon size/position changes, approx icon width + space */
+            padding-right: 1.5em; 
         }
         .selected-items-list { 
             font-size: 0.75rem; 
@@ -122,7 +121,7 @@
             padding-top: 0.375rem; 
             border-top: 1px dashed #d1d5db; 
             width: 100%; 
-            text-align: left; 
+            text-align: left; /* Content (strong, ul, li) within this block is left-aligned */
         }
         .selected-items-list strong { 
             color: #111827; 
@@ -136,9 +135,11 @@
         } 
         .selected-items-list li { 
             margin-bottom: 0.25rem; 
+            /* Vertical centering of text within li is default */
         }
         .selected-items-list .solution-text { color: #059669; margin-left: 0.3rem; font-style: italic;}
 
+        /* Specific Node Styles */
         .rca-node-initial-problem { background-color: #fee2e2; border-color: #ef4444; }
         .rca-node-initial-problem .rca-node-icon { background-color: #ef4444; }
         .rca-node-cause { background-color: #fef9c3; border-color: #f59e0b; }
@@ -151,7 +152,7 @@
         .rca-node-negative-effect .rca-node-text {
             width: auto; 
             max-width: 12em; 
-            padding-right: 2em; /* Ensure space for icon in pill nodes */
+            padding-right: 2em; 
         }
 
         .rca-children-container { 
@@ -173,11 +174,12 @@
             border-top: 1px solid #e5e7eb; 
             padding-top: 0.5rem; 
             width: 100%; 
-            justify-content: center; 
+            justify-content: flex-start; /* Buttons are left-aligned */
+            /* Vertical centering of text within buttons is default */
         }
         .action-button { background-color: #6b7280; color: white; padding: 0.375rem 0.75rem; border-radius: 0.25rem; font-size: 0.75rem; border: none; cursor: pointer; transition: background-color 0.2s; }
         .action-button:hover:not(:disabled) { background-color: #4b5563; } .action-button:disabled { background-color: #9ca3af; cursor: not-allowed; }
-        /* ... other action button styles remain the same ... */
+        /* ... other action button styles ... */
         .action-button.add-cause { background-color: #3b82f6; } .action-button.add-cause:hover:not(:disabled) { background-color: #2563eb; }
         .action-button.add-positive { background-color: #10b981; } .action-button.add-positive:hover:not(:disabled) { background-color: #059669; }
         .action-button.add-negative { background-color: #f97316; } .action-button.add-negative:hover:not(:disabled) { background-color: #ea580c; }
@@ -196,7 +198,7 @@
         .save-button { background-color: #065f46; color: white; } .save-button:hover:not(:disabled) { background-color: #047857; }
         .save-edit-button { background-color: #065f46; color: white; } .save-edit-button:hover:not(:disabled) { background-color: #047857; }
 
-        /* Unchanged styles from v4 */
+        /* Unchanged styles from v5 */
         .data-table-section { margin-top: 2rem; }
         .data-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         .data-table th, .data-table td { border: 1px solid #d1d5db; padding: 0.5rem; font-size: 0.875rem; text-align: center; vertical-align: middle; }
@@ -226,7 +228,7 @@
 <body class="p-4 md:p-8">
     <div class="container mx-auto max-w-7xl"> 
         <header class="mb-6 text-center">
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-700">RCA+ 矛盾分析繪圖工具 (圖示位置修正)</h1>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-700">RCA+ 矛盾分析繪圖工具 (內容對齊調整)</h1>
             <p class="text-gray-500 mt-1">視覺化根本原因、正面/負面效果，支援「且」關係連接、矛盾點標示、效果參數與發明原理。新增檔案選單、上一步、下一步與畫布縮放功能。</p>
         </header>
 
@@ -340,9 +342,8 @@
     </div>
 
     <script>
-        // --- JavaScript code remains the same as v4 ---
-        // --- All JS functions from previous version (v4) are included here for completeness. ---
-        // --- For brevity in this explanation, their code is not repeated line-by-line here but is in the full HTML output. ---
+        // --- JavaScript code remains the same as v5 ---
+        // --- All JS functions from previous version (v5) are included here for completeness. ---
         function deepCopy(obj) { return JSON.parse(JSON.stringify(obj)); }
         let rcaData = null; 
         let nodeIdCounter = 0;
@@ -452,7 +453,7 @@
         handleToggleFinalizeView = function() { isFinalizedView = !isFinalizedView; if (isFinalizedView) { finalizeDiagramButton.textContent = '編輯圖表'; finalizeDiagramButton.classList.remove('finalize-diagram'); finalizeDiagramButton.classList.add('edit-diagram'); } else { finalizeDiagramButton.textContent = '完成圖表'; finalizeDiagramButton.classList.remove('edit-diagram'); finalizeDiagramButton.classList.add('finalize-diagram'); } renderRcaDiagram(); };
         createNode = function(text, type, parentId, isNonChangeable = false) { nodeIdCounter++; const node = { id: `node-${nodeIdCounter}`, text: text, type: type, parentId: parentId, children: [], andSourceNodeIds: [], effectParameters: [], inventivePrinciples: [] }; if (type === 'cause') node.isNonChangeable = isNonChangeable; return node; };
         renderRcaDiagram = function() { diagramContainer.innerHTML = ''; if (rcaData) { diagramContainer.appendChild(createNodeElement(rcaData)); } requestAnimationFrame(drawAllSvgConnectors); };
-        createNodeElement = function(nodeData) { const nodeWrapper = document.createElement('div'); nodeWrapper.classList.add('rca-node-wrapper'); const nodeDiv = document.createElement('div'); nodeDiv.classList.add('rca-node', `rca-node-${nodeData.type}`); nodeDiv.id = nodeData.id; nodeDiv.dataset.nodeId = nodeData.id; const contentDiv = document.createElement('div'); contentDiv.classList.add('rca-node-content'); const headerDiv = document.createElement('div'); headerDiv.classList.add('rca-node-header'); const iconSpan = document.createElement('span'); iconSpan.classList.add('rca-node-icon'); const textSpan = document.createElement('span'); textSpan.classList.add('rca-node-text'); textSpan.textContent = nodeData.text; headerDiv.appendChild(textSpan); if (nodeData.type === 'cause' && nodeData.isNonChangeable) { const ncBadge = document.createElement('span'); ncBadge.classList.add('nc-badge'); ncBadge.textContent = 'NC'; headerDiv.appendChild(ncBadge); } /* Icon is now part of .rca-node directly, not headerDiv */ contentDiv.appendChild(headerDiv); nodeDiv.appendChild(iconSpan); /* Icon moved here */ if (nodeData.effectParameters && nodeData.effectParameters.length > 0) { const paramsDiv = document.createElement('div'); paramsDiv.classList.add('selected-items-list'); paramsDiv.innerHTML = `<strong>效果參數:</strong> <ul>${nodeData.effectParameters.map(p => `<li>${p}</li>`).join('')}</ul>`; contentDiv.appendChild(paramsDiv); } if (nodeData.inventivePrinciples && nodeData.inventivePrinciples.length > 0) { const principlesDiv = document.createElement('div'); principlesDiv.classList.add('selected-items-list'); let principlesHtml = '<strong>發明原理:</strong> <ul>'; nodeData.inventivePrinciples.forEach(ip => { principlesHtml += `<li>${ip.name}${ip.solution ? `<span class="solution-text">- ${ip.solution.substring(0, 20)}${ip.solution.length > 20 ? '...' : ''}</span>` : ''}</li>`; }); principlesHtml += '</ul>'; principlesDiv.innerHTML = principlesHtml; contentDiv.appendChild(principlesDiv); } iconSpan.style.display = 'flex'; if (nodeData.type === 'initial-problem') iconSpan.textContent = '(-)'; else if (nodeData.type === 'cause') { const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(nodeData); if (hasPositiveChild && hasNegativeChild) { iconSpan.textContent = '+/-'; iconSpan.classList.add('contradictory'); } else { iconSpan.style.display = 'none'; } } else if (nodeData.type === 'positive-effect') iconSpan.textContent = '(+)'; else if (nodeData.type === 'negative-effect') iconSpan.textContent = '(-)'; else { iconSpan.style.display = 'none'; } if (!isFinalizedView) { const actionsDiv = document.createElement('div'); actionsDiv.classList.add('rca-node-actions'); actionsDiv.appendChild(createActionButton('修訂此項', 'edit-node', () => promptEditNode(nodeData.id, contentDiv))); if (nodeData.type === 'initial-problem') { actionsDiv.appendChild(createActionButton('新增原因', 'add-cause', () => promptAddNode(nodeData.id, contentDiv, 'cause', '輸入原因描述'))); } else if (nodeData.type === 'cause') { actionsDiv.appendChild(createActionButton('新增子原因', 'add-cause', () => promptAddNode(nodeData.id, contentDiv, 'cause', '輸入子原因描述'))); actionsDiv.appendChild(createActionButton('(+) 正面效果', 'add-positive', () => promptAddNode(nodeData.id, contentDiv, 'positive-effect', '輸入此原因帶來的正面效果'))); actionsDiv.appendChild(createActionButton('(-) 負面效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入此原因導致的負面效果'))); const ncButtonText = nodeData.isNonChangeable ? '取消NC標記' : '設為NC'; actionsDiv.appendChild(createActionButton(ncButtonText, 'toggle-nc', () => toggleNonChangeable(nodeData.id))); actionsDiv.appendChild(createActionButton('選擇發明原理', 'set-principles', () => openInventivePrincipleModal(nodeData.id))); if (nodeData.parentId) { actionsDiv.appendChild(createActionButton('移除此原因', 'remove-button', () => removeNode(nodeData.id))); } } else if (nodeData.type === 'positive-effect' || nodeData.type === 'negative-effect') { actionsDiv.appendChild(createActionButton('(+) 新增正面子效果', 'add-positive', () => promptAddNode(nodeData.id, contentDiv, 'positive-effect', '輸入正面子效果描述'))); actionsDiv.appendChild(createActionButton('(-) 新增負面子效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入負面子效果描述'))); actionsDiv.appendChild(createActionButton('設定效果參數', 'set-parameters', () => openEffectParameterModal(nodeData.id))); actionsDiv.appendChild(createActionButton('設定AND輸入源', 'set-and-sources', () => openAndSourceModal(nodeData.id))); actionsDiv.appendChild(createActionButton('移除效果', 'remove-button', () => removeNode(nodeData.id))); } contentDiv.appendChild(actionsDiv); const inputContainer = document.createElement('div'); inputContainer.classList.add('input-group-container'); contentDiv.appendChild(inputContainer); } nodeDiv.appendChild(contentDiv); nodeWrapper.appendChild(nodeDiv); if (nodeData.children && nodeData.children.length > 0) { const childrenContainer = document.createElement('div'); childrenContainer.classList.add('rca-children-container'); nodeData.children.forEach(childNode => childrenContainer.appendChild(createNodeElement(childNode))); nodeWrapper.appendChild(childrenContainer); } return nodeWrapper; };
+        createNodeElement = function(nodeData) { const nodeWrapper = document.createElement('div'); nodeWrapper.classList.add('rca-node-wrapper'); const nodeDiv = document.createElement('div'); nodeDiv.classList.add('rca-node', `rca-node-${nodeData.type}`); nodeDiv.id = nodeData.id; nodeDiv.dataset.nodeId = nodeData.id; const contentDiv = document.createElement('div'); contentDiv.classList.add('rca-node-content'); const headerDiv = document.createElement('div'); headerDiv.classList.add('rca-node-header'); const iconSpan = document.createElement('span'); iconSpan.classList.add('rca-node-icon'); const textSpan = document.createElement('span'); textSpan.classList.add('rca-node-text'); textSpan.textContent = nodeData.text; headerDiv.appendChild(textSpan); if (nodeData.type === 'cause' && nodeData.isNonChangeable) { const ncBadge = document.createElement('span'); ncBadge.classList.add('nc-badge'); ncBadge.textContent = 'NC'; headerDiv.appendChild(ncBadge); } contentDiv.appendChild(headerDiv); nodeDiv.appendChild(iconSpan); if (nodeData.effectParameters && nodeData.effectParameters.length > 0) { const paramsDiv = document.createElement('div'); paramsDiv.classList.add('selected-items-list'); paramsDiv.innerHTML = `<strong>效果參數:</strong> <ul>${nodeData.effectParameters.map(p => `<li>${p}</li>`).join('')}</ul>`; contentDiv.appendChild(paramsDiv); } if (nodeData.inventivePrinciples && nodeData.inventivePrinciples.length > 0) { const principlesDiv = document.createElement('div'); principlesDiv.classList.add('selected-items-list'); let principlesHtml = '<strong>發明原理:</strong> <ul>'; nodeData.inventivePrinciples.forEach(ip => { principlesHtml += `<li>${ip.name}${ip.solution ? `<span class="solution-text">- ${ip.solution.substring(0, 20)}${ip.solution.length > 20 ? '...' : ''}</span>` : ''}</li>`; }); principlesHtml += '</ul>'; principlesDiv.innerHTML = principlesHtml; contentDiv.appendChild(principlesDiv); } iconSpan.style.display = 'flex'; if (nodeData.type === 'initial-problem') iconSpan.textContent = '(-)'; else if (nodeData.type === 'cause') { const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(nodeData); if (hasPositiveChild && hasNegativeChild) { iconSpan.textContent = '+/-'; iconSpan.classList.add('contradictory'); } else { iconSpan.style.display = 'none'; } } else if (nodeData.type === 'positive-effect') iconSpan.textContent = '(+)'; else if (nodeData.type === 'negative-effect') iconSpan.textContent = '(-)'; else { iconSpan.style.display = 'none'; } if (!isFinalizedView) { const actionsDiv = document.createElement('div'); actionsDiv.classList.add('rca-node-actions'); actionsDiv.appendChild(createActionButton('修訂此項', 'edit-node', () => promptEditNode(nodeData.id, contentDiv))); if (nodeData.type === 'initial-problem') { actionsDiv.appendChild(createActionButton('新增原因', 'add-cause', () => promptAddNode(nodeData.id, contentDiv, 'cause', '輸入原因描述'))); } else if (nodeData.type === 'cause') { actionsDiv.appendChild(createActionButton('新增子原因', 'add-cause', () => promptAddNode(nodeData.id, contentDiv, 'cause', '輸入子原因描述'))); actionsDiv.appendChild(createActionButton('(+) 正面效果', 'add-positive', () => promptAddNode(nodeData.id, contentDiv, 'positive-effect', '輸入此原因帶來的正面效果'))); actionsDiv.appendChild(createActionButton('(-) 負面效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入此原因導致的負面效果'))); const ncButtonText = nodeData.isNonChangeable ? '取消NC標記' : '設為NC'; actionsDiv.appendChild(createActionButton(ncButtonText, 'toggle-nc', () => toggleNonChangeable(nodeData.id))); actionsDiv.appendChild(createActionButton('選擇發明原理', 'set-principles', () => openInventivePrincipleModal(nodeData.id))); if (nodeData.parentId) { actionsDiv.appendChild(createActionButton('移除此原因', 'remove-button', () => removeNode(nodeData.id))); } } else if (nodeData.type === 'positive-effect' || nodeData.type === 'negative-effect') { actionsDiv.appendChild(createActionButton('(+) 新增正面子效果', 'add-positive', () => promptAddNode(nodeData.id, contentDiv, 'positive-effect', '輸入正面子效果描述'))); actionsDiv.appendChild(createActionButton('(-) 新增負面子效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入負面子效果描述'))); actionsDiv.appendChild(createActionButton('設定效果參數', 'set-parameters', () => openEffectParameterModal(nodeData.id))); actionsDiv.appendChild(createActionButton('設定AND輸入源', 'set-and-sources', () => openAndSourceModal(nodeData.id))); actionsDiv.appendChild(createActionButton('移除效果', 'remove-button', () => removeNode(nodeData.id))); } contentDiv.appendChild(actionsDiv); const inputContainer = document.createElement('div'); inputContainer.classList.add('input-group-container'); contentDiv.appendChild(inputContainer); } nodeDiv.appendChild(contentDiv); nodeWrapper.appendChild(nodeDiv); if (nodeData.children && nodeData.children.length > 0) { const childrenContainer = document.createElement('div'); childrenContainer.classList.add('rca-children-container'); nodeData.children.forEach(childNode => childrenContainer.appendChild(createNodeElement(childNode))); nodeWrapper.appendChild(childrenContainer); } return nodeWrapper; };
         promptEditNode = function(nodeId, parentNodeContentDiv) { if (isFinalizedView) return; const nodeToEdit = findNodeById(rcaData, nodeId); if (!nodeToEdit) return; const inputContainer = parentNodeContentDiv.querySelector('.input-group-container'); if (!inputContainer) { console.error("Input container not found for node:", nodeId); return; } document.querySelectorAll('.input-group').forEach(ig => ig.remove()); inputContainer.innerHTML = ''; const inputGroup = document.createElement('div'); inputGroup.classList.add('input-group'); const nodeInput = document.createElement('input'); nodeInput.type = 'text'; nodeInput.value = nodeToEdit.text; nodeInput.classList.add('input-field'); const saveEditButton = document.createElement('button'); saveEditButton.textContent = '儲存修訂'; saveEditButton.classList.add('action-button', 'save-edit-button', 'w-full', 'mt-2'); saveEditButton.onclick = () => { const newText = nodeInput.value.trim(); if (newText) { nodeToEdit.text = newText; pushStateToHistory(rcaData); renderRcaDiagram(); renderCauseEffectTable(); renderSolutionTable(); inputContainer.innerHTML = ''; } else { alert('描述不能為空！'); } }; nodeInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') saveEditButton.click(); }); const cancelEditButton = document.createElement('button'); cancelEditButton.textContent = '取消修訂'; cancelEditButton.classList.add('action-button', 'bg-gray-400', 'hover:bg-gray-500', 'w-full', 'mt-1'); cancelEditButton.onclick = () => { inputContainer.innerHTML = ''; }; inputGroup.appendChild(nodeInput); inputGroup.appendChild(saveEditButton); inputGroup.appendChild(cancelEditButton); inputContainer.appendChild(inputGroup); nodeInput.focus(); nodeInput.select(); };
         openAndSourceModal = function(targetNodeId) { if (isFinalizedView) return; currentAndTargetNodeId = targetNodeId; const targetNode = findNodeById(rcaData, targetNodeId); if (!targetNode) return; andSourceModalTitle.textContent = `為效果 "${targetNode.text}" 設定 AND 輸入源`; andSourceOptionsContainer.innerHTML = ''; const availableCauses = []; function findCausesRecursive(node) { if (!node) return; if (node.type === 'cause') availableCauses.push(node); if (node.children) node.children.forEach(findCausesRecursive); } if (rcaData) findCausesRecursive(rcaData); if (availableCauses.length === 0) { andSourceOptionsContainer.innerHTML = '<p class="text-gray-500 text-center">圖表中尚無可用的原因節點。</p>'; } else { availableCauses.forEach(causeNode => { if (causeNode.id === targetNode.id || isDescendant(targetNode, causeNode.id) || causeNode.id === targetNode.parentId) return; const div = document.createElement('div'); div.classList.add('flex', 'items-center', 'my-2', 'p-2', 'hover:bg-gray-100', 'rounded'); const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.id = `and-source-chk-${causeNode.id}`; checkbox.value = causeNode.id; checkbox.classList.add('form-checkbox', 'h-5', 'w-5', 'text-blue-600', 'rounded', 'border-gray-300'); if (targetNode.andSourceNodeIds && targetNode.andSourceNodeIds.includes(causeNode.id)) { checkbox.checked = true; } const label = document.createElement('label'); label.htmlFor = `and-source-chk-${causeNode.id}`; label.textContent = `${causeNode.text} (ID: ${causeNode.id.split('-')[1]})`; label.classList.add('ml-3', 'text-sm', 'text-gray-700', 'flex-grow'); div.appendChild(checkbox); div.appendChild(label); andSourceOptionsContainer.appendChild(div); }); if (andSourceOptionsContainer.childElementCount === 0) { andSourceOptionsContainer.innerHTML = '<p class="text-gray-500 text-center">無有效的 AND 輸入源選項。</p>'; } } andSourceModal.style.display = 'flex'; };
         isDescendant = function(parentNode, childNodeIdToFind) { if (!parentNode || !parentNode.children || parentNode.children.length === 0) return false; for (const child of parentNode.children) { if (child.id === childNodeIdToFind) return true; if (isDescendant(child, childNodeIdToFind)) return true; } return false; };
