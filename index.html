@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RCA+ 矛盾分析繪圖工具 (PRO)</title>
+    <title>RCA+ 矛盾分析繪圖工具 (v4)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -239,7 +239,7 @@
 <body class="p-4 md:p-8">
     <div class="container mx-auto max-w-7xl"> 
         <header class="mb-6 text-center">
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-700">RCA+ 矛盾分析繪圖工具 (v3 修正版)</h1>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-700">RCA+ 矛盾分析繪圖工具 (v4 PDF字型調整)</h1>
             <p class="text-gray-500 mt-1">視覺化根本原因、正面/負面效果，支援「且」關係連接、矛盾點標示、效果參數與發明原理。新增檔案選單、上一步、下一步、畫布縮放、自動調整節點與 PDF 匯出功能。</p>
         </header>
 
@@ -677,7 +677,7 @@
             targetScalableWrapper = scalableContentWrapper, 
             zoom = currentZoom
         ) { 
-            // console.log("drawAllSvgConnectors called. Zoom:", zoom); // Added for debugging
+            // console.log("drawAllSvgConnectors called. Zoom:", zoom); 
             targetSvgLayer.innerHTML = ''; 
             if (!rcaData || !targetDiagramContainer.querySelector(`#${rcaData.id}`) || !targetScalableWrapper) { 
                 // console.log("drawAllSvgConnectors: No data or elements, returning.");
@@ -698,7 +698,7 @@
             
             const lineVerticalOffset = 25; 
             const scalableWrapperRect = targetScalableWrapper.getBoundingClientRect(); 
-            let linesDrawn = 0; // Added for debugging
+            // let linesDrawn = 0; 
 
             function drawRecursive(parentNodeData, currentContainer) { 
                 const parentElement = currentContainer.querySelector(`#${parentNodeData.id}`); 
@@ -714,7 +714,7 @@
                     const mergePointYOffset = 40; 
                     const mergePoint_svg = { x: parentCenterX_svg, y: parentTopY_svg - mergePointYOffset }; 
                     if(mergePoint_svg.y < 0) mergePoint_svg.y = 10; 
-                    _drawSvgCircle(targetSvgLayer, mergePoint_svg.x, mergePoint_svg.y, 6, '#6d28d9', zoom); linesDrawn++;
+                    _drawSvgCircle(targetSvgLayer, mergePoint_svg.x, mergePoint_svg.y, 6, '#6d28d9', zoom); // linesDrawn++;
                     parentNodeData.andSourceNodeIds.forEach(sourceId => { 
                         const sourceElement = currentContainer.querySelector(`#${sourceId}`); 
                         if (sourceElement) { 
@@ -722,21 +722,21 @@
                             const sourceConnX_svg = (sourceRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + sourceRect.width / 2) / zoom; 
                             const sourceConnY_svg = (sourceRect.top - (scalableWrapperRect.top + wrapperPaddingTop) + sourceRect.height) / zoom; 
                             if (sourceConnY_svg < mergePoint_svg.y) { 
-                                _drawSvgLine(targetSvgLayer, sourceConnX_svg, sourceConnY_svg, mergePoint_svg.x, mergePoint_svg.y, '#6b7280', 2, zoom); linesDrawn++;
+                                _drawSvgLine(targetSvgLayer, sourceConnX_svg, sourceConnY_svg, mergePoint_svg.x, mergePoint_svg.y, '#6b7280', 2, zoom); // linesDrawn++;
                             } else { 
                                 const sourceTopY_svg = (sourceRect.top - (scalableWrapperRect.top + wrapperPaddingTop)) / zoom; 
-                                _drawSvgLine(targetSvgLayer, sourceConnX_svg, sourceTopY_svg, mergePoint_svg.x, mergePoint_svg.y, '#6b7280', 2, zoom); linesDrawn++;
+                                _drawSvgLine(targetSvgLayer, sourceConnX_svg, sourceTopY_svg, mergePoint_svg.x, mergePoint_svg.y, '#6b7280', 2, zoom); // linesDrawn++;
                             } 
                         } 
                     }); 
                     if (parentTopY_svg > mergePoint_svg.y) { 
-                        _drawSvgLine(targetSvgLayer, mergePoint_svg.x, mergePoint_svg.y, parentCenterX_svg, parentTopY_svg, '#6b7280', 2, zoom); linesDrawn++;
+                        _drawSvgLine(targetSvgLayer, mergePoint_svg.x, mergePoint_svg.y, parentCenterX_svg, parentTopY_svg, '#6b7280', 2, zoom); // linesDrawn++;
                     } 
                 } 
                 const standardChildren = parentNodeData.children.filter(c => !(c.andSourceNodeIds && c.andSourceNodeIds.length > 0 && c.andSourceNodeIds.includes(parentNodeData.id))); 
                 if (standardChildren.length > 0) { 
                     const horizontalLineY_svg = parentBottomY_svg + lineVerticalOffset; 
-                    _drawSvgLine(targetSvgLayer, parentBottomCenterX_svg, parentBottomY_svg, parentBottomCenterX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); linesDrawn++;
+                    _drawSvgLine(targetSvgLayer, parentBottomCenterX_svg, parentBottomY_svg, parentBottomCenterX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); // linesDrawn++;
                     if (standardChildren.length > 1) { 
                         const firstChildElement = currentContainer.querySelector(`#${standardChildren[0].id}`); 
                         const lastChildElement = currentContainer.querySelector(`#${standardChildren[standardChildren.length - 1].id}`); 
@@ -746,7 +746,7 @@
                             const hLineStartX_svg = (firstChildRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + firstChildRect.width / 2) / zoom; 
                             const hLineEndX_svg = (lastChildRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + lastChildRect.width / 2) / zoom; 
                             if (Math.abs(hLineStartX_svg - hLineEndX_svg) > 1) { 
-                                _drawSvgLine(targetSvgLayer, hLineStartX_svg, horizontalLineY_svg, hLineEndX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); linesDrawn++;
+                                _drawSvgLine(targetSvgLayer, hLineStartX_svg, horizontalLineY_svg, hLineEndX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); // linesDrawn++;
                             } 
                         } 
                     } else if (standardChildren.length === 1) { 
@@ -755,7 +755,7 @@
                             const childRect = childElement.getBoundingClientRect(); 
                             const childCenterX_svg = (childRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + childRect.width / 2) / zoom; 
                             if (Math.abs(parentBottomCenterX_svg - childCenterX_svg) > 1) { 
-                                _drawSvgLine(targetSvgLayer, parentBottomCenterX_svg, horizontalLineY_svg, childCenterX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); linesDrawn++;
+                                _drawSvgLine(targetSvgLayer, parentBottomCenterX_svg, horizontalLineY_svg, childCenterX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); // linesDrawn++;
                             } 
                         } 
                     } 
@@ -766,7 +766,7 @@
                             const childCenterX_svg = (childRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + childRect.width / 2) / zoom; 
                             const childTopY_svg = (childRect.top - (scalableWrapperRect.top + wrapperPaddingTop)) / zoom; 
                             if (childTopY_svg > horizontalLineY_svg) { 
-                                _drawSvgLine(targetSvgLayer, childCenterX_svg, horizontalLineY_svg, childCenterX_svg, childTopY_svg, '#9ca3af', 2, zoom); linesDrawn++;
+                                _drawSvgLine(targetSvgLayer, childCenterX_svg, horizontalLineY_svg, childCenterX_svg, childTopY_svg, '#9ca3af', 2, zoom); // linesDrawn++;
                             } 
                         } 
                     }); 
@@ -776,7 +776,7 @@
                 } 
             } 
             if(rcaData) drawRecursive(rcaData, targetDiagramContainer); 
-            // console.log("drawAllSvgConnectors: Attempted to draw lines count:", linesDrawn); // Added for debugging
+            // console.log("drawAllSvgConnectors: Attempted to draw lines count:", linesDrawn); 
         }
         function _drawSvgLine(svg, x1, y1, x2, y2, color = 'black', strokeWidth = 2, zoomFactor = 1) { if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) { return; } const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', x1); line.setAttribute('y1', y1); line.setAttribute('x2', x2); line.setAttribute('y2', y2); line.setAttribute('stroke', color); line.setAttribute('stroke-width', strokeWidth / zoomFactor); svg.appendChild(line); }
         function _drawSvgCircle(svg, cx, cy, r, fillColor = 'black', zoomFactor = 1) { if (isNaN(cx) || isNaN(cy) || isNaN(r)) { return; } const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); circle.setAttribute('cx', cx); circle.setAttribute('cy', cy); circle.setAttribute('r', r / zoomFactor); circle.setAttribute('fill', fillColor); svg.appendChild(circle); }
@@ -928,12 +928,11 @@
         async function exportDiagramAndTablesAsPDF() {
             if (!rcaData) {
                 alert('圖表為空，無法匯出 PDF。');
-                exportPngButton.disabled = !rcaData; // Re-enable buttons if no data
+                exportPngButton.disabled = !rcaData; 
                 exportPdfButton.disabled = !rcaData;
                 return;
             }
 
-            // More robust check for jsPDF and autoTable
             if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
                 alert('PDF 匯出功能所需組件 (jsPDF) 未載入。請檢查網路連線或稍後再試。');
                 console.error('jsPDF library is not loaded.');
@@ -942,24 +941,31 @@
                 return;
             }
 
-            const { jsPDF } = window.jspdf; // This is the constructor
-            const tempPdfInstance = new jsPDF(); // Create a temporary instance to check prototype
+            const { jsPDF } = window.jspdf; 
+            const tempPdfInstance = new jsPDF(); 
 
-            // Check if autoTable is on the instance's prototype OR on jsPDF.API (older plugins might use API)
             if (typeof tempPdfInstance.autoTable !== 'function' && (typeof jsPDF.API === 'undefined' || typeof jsPDF.API.autoTable !== 'function')) {
                  alert('PDF 表格匯出功能所需組件 (jsPDF-AutoTable) 未載入或未能正確附加至 jsPDF。\n請檢查網路連線、瀏覽器控制台錯誤，或稍後再試。');
-                 console.error('jsPDF-AutoTable plugin is not loaded or not attached correctly. Checked tempPdfInstance.autoTable and jsPDF.API.autoTable.');
+                 console.error('jsPDF-AutoTable plugin is not loaded or not attached correctly.');
                  exportPngButton.disabled = !rcaData;
                  exportPdfButton.disabled = !rcaData;
                  return;
             }
+            console.info("jsPDF and jsPDF-AutoTable appear to be loaded correctly."); // Info for debugging
 
-            alert('正在準備 PDF 報告，請稍候...');
+            alert('正在準備 PDF 報告，請稍候...\n注意：中文字元顯示可能因您的 PDF 檢視器及已安裝字型而異。');
             exportPngButton.disabled = true;
             exportPdfButton.disabled = true;
 
             const pdf = new jsPDF('p', 'pt', 'a4'); 
-            pdf.setFont("Helvetica", "normal"); 
+            // For CJK characters, jsPDF requires a font that supports them.
+            // Standard fonts like Helvetica might not. Embedding a CJK font is complex client-side.
+            // We'll use a standard font and rely on the PDF viewer's font substitution.
+            // For better CJK support, a library like 'pdfmake' or server-side generation is often preferred.
+            // Or, you can try to load a base64 encoded CJK font with jsPDF's `addFileToVFS` and `addFont` methods,
+            // but this significantly increases script size and complexity.
+            // For now, we stick to standard fonts and hope for the best with viewer substitution.
+            pdf.setFont("Helvetica", "normal"); // Using a standard font. Could try "Arial" as well.
 
             pdf.setFontSize(18);
             pdf.text('RCA+ 分析報告', 40, 40);
@@ -1055,7 +1061,7 @@
 
             } catch (err) {
                 console.error('產生圖表圖片失敗 (PDF):', err);
-                pdf.addPage(); // Ensure there's a page to write the error message
+                pdf.addPage(); 
                 pdf.text('無法產生圖表圖片。錯誤: ' + err.message, 40, 40);
                 const activeInputGroups = diagramContainer.querySelectorAll('.input-group');
                 activeInputGroups.forEach(group => group.style.display = 'flex');
@@ -1065,12 +1071,13 @@
             }
 
             let lastTableY = 70 + (pdf.lastAutoTable ? pdf.lastAutoTable.finalY : 0) ; 
-            if (pdf.lastAutoTable && pdf.lastAutoTable.finalY) { // if image was added
-                lastTableY = pdf.lastAutoTable.finalY > 70 ? pdf.lastAutoTable.finalY : 70; // Ensure Y is below image
-            } else { // If image failed, start tables lower
+            if (pdf.lastAutoTable && pdf.lastAutoTable.finalY) { 
+                lastTableY = pdf.lastAutoTable.finalY > 70 ? pdf.lastAutoTable.finalY : 70; 
+            } else { 
                  lastTableY = 100;
             }
 
+            const tableFontStyles = { font: "Helvetica", fontStyle: 'normal' }; // Use a standard font
 
             const causeEffectData = getCauseEffectTableData();
             if (causeEffectData.length > 0) {
@@ -1082,15 +1089,15 @@
                     startY: lastTableY,
                     head: [['原因', '原因類型', '正面效果', '負面效果']],
                     body: causeEffectData.map(row => [row.cause, row.type, row.positive, row.negative]),
-                    styles: { font: "Helvetica", fontStyle: 'normal' }, 
+                    styles: tableFontStyles, 
                     headStyles: { fillColor: [22, 160, 133] },
-                    margin: { top: 40, right: 40, bottom: 40, left: 40 }, // Use consistent margins
+                    margin: { top: 40, right: 40, bottom: 40, left: 40 }, 
                     didDrawPage: function (data) {
                         lastTableY = data.cursor.y; 
                          if (data.pageNumber > pdf.internal.getNumberOfPages() -1 && data.settings.startY !== undefined) { 
-                            lastTableY = data.settings.margin.top;
+                            lastTableY = data.settings.margin.top; // Reset Y for new page
                             pdf.setFontSize(16); 
-                            pdf.text('原因效果表 (續)', 40, lastTableY - 20);
+                            pdf.text('原因效果表 (續)', 40, lastTableY - 20); // Add continued title
                         }
                     }
                 });
@@ -1117,15 +1124,15 @@
                     startY: lastTableY,
                     head: [['矛盾原因', '發明原理', '改善方案']],
                     body: solutionData.map(row => [row.contradictoryCause, row.principle, row.solution]),
-                    styles: { font: "Helvetica", fontStyle: 'normal' },
+                    styles: tableFontStyles,
                     headStyles: { fillColor: [41, 128, 185] },
                     margin: { top: 40, right: 40, bottom: 40, left: 40 },
                      didDrawPage: function (data) {
                         lastTableY = data.cursor.y;
                         if (data.pageNumber > pdf.internal.getNumberOfPages() -1 && data.settings.startY !== undefined) {
-                            lastTableY = data.settings.margin.top;
+                            lastTableY = data.settings.margin.top; // Reset Y for new page
                             pdf.setFontSize(16);
-                            pdf.text('矛盾點之創意改善方案表 (續)', 40, lastTableY - 20);
+                            pdf.text('矛盾點之創意改善方案表 (續)', 40, lastTableY - 20); // Add continued title
                         }
                     }
                 });
