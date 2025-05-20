@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RCA+ 矛盾分析繪圖工具 (修正版)</title>
+    <title>RCA+ 矛盾分析繪圖工具 (PRO)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -33,7 +33,7 @@
             position: relative;
             transform-origin: top left;
             display: inline-block; 
-            padding: 20px; /* This padding is crucial for connector calculations */
+            padding: 20px; 
             cursor: grab; 
         }
         #scalable-content-wrapper:active {
@@ -41,8 +41,8 @@
         }
         #svg-connector-layer {
             position: absolute; 
-            top: 20px; /* Aligns with scalable-content-wrapper's padding */
-            left: 20px;/* Aligns with scalable-content-wrapper's padding */
+            top: 20px; 
+            left: 20px;
             pointer-events: none; 
             z-index: 0; 
         }
@@ -239,7 +239,7 @@
 <body class="p-4 md:p-8">
     <div class="container mx-auto max-w-7xl"> 
         <header class="mb-6 text-center">
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-700">RCA+ 矛盾分析繪圖工具 (修正版)</h1>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-700">RCA+ 矛盾分析繪圖工具 (v3 修正版)</h1>
             <p class="text-gray-500 mt-1">視覺化根本原因、正面/負面效果，支援「且」關係連接、矛盾點標示、效果參數與發明原理。新增檔案選單、上一步、下一步、畫布縮放、自動調整節點與 PDF 匯出功能。</p>
         </header>
 
@@ -671,21 +671,21 @@
         function openInventivePrincipleModal(targetNodeId) { if (isFinalizedView) return; currentPrincipleTargetNodeId = targetNodeId; const targetNode = findNodeById(rcaData, targetNodeId); if (!targetNode || targetNode.type !== 'cause') return; inventivePrincipleModalTitle.textContent = `為原因 "${targetNode.text}" 選擇發明原理與改善方案`; inventivePrincipleOptionsContainer.innerHTML = ''; INVENTIVE_PRINCIPLES.forEach(principleName => { const principleContainer = document.createElement('div'); principleContainer.classList.add('my-2', 'p-2', 'border-b', 'border-gray-200'); const div = document.createElement('div'); div.classList.add('flex', 'items-center'); const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; const checkboxId = `principle-chk-${principleName.replace(/\s|\/|[\(\)\[\]]/g, '-')}`; checkbox.id = checkboxId; checkbox.value = principleName; checkbox.classList.add('form-checkbox', 'h-4', 'w-4', 'text-pink-600', 'rounded', 'border-gray-300', 'focus:ring-pink-500'); const existingPrinciple = targetNode.inventivePrinciples.find(p => p.name === principleName); if (existingPrinciple) { checkbox.checked = true; } const label = document.createElement('label'); label.htmlFor = checkboxId; label.textContent = principleName; label.classList.add('ml-2', 'text-sm', 'text-gray-700', 'font-medium'); div.appendChild(checkbox); div.appendChild(label); principleContainer.appendChild(div); const solutionInput = document.createElement('input'); solutionInput.type = 'text'; solutionInput.placeholder = '輸入此原理的改善方案...'; solutionInput.dataset.principleName = principleName; solutionInput.classList.add('principle-solution-input', 'input-field', 'mt-1'); solutionInput.value = existingPrinciple && existingPrinciple.solution ? existingPrinciple.solution : ''; solutionInput.style.display = checkbox.checked ? 'block' : 'none'; checkbox.onchange = () => { solutionInput.style.display = checkbox.checked ? 'block' : 'none'; if (!checkbox.checked) solutionInput.value = ''; }; principleContainer.appendChild(solutionInput); inventivePrincipleOptionsContainer.appendChild(principleContainer); }); inventivePrincipleModal.style.display = 'flex'; }
         function handleSaveInventivePrinciples() { if (!currentPrincipleTargetNodeId) return; const targetNode = findNodeById(rcaData, currentPrincipleTargetNodeId); if (!targetNode) return; const selectedPrinciples = []; const principleContainers = inventivePrincipleOptionsContainer.querySelectorAll('div.my-2 > div.flex > input[type="checkbox"]'); principleContainers.forEach(chk => { if (chk.checked) { const principleName = chk.value; const solutionInput = chk.closest('.my-2').querySelector('input[type="text"][data-principle-name]'); selectedPrinciples.push({ name: principleName, solution: solutionInput ? solutionInput.value.trim() : '' }); } }); targetNode.inventivePrinciples = selectedPrinciples; pushStateToHistory(rcaData); inventivePrincipleModal.style.display = 'none'; currentPrincipleTargetNodeId = null; renderRcaDiagram(); renderSolutionTable(); }
         
-        // --- SVG Connector Drawing (MODIFIED for padding) ---
         function drawAllSvgConnectors(
             targetSvgLayer = svgLayer, 
             targetDiagramContainer = diagramContainer, 
             targetScalableWrapper = scalableContentWrapper, 
             zoom = currentZoom
         ) { 
+            // console.log("drawAllSvgConnectors called. Zoom:", zoom); // Added for debugging
             targetSvgLayer.innerHTML = ''; 
             if (!rcaData || !targetDiagramContainer.querySelector(`#${rcaData.id}`) || !targetScalableWrapper) { 
+                // console.log("drawAllSvgConnectors: No data or elements, returning.");
                 targetSvgLayer.setAttribute('width', 0); 
                 targetSvgLayer.setAttribute('height', 0); 
                 return; 
             } 
             
-            // Get padding of the scalableContentWrapper
             const wrapperStyle = getComputedStyle(targetScalableWrapper);
             const wrapperPaddingLeft = parseFloat(wrapperStyle.paddingLeft) || 0;
             const wrapperPaddingTop = parseFloat(wrapperStyle.paddingTop) || 0;
@@ -698,13 +698,13 @@
             
             const lineVerticalOffset = 25; 
             const scalableWrapperRect = targetScalableWrapper.getBoundingClientRect(); 
+            let linesDrawn = 0; // Added for debugging
 
             function drawRecursive(parentNodeData, currentContainer) { 
                 const parentElement = currentContainer.querySelector(`#${parentNodeData.id}`); 
                 if (!parentElement) return; 
                 
                 const parentRect = parentElement.getBoundingClientRect(); 
-                // MODIFIED: Account for wrapper padding in coordinate calculations
                 const parentBottomCenterX_svg = (parentRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + parentRect.width / 2) / zoom; 
                 const parentBottomY_svg = (parentRect.top - (scalableWrapperRect.top + wrapperPaddingTop) + parentRect.height) / zoom; 
                 const parentTopY_svg = (parentRect.top - (scalableWrapperRect.top + wrapperPaddingTop)) / zoom; 
@@ -714,52 +714,48 @@
                     const mergePointYOffset = 40; 
                     const mergePoint_svg = { x: parentCenterX_svg, y: parentTopY_svg - mergePointYOffset }; 
                     if(mergePoint_svg.y < 0) mergePoint_svg.y = 10; 
-                    _drawSvgCircle(targetSvgLayer, mergePoint_svg.x, mergePoint_svg.y, 6, '#6d28d9', zoom); 
+                    _drawSvgCircle(targetSvgLayer, mergePoint_svg.x, mergePoint_svg.y, 6, '#6d28d9', zoom); linesDrawn++;
                     parentNodeData.andSourceNodeIds.forEach(sourceId => { 
                         const sourceElement = currentContainer.querySelector(`#${sourceId}`); 
                         if (sourceElement) { 
                             const sourceRect = sourceElement.getBoundingClientRect(); 
-                            // MODIFIED: Account for wrapper padding
                             const sourceConnX_svg = (sourceRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + sourceRect.width / 2) / zoom; 
                             const sourceConnY_svg = (sourceRect.top - (scalableWrapperRect.top + wrapperPaddingTop) + sourceRect.height) / zoom; 
                             if (sourceConnY_svg < mergePoint_svg.y) { 
-                                _drawSvgLine(targetSvgLayer, sourceConnX_svg, sourceConnY_svg, mergePoint_svg.x, mergePoint_svg.y, '#6b7280', 2, zoom); 
+                                _drawSvgLine(targetSvgLayer, sourceConnX_svg, sourceConnY_svg, mergePoint_svg.x, mergePoint_svg.y, '#6b7280', 2, zoom); linesDrawn++;
                             } else { 
-                                // MODIFIED: Account for wrapper padding
                                 const sourceTopY_svg = (sourceRect.top - (scalableWrapperRect.top + wrapperPaddingTop)) / zoom; 
-                                _drawSvgLine(targetSvgLayer, sourceConnX_svg, sourceTopY_svg, mergePoint_svg.x, mergePoint_svg.y, '#6b7280', 2, zoom); 
+                                _drawSvgLine(targetSvgLayer, sourceConnX_svg, sourceTopY_svg, mergePoint_svg.x, mergePoint_svg.y, '#6b7280', 2, zoom); linesDrawn++;
                             } 
                         } 
                     }); 
                     if (parentTopY_svg > mergePoint_svg.y) { 
-                        _drawSvgLine(targetSvgLayer, mergePoint_svg.x, mergePoint_svg.y, parentCenterX_svg, parentTopY_svg, '#6b7280', 2, zoom); 
+                        _drawSvgLine(targetSvgLayer, mergePoint_svg.x, mergePoint_svg.y, parentCenterX_svg, parentTopY_svg, '#6b7280', 2, zoom); linesDrawn++;
                     } 
                 } 
                 const standardChildren = parentNodeData.children.filter(c => !(c.andSourceNodeIds && c.andSourceNodeIds.length > 0 && c.andSourceNodeIds.includes(parentNodeData.id))); 
                 if (standardChildren.length > 0) { 
                     const horizontalLineY_svg = parentBottomY_svg + lineVerticalOffset; 
-                    _drawSvgLine(targetSvgLayer, parentBottomCenterX_svg, parentBottomY_svg, parentBottomCenterX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); 
+                    _drawSvgLine(targetSvgLayer, parentBottomCenterX_svg, parentBottomY_svg, parentBottomCenterX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); linesDrawn++;
                     if (standardChildren.length > 1) { 
                         const firstChildElement = currentContainer.querySelector(`#${standardChildren[0].id}`); 
                         const lastChildElement = currentContainer.querySelector(`#${standardChildren[standardChildren.length - 1].id}`); 
                         if (firstChildElement && lastChildElement) { 
                             const firstChildRect = firstChildElement.getBoundingClientRect(); 
                             const lastChildRect = lastChildElement.getBoundingClientRect(); 
-                            // MODIFIED: Account for wrapper padding
                             const hLineStartX_svg = (firstChildRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + firstChildRect.width / 2) / zoom; 
                             const hLineEndX_svg = (lastChildRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + lastChildRect.width / 2) / zoom; 
                             if (Math.abs(hLineStartX_svg - hLineEndX_svg) > 1) { 
-                                _drawSvgLine(targetSvgLayer, hLineStartX_svg, horizontalLineY_svg, hLineEndX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); 
+                                _drawSvgLine(targetSvgLayer, hLineStartX_svg, horizontalLineY_svg, hLineEndX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); linesDrawn++;
                             } 
                         } 
                     } else if (standardChildren.length === 1) { 
                         const childElement = currentContainer.querySelector(`#${standardChildren[0].id}`); 
                         if (childElement) { 
                             const childRect = childElement.getBoundingClientRect(); 
-                            // MODIFIED: Account for wrapper padding
                             const childCenterX_svg = (childRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + childRect.width / 2) / zoom; 
                             if (Math.abs(parentBottomCenterX_svg - childCenterX_svg) > 1) { 
-                                _drawSvgLine(targetSvgLayer, parentBottomCenterX_svg, horizontalLineY_svg, childCenterX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); 
+                                _drawSvgLine(targetSvgLayer, parentBottomCenterX_svg, horizontalLineY_svg, childCenterX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); linesDrawn++;
                             } 
                         } 
                     } 
@@ -767,11 +763,10 @@
                         const childElement = currentContainer.querySelector(`#${childNode.id}`); 
                         if (childElement) { 
                             const childRect = childElement.getBoundingClientRect(); 
-                            // MODIFIED: Account for wrapper padding
                             const childCenterX_svg = (childRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + childRect.width / 2) / zoom; 
                             const childTopY_svg = (childRect.top - (scalableWrapperRect.top + wrapperPaddingTop)) / zoom; 
                             if (childTopY_svg > horizontalLineY_svg) { 
-                                _drawSvgLine(targetSvgLayer, childCenterX_svg, horizontalLineY_svg, childCenterX_svg, childTopY_svg, '#9ca3af', 2, zoom); 
+                                _drawSvgLine(targetSvgLayer, childCenterX_svg, horizontalLineY_svg, childCenterX_svg, childTopY_svg, '#9ca3af', 2, zoom); linesDrawn++;
                             } 
                         } 
                     }); 
@@ -781,6 +776,7 @@
                 } 
             } 
             if(rcaData) drawRecursive(rcaData, targetDiagramContainer); 
+            // console.log("drawAllSvgConnectors: Attempted to draw lines count:", linesDrawn); // Added for debugging
         }
         function _drawSvgLine(svg, x1, y1, x2, y2, color = 'black', strokeWidth = 2, zoomFactor = 1) { if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) { return; } const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', x1); line.setAttribute('y1', y1); line.setAttribute('x2', x2); line.setAttribute('y2', y2); line.setAttribute('stroke', color); line.setAttribute('stroke-width', strokeWidth / zoomFactor); svg.appendChild(line); }
         function _drawSvgCircle(svg, cx, cy, r, fillColor = 'black', zoomFactor = 1) { if (isNaN(cx) || isNaN(cy) || isNaN(r)) { return; } const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); circle.setAttribute('cx', cx); circle.setAttribute('cy', cy); circle.setAttribute('r', r / zoomFactor); circle.setAttribute('fill', fillColor); svg.appendChild(circle); }
@@ -932,27 +928,38 @@
         async function exportDiagramAndTablesAsPDF() {
             if (!rcaData) {
                 alert('圖表為空，無法匯出 PDF。');
+                exportPngButton.disabled = !rcaData; // Re-enable buttons if no data
+                exportPdfButton.disabled = !rcaData;
                 return;
             }
-            // Check if jsPDF and autoTable are loaded
+
+            // More robust check for jsPDF and autoTable
             if (typeof window.jspdf === 'undefined' || typeof window.jspdf.jsPDF === 'undefined') {
                 alert('PDF 匯出功能所需組件 (jsPDF) 未載入。請檢查網路連線或稍後再試。');
                 console.error('jsPDF library is not loaded.');
+                exportPngButton.disabled = !rcaData;
+                exportPdfButton.disabled = !rcaData;
                 return;
             }
-             if (typeof window.jspdf.jsPDF.autoTable !== 'function') {
-                alert('PDF 表格匯出功能所需組件 (jsPDF-AutoTable) 未載入。請檢查網路連線或稍後再試。');
-                console.error('jsPDF-AutoTable plugin is not loaded.');
-                return;
+
+            const { jsPDF } = window.jspdf; // This is the constructor
+            const tempPdfInstance = new jsPDF(); // Create a temporary instance to check prototype
+
+            // Check if autoTable is on the instance's prototype OR on jsPDF.API (older plugins might use API)
+            if (typeof tempPdfInstance.autoTable !== 'function' && (typeof jsPDF.API === 'undefined' || typeof jsPDF.API.autoTable !== 'function')) {
+                 alert('PDF 表格匯出功能所需組件 (jsPDF-AutoTable) 未載入或未能正確附加至 jsPDF。\n請檢查網路連線、瀏覽器控制台錯誤，或稍後再試。');
+                 console.error('jsPDF-AutoTable plugin is not loaded or not attached correctly. Checked tempPdfInstance.autoTable and jsPDF.API.autoTable.');
+                 exportPngButton.disabled = !rcaData;
+                 exportPdfButton.disabled = !rcaData;
+                 return;
             }
 
             alert('正在準備 PDF 報告，請稍候...');
             exportPngButton.disabled = true;
             exportPdfButton.disabled = true;
 
-            const { jsPDF } = window.jspdf;
             const pdf = new jsPDF('p', 'pt', 'a4'); 
-            pdf.setFont("Helvetica", "normal"); // Set a standard font
+            pdf.setFont("Helvetica", "normal"); 
 
             pdf.setFontSize(18);
             pdf.text('RCA+ 分析報告', 40, 40);
@@ -1048,22 +1055,26 @@
 
             } catch (err) {
                 console.error('產生圖表圖片失敗 (PDF):', err);
-                pdf.addPage();
-                pdf.text('無法產生圖表圖片。', 40, 40);
-                 // Restore UI elements even on error during image generation
+                pdf.addPage(); // Ensure there's a page to write the error message
+                pdf.text('無法產生圖表圖片。錯誤: ' + err.message, 40, 40);
                 const activeInputGroups = diagramContainer.querySelectorAll('.input-group');
                 activeInputGroups.forEach(group => group.style.display = 'flex');
-                const originalZoom = currentZoom; // Assuming currentZoom wasn't changed if error happened early
+                const originalZoom = currentZoom; 
                 applyZoom(originalZoom, true);
                 requestAnimationFrame(() => drawAllSvgConnectors());
             }
 
-            let lastTableY = 70 + (pdf.getImageProperties(pdf.lastAutoTable)?.height || 0); // Estimate based on image height
+            let lastTableY = 70 + (pdf.lastAutoTable ? pdf.lastAutoTable.finalY : 0) ; 
+            if (pdf.lastAutoTable && pdf.lastAutoTable.finalY) { // if image was added
+                lastTableY = pdf.lastAutoTable.finalY > 70 ? pdf.lastAutoTable.finalY : 70; // Ensure Y is below image
+            } else { // If image failed, start tables lower
+                 lastTableY = 100;
+            }
+
 
             const causeEffectData = getCauseEffectTableData();
             if (causeEffectData.length > 0) {
-                pdf.addPage(); // Always add a new page for the first table for clarity
-                lastTableY = 40; // Reset Y for new page
+                if (lastTableY + 80 > pdf.internal.pageSize.getHeight()) { pdf.addPage(); lastTableY = 40;} else { lastTableY +=20;}
                 pdf.setFontSize(16);
                 pdf.text('原因效果表', 40, lastTableY);
                 lastTableY += 20;
@@ -1073,20 +1084,19 @@
                     body: causeEffectData.map(row => [row.cause, row.type, row.positive, row.negative]),
                     styles: { font: "Helvetica", fontStyle: 'normal' }, 
                     headStyles: { fillColor: [22, 160, 133] },
-                    margin: { top: lastTableY, right: 40, bottom: 40, left: 40 },
+                    margin: { top: 40, right: 40, bottom: 40, left: 40 }, // Use consistent margins
                     didDrawPage: function (data) {
-                        lastTableY = data.cursor.y; // Update Y after drawing
-                         if (data.pageNumber > 1 && data.settings.startY !== undefined) { // Reset Y for new page by autotable
+                        lastTableY = data.cursor.y; 
+                         if (data.pageNumber > pdf.internal.getNumberOfPages() -1 && data.settings.startY !== undefined) { 
                             lastTableY = data.settings.margin.top;
-                            pdf.setFontSize(16); // Re-set title for new page if table spans
+                            pdf.setFontSize(16); 
                             pdf.text('原因效果表 (續)', 40, lastTableY - 20);
                         }
                     }
                 });
                 lastTableY = pdf.lastAutoTable.finalY || lastTableY;
             } else {
-                pdf.addPage();
-                lastTableY = 40;
+                if (lastTableY + 60 > pdf.internal.pageSize.getHeight()) { pdf.addPage(); lastTableY = 40;} else { lastTableY +=20;}
                 pdf.setFontSize(12);
                 pdf.text('原因效果表: 無資料', 40, lastTableY);
                 lastTableY += 20;
@@ -1094,11 +1104,11 @@
 
             const solutionData = getSolutionTableData();
             if (solutionData.length > 0) {
-                if (lastTableY + 80 > pdf.internal.pageSize.getHeight()) { // Check if new page needed
+                if (lastTableY + 80 > pdf.internal.pageSize.getHeight()) { 
                      pdf.addPage();
                      lastTableY = 40;
                 } else {
-                    lastTableY += 40; // Add some space before the next table
+                    lastTableY += 40; 
                 }
                 pdf.setFontSize(16);
                 pdf.text('矛盾點之創意改善方案表', 40, lastTableY);
@@ -1109,10 +1119,10 @@
                     body: solutionData.map(row => [row.contradictoryCause, row.principle, row.solution]),
                     styles: { font: "Helvetica", fontStyle: 'normal' },
                     headStyles: { fillColor: [41, 128, 185] },
-                    margin: { top: lastTableY, right: 40, bottom: 40, left: 40 },
+                    margin: { top: 40, right: 40, bottom: 40, left: 40 },
                      didDrawPage: function (data) {
                         lastTableY = data.cursor.y;
-                        if (data.pageNumber > 1 && data.settings.startY !== undefined) {
+                        if (data.pageNumber > pdf.internal.getNumberOfPages() -1 && data.settings.startY !== undefined) {
                             lastTableY = data.settings.margin.top;
                             pdf.setFontSize(16);
                             pdf.text('矛盾點之創意改善方案表 (續)', 40, lastTableY - 20);
