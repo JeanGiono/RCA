@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RCA+ 矛盾分析繪圖工具 (全面優化)</title>
+    <title>RCA+ 矛盾分析繪圖工具 (功能增強)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -12,7 +12,6 @@
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6; /* Tailwind gray-100 */
         }
-        /* 繪圖區域的容器，提供滾動條 */
         #diagram-render-area { 
             position: relative; 
             overflow: auto; 
@@ -23,24 +22,19 @@
             min-height: 450px; 
             width: 100%; 
         }
-        /* SVG 圖層，用於繪製連接線 */
         #svg-connector-layer {
             position: absolute; 
             top: 0; 
             left: 0; 
             pointer-events: none; 
             z-index: 0;
-            /* width, height, viewBox 將由 JavaScript 動態設定 */
         }
-        /* 實際容納所有節點的容器，其大小會隨內容擴展 */
         #rca-diagram-container {
-            display: inline-block; /* 讓寬度由內容決定，但仍可滾動 */
+            display: inline-block; 
             padding: 20px; 
             min-width: 100%; 
             text-align: center; 
         }
-
-        /* 包裹單個節點及其子節點容器的 div */
         .rca-node-wrapper {
             display: inline-flex; 
             flex-direction: column; 
@@ -117,7 +111,6 @@
         }
         .selected-items-list .solution-text { color: #059669; margin-left: 0.3rem; font-style: italic;}
 
-        /* Specific Node Styles */
         .rca-node-initial-problem { background-color: #fee2e2; border-color: #ef4444; }
         .rca-node-initial-problem .rca-node-icon { background-color: #ef4444; }
         .rca-node-cause { background-color: #fef9c3; border-color: #f59e0b; }
@@ -129,7 +122,6 @@
         .rca-node-negative-effect .rca-node-header { justify-content: center; }
         .rca-node-negative-effect .rca-node-icon { background-color: #f97316; }
 
-        /* 容器，用於水平排列子節點 */
         .rca-children-container { 
             display: flex; 
             flex-direction: row; 
@@ -138,34 +130,33 @@
             margin-top: 15px; 
             position: relative; 
             padding-top: 25px; 
-            width: max-content; /* 讓容器寬度由子元素決定，以避免不必要的空白 */
-            /* min-width: 100%; (移除，讓其自然收縮) */
+            width: max-content; 
         }
         
         .rca-node-actions { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.5rem; border-top: 1px solid #e5e7eb; padding-top: 0.5rem; }
         .action-button { background-color: #6b7280; color: white; padding: 0.375rem 0.75rem; border-radius: 0.25rem; font-size: 0.75rem; border: none; cursor: pointer; transition: background-color 0.2s; }
-        .action-button:hover { background-color: #4b5563; }
-        .action-button.add-cause { background-color: #3b82f6; } .action-button.add-cause:hover { background-color: #2563eb; }
-        .action-button.add-positive { background-color: #10b981; } .action-button.add-positive:hover { background-color: #059669; }
-        .action-button.add-negative { background-color: #f97316; } .action-button.add-negative:hover { background-color: #ea580c; }
-        .action-button.toggle-nc { background-color: #a855f7; } .action-button.toggle-nc:hover { background-color: #9333ea; }
-        .action-button.set-and-sources { background-color: #6d28d9; } .action-button.set-and-sources:hover { background-color: #5b21b6; }
-        .action-button.edit-node { background-color: #f59e0b; } .action-button.edit-node:hover { background-color: #d97706; }
-        .action-button.set-parameters { background-color: #0ea5e9; } .action-button.set-parameters:hover { background-color: #0284c7; }
-        .action-button.set-principles { background-color: #ec4899; } .action-button.set-principles:hover { background-color: #db2777; }
+        .action-button:hover:not(:disabled) { background-color: #4b5563; }
+        .action-button:disabled { background-color: #9ca3af; cursor: not-allowed; }
+        .action-button.add-cause { background-color: #3b82f6; } .action-button.add-cause:hover:not(:disabled) { background-color: #2563eb; }
+        .action-button.add-positive { background-color: #10b981; } .action-button.add-positive:hover:not(:disabled) { background-color: #059669; }
+        .action-button.add-negative { background-color: #f97316; } .action-button.add-negative:hover:not(:disabled) { background-color: #ea580c; }
+        .action-button.toggle-nc { background-color: #a855f7; } .action-button.toggle-nc:hover:not(:disabled) { background-color: #9333ea; }
+        .action-button.set-and-sources { background-color: #6d28d9; } .action-button.set-and-sources:hover:not(:disabled) { background-color: #5b21b6; }
+        .action-button.edit-node { background-color: #f59e0b; } .action-button.edit-node:hover:not(:disabled) { background-color: #d97706; }
+        .action-button.set-parameters { background-color: #0ea5e9; } .action-button.set-parameters:hover:not(:disabled) { background-color: #0284c7; }
+        .action-button.set-principles { background-color: #ec4899; } .action-button.set-principles:hover:not(:disabled) { background-color: #db2777; }
         .action-button.finalize-diagram { background-color: #059669; } 
-        .action-button.finalize-diagram:hover { background-color: #047857; }
+        .action-button.finalize-diagram:hover:not(:disabled) { background-color: #047857; }
         .action-button.edit-diagram { background-color: #d97706; } 
-        .action-button.edit-diagram:hover { background-color: #b45309; }
-        .remove-button { background-color: #ef4444; } .remove-button:hover { background-color: #dc2626; }
+        .action-button.edit-diagram:hover:not(:disabled) { background-color: #b45309; }
+        .remove-button { background-color: #ef4444; } .remove-button:hover:not(:disabled) { background-color: #dc2626; }
         
         .input-group-container { margin-top: 0.5rem; }
         .input-group { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.25rem; background-color: #f9fafb; }
         .input-field { border: 1px solid #d1d5db; padding: 0.5rem; border-radius: 0.25rem; font-size: 0.875rem; width: 100%; }
-        .save-button { background-color: #065f46; color: white; } .save-button:hover { background-color: #047857; }
-        .save-edit-button { background-color: #065f46; color: white; } .save-edit-button:hover { background-color: #047857; }
+        .save-button { background-color: #065f46; color: white; } .save-button:hover:not(:disabled) { background-color: #047857; }
+        .save-edit-button { background-color: #065f46; color: white; } .save-edit-button:hover:not(:disabled) { background-color: #047857; }
 
-        /* 表格樣式 */
         .data-table-section { margin-top: 2rem; }
         .data-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
         .data-table th, .data-table td { 
@@ -184,8 +175,6 @@
              text-align: left;
         }
 
-
-        /* Modals Styles */
         .modal { z-index: 50; }
         .modal-content { position: relative; } 
         .modal-close-button {
@@ -195,7 +184,7 @@
         }
         .modal-close-button:hover { color: #1f2937; }
         .modal-options-container label { cursor: pointer; }
-        .modal-options-container h4 { font-semibold; margin-top: 0.75rem; margin-bottom: 0.25rem; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.25rem; }
+        .modal-options-container h4 { font-weight:600; margin-top: 0.75rem; margin-bottom: 0.25rem; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.25rem; }
         .modal-options-container h4:first-child { margin-top: 0; }
         .principle-solution-input {
             width: calc(100% - 2rem); margin-left: 1.5rem; margin-top: 0.25rem; margin-bottom: 0.5rem;
@@ -206,8 +195,8 @@
 <body class="p-4 md:p-8">
     <div class="container mx-auto max-w-7xl"> 
         <header class="mb-6 text-center">
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-700">RCA+ 矛盾分析繪圖工具</h1>
-            <p class="text-gray-500 mt-1">視覺化根本原因、正面/負面效果，支援「且」關係連接、矛盾點標示、效果參數與發明原理。</p>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-700">RCA+ 矛盾分析繪圖工具 (功能增強)</h1>
+            <p class="text-gray-500 mt-1">視覺化根本原因、正面/負面效果，支援「且」關係連接、矛盾點標示、效果參數與發明原理。新增儲存、載入、上一步、下一步功能。</p>
         </header>
 
         <section id="controls-section" class="mb-6 p-4 bg-white rounded-lg shadow">
@@ -218,7 +207,11 @@
                     <button id="set-problem-button" class="action-button add-cause text-white font-semibold py-2 px-4 rounded-md">設定問題根源</button>
                 </div>
             </div>
-            <div id="tool-buttons" style="display: none;" class="mt-4 flex flex-wrap gap-2">
+            <div id="tool-buttons" style="display: none;" class="mt-4 flex flex-wrap gap-2 justify-center">
+                <button id="save-diagram-button" class="action-button bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md">儲存進度</button>
+                <button id="load-diagram-button" class="action-button bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md">載入進度</button>
+                <button id="undo-button" class="action-button bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-md">上一步</button>
+                <button id="redo-button" class="action-button bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-md">下一步</button>
                 <button id="finalize-diagram-button" class="action-button finalize-diagram text-white font-semibold py-2 px-4 rounded-md">完成圖表</button>
                 <button id="export-diagram-button" class="action-button bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-md">匯出圖表 (PNG)</button>
                 <button id="toggle-cause-effect-table-button" class="action-button bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-4 rounded-md">顯示原因效果表</button>
@@ -258,8 +251,8 @@
                 <h3 class="text-lg leading-6 font-medium text-gray-900 text-center" id="and-source-modal-title">為效果設定 AND 輸入源</h3>
                 <div class="mt-4 px-2 py-3 max-h-72 overflow-y-auto modal-options-container" id="and-source-options-container"></div>
                 <div class="items-center px-4 py-3 mt-4 text-right">
-                    <button id="cancel-and-sources-button" class="mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">取消</button>
-                    <button id="save-and-sources-button" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-700">儲存AND來源</button>
+                    <button id="cancel-and-sources-button" class="action-button mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">取消</button>
+                    <button id="save-and-sources-button" class="action-button px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-700">儲存AND來源</button>
                 </div>
             </div>
         </div>
@@ -272,8 +265,8 @@
                 <h3 class="text-lg leading-6 font-medium text-gray-900 text-center" id="effect-parameter-modal-title">設定效果參數</h3>
                 <div class="mt-4 px-2 py-3 max-h-96 overflow-y-auto modal-options-container" id="effect-parameter-options-container"></div>
                 <div class="items-center px-4 py-3 mt-4 text-right">
-                    <button id="cancel-effect-parameters-button" class="mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">取消</button>
-                    <button id="save-effect-parameters-button" class="px-4 py-2 bg-sky-500 text-white rounded-md hover:bg-sky-700">儲存參數</button>
+                    <button id="cancel-effect-parameters-button" class="action-button mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">取消</button>
+                    <button id="save-effect-parameters-button" class="action-button px-4 py-2 bg-sky-500 text-white rounded-md hover:bg-sky-700">儲存參數</button>
                 </div>
             </div>
         </div>
@@ -286,14 +279,29 @@
                 <h3 class="text-lg leading-6 font-medium text-gray-900 text-center" id="inventive-principle-modal-title">選擇發明原理與改善方案</h3>
                 <div class="mt-4 px-2 py-3 max-h-96 overflow-y-auto modal-options-container" id="inventive-principle-options-container"></div>
                 <div class="items-center px-4 py-3 mt-4 text-right">
-                    <button id="cancel-inventive-principles-button" class="mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">取消</button>
-                    <button id="save-inventive-principles-button" class="px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-700">儲存原理與方案</button>
+                    <button id="cancel-inventive-principles-button" class="action-button mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">取消</button>
+                    <button id="save-inventive-principles-button" class="action-button px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-700">儲存原理與方案</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // --- Helper function for deep copying ---
+        function deepCopy(obj) {
+            try {
+                // For data objects without functions, Date, RegExp, Map, Set, etc.,
+                // JSON.parse(JSON.stringify(obj)) is a common and simple way.
+                // Be aware of its limitations (e.g., undefined becomes null, functions are removed).
+                // For this specific rcaData structure, it should be mostly fine.
+                return JSON.parse(JSON.stringify(obj));
+            } catch (e) {
+                console.error("Deep copy failed:", e);
+                // Fallback or more sophisticated deep copy if needed
+                return null; 
+            }
+        }
+
         // --- 全局變數 ---
         let rcaData = null; 
         let nodeIdCounter = 0;
@@ -301,6 +309,11 @@
         let isFinalizedView = false; 
         let currentParameterTargetNodeId = null; 
         let currentPrincipleTargetNodeId = null; 
+
+        // --- History Management for Undo/Redo ---
+        let historyStack = []; // Array to store snapshots of rcaData
+        let historyIndex = -1; // Pointer to the current state in historyStack
+        const MAX_HISTORY_STATES = 50; // Limit the number of history states
 
         // --- DOM 元素引用 ---
         const problemInput = document.getElementById('problem-statement-input');
@@ -311,10 +324,17 @@
         const diagramTitle = document.getElementById('diagram-title');
         const problemInputArea = document.getElementById('problem-input-area');
         const toolButtonsContainer = document.getElementById('tool-buttons');
+        
+        // Tool Buttons
+        const saveDiagramButton = document.getElementById('save-diagram-button');
+        const loadDiagramButton = document.getElementById('load-diagram-button');
+        const undoButton = document.getElementById('undo-button');
+        const redoButton = document.getElementById('redo-button');
         const finalizeDiagramButton = document.getElementById('finalize-diagram-button'); 
         const exportDiagramButton = document.getElementById('export-diagram-button');
         const toggleCauseEffectTableButton = document.getElementById('toggle-cause-effect-table-button');
         const toggleSolutionTableButton = document.getElementById('toggle-solution-table-button'); 
+        
         const causeEffectTableSection = document.getElementById('cause-effect-table-section');
         const causeEffectTableBody = document.getElementById('cause-effect-table-body');
         const solutionTableSection = document.getElementById('solution-table-section'); 
@@ -338,7 +358,7 @@
         const saveInventivePrinciplesButton = document.getElementById('save-inventive-principles-button');
         const cancelInventivePrinciplesButton = document.getElementById('cancel-inventive-principles-button');
 
-        // --- 資料列表 ---
+        // --- 資料列表 (Effect Parameters, Inventive Principles) ---
         const EFFECT_PARAMETERS = {
             "活動": ["活動效用性", "活動可變性", "活動費用", "活動時間", "活動複雜性", "活動方便性", "活動安全性", "活動可靠性"],
             "系統": ["系統有效性", "系統可變性", "系統費用", "系統時間", "系統複雜性", "系統方便性", "系統安全性", "系統可靠性", "對系統的有害影響", "系統產生的有害影響", "組織壓力", "組織穩定性"],
@@ -358,6 +378,13 @@
         function initialize() {
             setProblemButton.addEventListener('click', handleSetInitialProblem);
             problemInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSetInitialProblem(); });
+            
+            // New button listeners
+            saveDiagramButton.addEventListener('click', handleSaveToLocalStorage);
+            loadDiagramButton.addEventListener('click', handleLoadFromLocalStorage);
+            undoButton.addEventListener('click', handleUndo);
+            redoButton.addEventListener('click', handleRedo);
+
             finalizeDiagramButton.addEventListener('click', handleToggleFinalizeView); 
             exportDiagramButton.addEventListener('click', exportDiagramAsPNG);
             toggleCauseEffectTableButton.addEventListener('click', handleToggleCauseEffectTable);
@@ -373,6 +400,162 @@
             cancelInventivePrinciplesButton.addEventListener('click', () => { inventivePrincipleModal.style.display = 'none'; currentPrincipleTargetNodeId = null; });
             
             new ResizeObserver(drawAllSvgConnectors).observe(diagramRenderArea);
+            updateButtonStates(); // Set initial states for undo/redo/load buttons
+        }
+
+        // --- History and State Management Functions ---
+        function updateButtonStates() {
+            undoButton.disabled = historyIndex <= 0;
+            redoButton.disabled = historyIndex >= historyStack.length - 1;
+            loadDiagramButton.disabled = !localStorage.getItem('rcaDiagramData');
+            // Disable save if no data
+            saveDiagramButton.disabled = !rcaData;
+        }
+
+        function pushStateToHistory(currentState, clearRedoStack = true) {
+            if (!currentState) { // Do not push null state if rcaData is null
+                console.log("Attempted to push null state to history. Skipped.");
+                updateButtonStates(); // Still update buttons as rcaData might be null
+                return;
+            }
+            const stateCopy = deepCopy(currentState);
+            if (!stateCopy) {
+                console.error("Failed to copy state for history.");
+                return;
+            }
+
+            if (clearRedoStack) {
+                historyStack = historyStack.slice(0, historyIndex + 1); // Clear "redo" history
+            }
+
+            historyStack.push(stateCopy);
+            historyIndex = historyStack.length - 1; // Point to the new state
+
+            // Limit history size
+            if (historyStack.length > MAX_HISTORY_STATES) {
+                historyStack.shift(); // Remove the oldest state
+                historyIndex--;     // Adjust index accordingly
+            }
+            // console.log(`State pushed. Index: ${historyIndex}, Stack size: ${historyStack.length}`);
+            updateButtonStates();
+        }
+        
+        function recalculateNodeIdCounter(currentData) {
+            let maxId = 0;
+            function findMaxIdRecursive(node) {
+                if (!node) return;
+                const idNum = parseInt(node.id.replace('node-', ''));
+                if (!isNaN(idNum) && idNum > maxId) {
+                    maxId = idNum;
+                }
+                if (node.children) {
+                    node.children.forEach(findMaxIdRecursive);
+                }
+            }
+            if (currentData) {
+              findMaxIdRecursive(currentData);
+            }
+            nodeIdCounter = maxId; // Next ID will be maxId + 1 due to pre-increment in createNode
+        }
+
+
+        function handleUndo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                const previousState = deepCopy(historyStack[historyIndex]);
+                if (previousState) {
+                    rcaData = previousState;
+                    recalculateNodeIdCounter(rcaData); // Recalculate counter based on the restored state
+                    renderRcaDiagram();
+                    renderCauseEffectTable();
+                    renderSolutionTable();
+                } else {
+                     console.error("Failed to retrieve previous state from history for undo.");
+                     historyIndex++; // Revert index change on error
+                }
+            }
+            updateButtonStates();
+        }
+
+        function handleRedo() {
+            if (historyIndex < historyStack.length - 1) {
+                historyIndex++;
+                const nextState = deepCopy(historyStack[historyIndex]);
+                if (nextState) {
+                    rcaData = nextState;
+                    recalculateNodeIdCounter(rcaData); // Recalculate counter
+                    renderRcaDiagram();
+                    renderCauseEffectTable();
+                    renderSolutionTable();
+                } else {
+                    console.error("Failed to retrieve next state from history for redo.");
+                    historyIndex--; // Revert index change on error
+                }
+            }
+            updateButtonStates();
+        }
+
+        function handleSaveToLocalStorage() {
+            if (rcaData) {
+                try {
+                    localStorage.setItem('rcaDiagramData', JSON.stringify(rcaData));
+                    localStorage.setItem('rcaNodeIdCounter', nodeIdCounter.toString()); // Save counter too
+                    alert('圖表進度已儲存至瀏覽器！');
+                } catch (e) {
+                    console.error("Error saving to localStorage:", e);
+                    alert('儲存失敗，可能是瀏覽器儲存空間已滿或功能受限。');
+                }
+            } else {
+                alert('沒有圖表資料可儲存。');
+            }
+            updateButtonStates(); // Update load button state, etc.
+        }
+
+        function handleLoadFromLocalStorage() {
+            const savedDataString = localStorage.getItem('rcaDiagramData');
+            const savedCounterString = localStorage.getItem('rcaNodeIdCounter');
+
+            if (savedDataString) {
+                try {
+                    const parsedData = JSON.parse(savedDataString);
+                    if (parsedData) {
+                        rcaData = parsedData;
+                        // Set nodeIdCounter from saved value, or recalculate if not present
+                        nodeIdCounter = savedCounterString ? parseInt(savedCounterString) : 0;
+                        recalculateNodeIdCounter(rcaData); // Crucial to avoid ID conflicts
+
+                        // Reset history and initialize with the loaded state
+                        historyStack = [];
+                        historyIndex = -1;
+                        pushStateToHistory(rcaData, true); 
+
+                        problemInputArea.style.display = 'none';
+                        diagramTitle.style.display = 'block';
+                        toolButtonsContainer.style.display = 'flex';
+                        renderRcaDiagram();
+                        renderCauseEffectTable();
+                        renderSolutionTable();
+                        alert('圖表進度已載入！');
+                    }
+                } catch (e) {
+                    console.error("Error loading from localStorage:", e);
+                    alert('載入失敗，儲存的資料可能已損毀或格式不正確。');
+                    // Reset to a clean state if loading fails
+                    rcaData = null;
+                    nodeIdCounter = 0;
+                    historyStack = [];
+                    historyIndex = -1;
+                    problemInputArea.style.display = 'flex';
+                    diagramTitle.style.display = 'none';
+                    toolButtonsContainer.style.display = 'none';
+                    renderRcaDiagram(); // Clear diagram
+                    renderCauseEffectTable();
+                    renderSolutionTable();
+                }
+            } else {
+                alert('瀏覽器中沒有儲存的圖表進度。');
+            }
+            updateButtonStates();
         }
 
         // --- 處理設定初始問題 ---
@@ -381,6 +564,11 @@
             if (!problemText) { alert('請輸入主要負面效果！'); return; }
             nodeIdCounter = 0; 
             rcaData = createNode(problemText, 'initial-problem', null); 
+            
+            historyStack = []; // Reset history
+            historyIndex = -1;
+            pushStateToHistory(rcaData); // Save initial state
+
             isFinalizedView = false; 
             finalizeDiagramButton.textContent = '完成圖表';
             finalizeDiagramButton.classList.remove('edit-diagram');
@@ -391,6 +579,7 @@
             renderRcaDiagram();
             renderCauseEffectTable(); 
             renderSolutionTable(); 
+            updateButtonStates();
         }
 
         // --- 切換完成/編輯檢視模式 ---
@@ -406,11 +595,12 @@
                 finalizeDiagramButton.classList.add('finalize-diagram');
             }
             renderRcaDiagram(); 
+            // No history push here as it's a view change, not data change
         }
         
         // --- 創建節點資料物件 ---
         function createNode(text, type, parentId, isNonChangeable = false) {
-            nodeIdCounter++;
+            nodeIdCounter++; // Pre-increment to get the new ID
             const node = {
                 id: `node-${nodeIdCounter}`, text: text, type: type, parentId: parentId, children: [],
                 andSourceNodeIds: [], 
@@ -428,7 +618,10 @@
                 diagramContainer.style.display = 'flex'; 
                 diagramContainer.style.justifyContent = 'center'; 
                 diagramContainer.appendChild(createNodeElement(rcaData));
+            } else {
+                 diagramContainer.style.display = 'none'; 
             }
+            // Delay connector drawing until after DOM updates
             requestAnimationFrame(drawAllSvgConnectors); 
         }
 
@@ -460,7 +653,6 @@
             headerDiv.appendChild(iconSpan); 
             contentDiv.appendChild(headerDiv);
 
-
             if (nodeData.effectParameters && nodeData.effectParameters.length > 0) {
                 const paramsDiv = document.createElement('div');
                 paramsDiv.classList.add('selected-items-list');
@@ -479,22 +671,20 @@
                 contentDiv.appendChild(principlesDiv);
             }
 
-            // 設定圖示內容
-            iconSpan.style.display = 'flex'; // 預設顯示
+            iconSpan.style.display = 'flex'; 
             if (nodeData.type === 'initial-problem') iconSpan.textContent = '(-)';
             else if (nodeData.type === 'cause') {
                 const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(nodeData);
                 if (hasPositiveChild && hasNegativeChild) {
                     iconSpan.textContent = '+/-'; iconSpan.classList.add('contradictory');
                 } else {
-                    iconSpan.style.display = 'none'; // 非矛盾原因不顯示圖示
+                    iconSpan.style.display = 'none'; 
                 }
             } else if (nodeData.type === 'positive-effect') iconSpan.textContent = '(+)';
             else if (nodeData.type === 'negative-effect') iconSpan.textContent = '(-)';
             else {
                  iconSpan.style.display = 'none'; 
             }
-
 
             if (!isFinalizedView) {
                 const actionsDiv = document.createElement('div');
@@ -539,7 +729,6 @@
             return nodeWrapper;
         }
         
-        // --- 提示修訂節點文字 ---
         function promptEditNode(nodeId, parentNodeContentDiv) {
             if (isFinalizedView) return;
             const nodeToEdit = findNodeById(rcaData, nodeId);
@@ -550,7 +739,10 @@
                 console.error("Input container not found for node:", nodeId);
                 return; 
             }
+            // Clear any existing input fields in this node
+            document.querySelectorAll('.input-group').forEach(ig => ig.remove());
             inputContainer.innerHTML = ''; 
+
 
             const inputGroup = document.createElement('div');
             inputGroup.classList.add('input-group');
@@ -568,6 +760,7 @@
                 const newText = nodeInput.value.trim();
                 if (newText) {
                     nodeToEdit.text = newText;
+                    pushStateToHistory(rcaData); // Save state after edit
                     renderRcaDiagram(); 
                     renderCauseEffectTable();
                     renderSolutionTable(); 
@@ -595,7 +788,6 @@
             nodeInput.select();
         }
 
-        // --- AND Source Modal Logic ---
         function openAndSourceModal(targetNodeId) {
             if (isFinalizedView) return; 
             currentAndTargetNodeId = targetNodeId;
@@ -617,7 +809,7 @@
                 andSourceOptionsContainer.innerHTML = '<p class="text-gray-500 text-center">圖表中尚無可用的原因節點。</p>';
             } else {
                 availableCauses.forEach(causeNode => {
-                    if (causeNode.id === targetNode.id || isDescendant(targetNode, causeNode.id)) return;
+                    if (causeNode.id === targetNode.id || isDescendant(targetNode, causeNode.id) || causeNode.id === targetNode.parentId) return; // Prevent self, descendant, or direct parent
 
                     const div = document.createElement('div');
                     div.classList.add('flex', 'items-center', 'my-2', 'p-2', 'hover:bg-gray-100', 'rounded');
@@ -631,7 +823,7 @@
                     }
                     const label = document.createElement('label');
                     label.htmlFor = `and-source-chk-${causeNode.id}`;
-                    label.textContent = `${causeNode.text} (ID: ${causeNode.id})`;
+                    label.textContent = `${causeNode.text} (ID: ${causeNode.id.split('-')[1]})`; // Shorter ID display
                     label.classList.add('ml-3', 'text-sm', 'text-gray-700', 'flex-grow');
                     div.appendChild(checkbox); div.appendChild(label);
                     andSourceOptionsContainer.appendChild(div);
@@ -660,17 +852,14 @@
             const checkboxes = andSourceOptionsContainer.querySelectorAll('input[type="checkbox"]:checked');
             checkboxes.forEach(chk => selectedSourceIds.push(chk.value));
             targetNode.andSourceNodeIds = selectedSourceIds;
+            
+            pushStateToHistory(rcaData); // Save state
+            
             andSourceModal.style.display = 'none';
             currentAndTargetNodeId = null;
             renderRcaDiagram(); 
         }
-
-        function handleCancelAndSources() {
-            andSourceModal.style.display = 'none';
-            currentAndTargetNodeId = null;
-        }
         
-        // --- Effect Parameter Modal Logic ---
         function openEffectParameterModal(targetNodeId) {
             if (isFinalizedView) return;
             currentParameterTargetNodeId = targetNodeId;
@@ -690,7 +879,7 @@
                     div.classList.add('flex', 'items-center', 'my-1', 'p-1', 'hover:bg-gray-50', 'rounded');
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
-                    checkbox.id = `param-chk-${param.replace(/\s|\/|[\(\)]/g, '-')}`;
+                    checkbox.id = `param-chk-${param.replace(/\s|\/|[\(\)]/g, '-')}`; // Sanitize ID
                     checkbox.value = param;
                     checkbox.classList.add('form-checkbox', 'h-4', 'w-4', 'text-sky-600', 'rounded', 'border-gray-300', 'focus:ring-sky-500');
                     if (targetNode.effectParameters && targetNode.effectParameters.includes(param)) {
@@ -718,12 +907,13 @@
             checkboxes.forEach(chk => selectedParameters.push(chk.value));
 
             targetNode.effectParameters = selectedParameters;
+            pushStateToHistory(rcaData); // Save state
+
             effectParameterModal.style.display = 'none';
             currentParameterTargetNodeId = null;
             renderRcaDiagram();
         }
 
-        // --- Inventive Principle Modal Logic ---
         function openInventivePrincipleModal(targetNodeId) {
             if (isFinalizedView) return;
             currentPrincipleTargetNodeId = targetNodeId;
@@ -742,7 +932,7 @@
                 
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
-                const checkboxId = `principle-chk-${principleName.replace(/\s|\/|[\(\)\[\]]/g, '-')}`;
+                const checkboxId = `principle-chk-${principleName.replace(/\s|\/|[\(\)\[\]]/g, '-')}`; // Sanitize ID
                 checkbox.id = checkboxId;
                 checkbox.value = principleName;
                 checkbox.classList.add('form-checkbox', 'h-4', 'w-4', 'text-pink-600', 'rounded', 'border-gray-300', 'focus:ring-pink-500');
@@ -765,7 +955,7 @@
                 solutionInput.type = 'text';
                 solutionInput.placeholder = '輸入此原理的改善方案...';
                 solutionInput.dataset.principleName = principleName; 
-                solutionInput.classList.add('principle-solution-input', 'input-field', 'mt-1');
+                solutionInput.classList.add('principle-solution-input', 'input-field', 'mt-1'); // Reused input-field class
                 solutionInput.value = existingPrinciple && existingPrinciple.solution ? existingPrinciple.solution : '';
                 solutionInput.style.display = checkbox.checked ? 'block' : 'none'; 
 
@@ -786,12 +976,13 @@
             if (!targetNode) return;
 
             const selectedPrinciples = [];
-            const principleCheckboxes = inventivePrincipleOptionsContainer.querySelectorAll('input[type="checkbox"]');
+            const principleContainers = inventivePrincipleOptionsContainer.querySelectorAll('div.my-2 > div.flex > input[type="checkbox"]'); // More specific selector
             
-            principleCheckboxes.forEach(chk => {
+            principleContainers.forEach(chk => {
                 if (chk.checked) {
                     const principleName = chk.value;
-                    const solutionInput = inventivePrincipleOptionsContainer.querySelector(`input[type="text"][data-principle-name="${principleName}"]`);
+                    // Find the corresponding input field within the same container
+                    const solutionInput = chk.closest('.my-2').querySelector('input[type="text"][data-principle-name]');
                     selectedPrinciples.push({
                         name: principleName,
                         solution: solutionInput ? solutionInput.value.trim() : ''
@@ -800,43 +991,44 @@
             });
 
             targetNode.inventivePrinciples = selectedPrinciples;
+            pushStateToHistory(rcaData); // Save state
+
             inventivePrincipleModal.style.display = 'none';
             currentPrincipleTargetNodeId = null;
             renderRcaDiagram();
             renderSolutionTable(); 
         }
 
-
-        // --- SVG 連接線繪製邏輯 ---
         function drawAllSvgConnectors() {
             svgLayer.innerHTML = ''; 
-            if (!rcaData) return;
+            if (!rcaData || !document.getElementById(rcaData.id)) { // Ensure root node exists in DOM
+                svgLayer.setAttribute('width', 0);
+                svgLayer.setAttribute('height', 0);
+                return;
+            }
             const diagramRenderAreaElement = document.getElementById('diagram-render-area');
             const diagramRect = diagramRenderAreaElement.getBoundingClientRect(); 
             
-            // 設定 SVG 的寬高以匹配實際內容容器 diagramContainer 的滾動尺寸
             svgLayer.setAttribute('width', diagramContainer.scrollWidth);
             svgLayer.setAttribute('height', diagramContainer.scrollHeight);
             svgLayer.setAttribute('viewBox', `0 0 ${diagramContainer.scrollWidth} ${diagramContainer.scrollHeight}`);
 
-            const lineVerticalOffset = 25; // 從父節點底部到水平連接線的垂直距離
+            const lineVerticalOffset = 25; 
 
             function drawRecursive(parentNodeData) {
                 const parentElement = document.getElementById(parentNodeData.id);
                 if (!parentElement) return;
 
                 const parentRect = parentElement.getBoundingClientRect();
-                // 計算父節點座標，相對於 diagramContainer (考慮到 diagramRenderArea 的滾動)
                 const parentBottomCenterX = parentRect.left - diagramRect.left + diagramRenderAreaElement.scrollLeft + parentRect.width / 2;
                 const parentBottomY = parentRect.top - diagramRect.top + diagramRenderAreaElement.scrollTop + parentRect.height;
                 const parentTopY = parentRect.top - diagramRect.top + diagramRenderAreaElement.scrollTop;
-                const parentCenterX = parentBottomCenterX; // X 座標相同
+                const parentCenterX = parentBottomCenterX;
 
-                // 處理 AND 連接 (如果當前節點是 AND 的目標)
                 if (parentNodeData.andSourceNodeIds && parentNodeData.andSourceNodeIds.length > 0) {
                     const mergePointYOffset = 40; 
                     const mergePoint = { x: parentCenterX, y: parentTopY - mergePointYOffset };
-                    if(mergePoint.y < 0) mergePoint.y = 10; // 防止聚合點超出 SVG 頂部
+                    if(mergePoint.y < 0) mergePoint.y = 10; 
 
                     drawSvgCircle(mergePoint.x, mergePoint.y, 6, '#6d28d9'); 
                     parentNodeData.andSourceNodeIds.forEach(sourceId => {
@@ -845,21 +1037,21 @@
                             const sourceRect = sourceElement.getBoundingClientRect();
                             const sourceConnX = sourceRect.left - diagramRect.left + diagramRenderAreaElement.scrollLeft + sourceRect.width / 2;
                             const sourceConnY = sourceRect.top - diagramRect.top + diagramRenderAreaElement.scrollTop + sourceRect.height; 
-                            if (sourceConnY < mergePoint.y) { // 確保線條方向正確
+                            if (sourceConnY < mergePoint.y) { 
                                 drawSvgLine(sourceConnX, sourceConnY, mergePoint.x, mergePoint.y, '#6b7280');
+                            } else { // Draw from source side if it's below merge point (less common)
+                                drawSvgLine(sourceConnX, sourceRect.top - diagramRect.top + diagramRenderAreaElement.scrollTop, mergePoint.x, mergePoint.y, '#6b7280');
                             }
                         }
                     });
-                    if (parentTopY > mergePoint.y) { // 確保線條方向正確
+                    if (parentTopY > mergePoint.y) { 
                         drawSvgLine(mergePoint.x, mergePoint.y, parentCenterX, parentTopY, '#6b7280'); 
                     }
                 }
                 
-                // 處理標準的子節點連接
-                const standardChildren = parentNodeData.children.filter(c => !(c.andSourceNodeIds && c.andSourceNodeIds.length > 0));
+                const standardChildren = parentNodeData.children.filter(c => !(c.andSourceNodeIds && c.andSourceNodeIds.length > 0 && c.andSourceNodeIds.includes(parentNodeData.id))); // Basic AND check
                 if (standardChildren.length > 0) {
                     const horizontalLineY = parentBottomY + lineVerticalOffset;
-                    // 從父節點到底部畫一小段垂直線，連接到水平線的 Y 層級
                     drawSvgLine(parentBottomCenterX, parentBottomY, parentBottomCenterX, horizontalLineY, '#9ca3af');
 
                     if (standardChildren.length > 1) {
@@ -870,27 +1062,35 @@
                             const lastChildRect = lastChildElement.getBoundingClientRect();
                             const hLineStartX = firstChildRect.left - diagramRect.left + diagramRenderAreaElement.scrollLeft + firstChildRect.width / 2;
                             const hLineEndX = lastChildRect.left - diagramRect.left + diagramRenderAreaElement.scrollLeft + lastChildRect.width / 2;
-                            if (hLineStartX !== hLineEndX) { // 只有在子節點確實水平散開時才畫水平線
+                            if (Math.abs(hLineStartX - hLineEndX) > 1) { 
                                 drawSvgLine(hLineStartX, horizontalLineY, hLineEndX, horizontalLineY, '#9ca3af');
                             }
                         }
+                    } else if (standardChildren.length === 1) { // Single child, connect parent vertical line to child vertical line directly
+                         const childElement = document.getElementById(standardChildren[0].id);
+                         if (childElement) {
+                            const childRect = childElement.getBoundingClientRect();
+                            const childCenterX = childRect.left - diagramRect.left + diagramRenderAreaElement.scrollLeft + childRect.width / 2;
+                            // Connect parent's vertical drop to child's center X at horizontalLineY
+                            if (Math.abs(parentBottomCenterX - childCenterX) > 1) { // If not aligned, draw small horizontal segment
+                                drawSvgLine(parentBottomCenterX, horizontalLineY, childCenterX, horizontalLineY, '#9ca3af');
+                            }
+                         }
                     }
-                    // 為每個標準子節點畫垂直連接線
+
                     standardChildren.forEach(childNode => {
                         const childElement = document.getElementById(childNode.id);
                         if (childElement) {
                             const childRect = childElement.getBoundingClientRect();
                             const childCenterX = childRect.left - diagramRect.left + diagramRenderAreaElement.scrollLeft + childRect.width / 2;
                             const childTopY = childRect.top - diagramRect.top + diagramRenderAreaElement.scrollTop;
-                            // 從水平線的 Y 層級畫到子節點頂部
-                            if (childTopY > horizontalLineY) { // 確保線條方向正確
+                            if (childTopY > horizontalLineY) { 
                                 drawSvgLine(childCenterX, horizontalLineY, childCenterX, childTopY, '#9ca3af');
                             }
                         }
                     });
                 }
 
-                // 遞迴處理子節點
                 if (parentNodeData.children) {
                     parentNodeData.children.forEach(childNode => drawRecursive(childNode));
                 }
@@ -915,7 +1115,6 @@
             svgLayer.appendChild(circle);
         }
         
-        // --- 其他輔助函數 (與前一版本相同，此處為確保完整性而包含) ---
         function checkChildrenEffects(nodeData) {
             let hasPositiveChild = false; let hasNegativeChild = false;
             if (nodeData.children) {
@@ -933,6 +1132,7 @@
             const node = findNodeById(rcaData, nodeId);
             if (node && node.type === 'cause') {
                 node.isNonChangeable = !node.isNonChangeable;
+                pushStateToHistory(rcaData); // Save state
                 renderRcaDiagram(); renderCauseEffectTable();
             }
         }
@@ -948,7 +1148,13 @@
             if (isFinalizedView) return; 
             const inputContainer = parentNodeContentDiv.querySelector('.input-group-container');
             if (!inputContainer) return; 
+            
+            // Clear any existing input fields in THIS node before adding a new one
             inputContainer.innerHTML = ''; 
+            // Also clear any other open input groups in other nodes
+            document.querySelectorAll('.input-group').forEach(ig => ig.remove());
+
+
             const inputGroup = document.createElement('div');
             inputGroup.classList.add('input-group');
             const nodeInput = document.createElement('input');
@@ -959,12 +1165,26 @@
             saveButton.classList.add('action-button', 'save-button', 'w-full', 'mt-2');
             saveButton.onclick = () => {
                 const nodeText = nodeInput.value.trim();
-                if (nodeText) { addNodeToData(parentId, nodeText, nodeTypeToAdd); } 
+                if (nodeText) { 
+                    addNodeToData(parentId, nodeText, nodeTypeToAdd); 
+                    inputContainer.innerHTML = ''; // Clear input after save
+                } 
                 else { alert('描述不能為空！'); }
             };
             nodeInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') saveButton.click(); });
-            inputGroup.appendChild(nodeInput); inputGroup.appendChild(saveButton);
-            inputContainer.appendChild(inputGroup); nodeInput.focus();
+            
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = '取消';
+            cancelButton.classList.add('action-button', 'bg-gray-400', 'hover:bg-gray-500', 'w-full', 'mt-1');
+            cancelButton.onclick = () => {
+                inputContainer.innerHTML = ''; // Clear input on cancel
+            };
+
+            inputGroup.appendChild(nodeInput); 
+            inputGroup.appendChild(saveButton);
+            inputGroup.appendChild(cancelButton);
+            inputContainer.appendChild(inputGroup); 
+            nodeInput.focus();
         }
 
         function addNodeToData(parentId, nodeText, nodeType) {
@@ -972,6 +1192,7 @@
             if (parentNode) {
                 const newNode = createNode(nodeText, nodeType, parentId);
                 parentNode.children.push(newNode);
+                pushStateToHistory(rcaData); // Save state
                 renderRcaDiagram(); 
                 renderCauseEffectTable();
                 renderSolutionTable();
@@ -981,36 +1202,48 @@
         function removeNode(nodeIdToRemove) {
             if (isFinalizedView) return; 
             if (rcaData && rcaData.id === nodeIdToRemove) { alert('不能移除主要問題根源節點！'); return; }
+            
+            let nodeRemoved = false;
             function filterRecursive(node, idToRemove) {
                 if (!node) return null;
-                node.children = node.children.map(child => filterRecursive(child, idToRemove)).filter(child => child !== null);
-                function removeAndSourceFromEntireTree(currentNode, removedId) { 
-                    if (!currentNode) return;
-                    if (currentNode.andSourceNodeIds && currentNode.andSourceNodeIds.includes(removedId)) {
-                        currentNode.andSourceNodeIds = currentNode.andSourceNodeIds.filter(srcId => srcId !== removedId);
-                    }
-                    if (currentNode.children) {
-                        currentNode.children.forEach(child => removeAndSourceFromEntireTree(child, removedId));
-                    }
-                }
                 if (node.id === idToRemove) { 
+                    nodeRemoved = true;
+                    // Before removing, ensure this node ID is removed from any AND source lists
+                    function removeAndSourceFromEntireTree(currentNodeData, removedId) { 
+                        if (!currentNodeData) return;
+                        if (currentNodeData.andSourceNodeIds && currentNodeData.andSourceNodeIds.includes(removedId)) {
+                            currentNodeData.andSourceNodeIds = currentNodeData.andSourceNodeIds.filter(srcId => srcId !== removedId);
+                        }
+                        if (currentNodeData.children) {
+                            currentNodeData.children.forEach(child => removeAndSourceFromEntireTree(child, removedId));
+                        }
+                    }
                     removeAndSourceFromEntireTree(rcaData, idToRemove); 
-                    return null; 
+                    return null; // This node will be filtered out
+                }
+                if (node.children) {
+                    node.children = node.children.map(child => filterRecursive(child, idToRemove)).filter(child => child !== null);
                 }
                 return node;
             }
             rcaData = filterRecursive(rcaData, nodeIdToRemove);
             
-            if (!rcaData) { 
+            if (nodeRemoved) {
+                 pushStateToHistory(rcaData); // Save state
+            }
+
+            if (!rcaData) { // If root problem was somehow removed (should be prevented) or data becomes null
                  problemInputArea.style.display = 'flex'; 
                  diagramTitle.style.display = 'none';
                  toolButtonsContainer.style.display = 'none';
                  causeEffectTableSection.style.display = 'none';
                  solutionTableSection.style.display = 'none';
+                 historyStack = []; historyIndex = -1; // Reset history
             }
             renderRcaDiagram(); 
             renderCauseEffectTable();
             renderSolutionTable();
+            updateButtonStates(); // Update buttons as rcaData might be null now
         }
         
         function findNodeById(node, id) {
@@ -1040,14 +1273,15 @@
                     const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(node);
                     let causeType = '';
                     if (node.isNonChangeable) causeType = 'NC';
-                    else if (hasPositiveChild && hasNegativeChild) causeType = 'N+P';
-                    else if (hasNegativeChild) causeType = 'N';
-                    else if (hasPositiveChild) causeType = 'P'; 
-                    else causeType = 'N'; 
+                    else if (hasPositiveChild && hasNegativeChild) causeType = 'N+P (矛盾)';
+                    else if (hasNegativeChild) causeType = 'N (純負面)';
+                    else if (hasPositiveChild) causeType = 'P (純正面)'; 
+                    else causeType = '未定義效果'; 
                     
-                    if (causeType !== 'P') {
-                         const positiveEffects = node.children.filter(c => c.type === 'positive-effect').map(c => c.text).join('; ') || '一 (無)';
-                         const negativeEffects = node.children.filter(c => c.type === 'negative-effect').map(c => c.text).join('; ') || '一 (無)';
+                    // Only list causes that are not purely positive, or have defined effects
+                    if (causeType !== 'P (純正面)' || (hasPositiveChild || hasNegativeChild)) {
+                         const positiveEffects = node.children.filter(c => c.type === 'positive-effect').map(c => c.text).join('; ') || '無';
+                         const negativeEffects = node.children.filter(c => c.type === 'negative-effect').map(c => c.text).join('; ') || '無';
                          tableRowsData.push({ cause: node.text, type: causeType, positive: positiveEffects, negative: negativeEffects });
                     }
                 }
@@ -1065,7 +1299,7 @@
             const tableData = getCauseEffectTableData();
             causeEffectTableBody.innerHTML = ''; 
             if (tableData.length === 0) {
-                causeEffectTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500">目前圖表中沒有定義直接帶有正面或負面效果的原因 (且非純正面原因)。</td></tr>';
+                causeEffectTableBody.innerHTML = '<tr><td colspan="4" class="text-center text-gray-500">目前圖表中沒有定義直接帶有正面或負面效果的原因 (且非純粹正面原因)。</td></tr>';
                 return;
             }
             tableData.forEach(rowData => {
@@ -1077,7 +1311,6 @@
             });
         }
 
-        // --- 改善方案表邏輯 ---
         function handleToggleSolutionTable() {
             const isHidden = solutionTableSection.style.display === 'none';
             solutionTableSection.style.display = isHidden ? 'block' : 'none';
@@ -1104,7 +1337,7 @@
                         const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(node);
                         if (hasPositiveChild && hasNegativeChild) {
                             hasContradictoryCause = true;
-                            return; // Found one, no need to search further for this check
+                            return; 
                         }
                     }
                     if (node.children && !hasContradictoryCause) node.children.forEach(findContradictory);
@@ -1143,7 +1376,6 @@
             });
         }
 
-
         function getSolutionTableData() {
             const solutionData = [];
             function collectSolutionsRecursive(node) {
@@ -1152,11 +1384,13 @@
                     const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(node);
                     if (hasPositiveChild && hasNegativeChild && node.inventivePrinciples && node.inventivePrinciples.length > 0) {
                         node.inventivePrinciples.forEach(ip => {
-                            solutionData.push({
-                                contradictoryCause: node.text, 
-                                principle: ip.name,
-                                solution: ip.solution || '一 (尚未填寫)'
-                            });
+                            if (ip.solution && ip.solution.trim() !== '') { // Only include if solution is provided
+                                solutionData.push({
+                                    contradictoryCause: node.text, 
+                                    principle: ip.name,
+                                    solution: ip.solution
+                                });
+                            }
                         });
                     }
                 }
@@ -1170,24 +1404,25 @@
             return solutionData;
         }
 
-
         function exportDiagramAsPNG() {
             const diagramRenderAreaElement = document.getElementById('diagram-render-area'); 
-            if (!diagramRenderAreaElement || diagramContainer.children.length === 0) { 
+            if (!diagramRenderAreaElement || !rcaData || diagramContainer.children.length === 0) { 
                 alert('圖表為空或找不到圖表元素！'); 
                 return; 
             }
             
-            const activeInputGroupsInNodes = diagramContainer.querySelectorAll('.input-group-container .input-group');
-            activeInputGroupsInNodes.forEach(group => group.style.display = 'none'); 
-
+            // Temporarily hide any open input groups for cleaner export
+            const activeInputGroups = diagramContainer.querySelectorAll('.input-group');
+            activeInputGroups.forEach(group => group.style.display = 'none'); 
+            
+            // Ensure SVG connectors are up-to-date
             drawAllSvgConnectors(); 
 
             html2canvas(diagramRenderAreaElement, { 
                 scale: 1.5, 
                 useCORS: true, 
                 backgroundColor: '#ffffff', 
-                logging: true, 
+                logging: false, // Reduce console noise
                 width: diagramRenderAreaElement.scrollWidth, 
                 height: diagramRenderAreaElement.scrollHeight, 
                 onclone: (clonedDoc) => {
@@ -1203,16 +1438,18 @@
                         clonedRenderArea.style.width = diagramRenderAreaElement.scrollWidth + 'px';
                         clonedRenderArea.style.height = diagramRenderAreaElement.scrollHeight + 'px';
                     }
+                    // If in finalized view, ensure action buttons are hidden in the clone
                     if (isFinalizedView) {
                         const clonedActionDivs = clonedDoc.querySelectorAll('.rca-node-actions');
                         clonedActionDivs.forEach(div => div.style.display = 'none');
-                        const clonedInputContainers = clonedDoc.querySelectorAll('.input-group-container');
-                        clonedInputContainers.forEach(div => div.style.display = 'none');
                     }
+                    // Ensure input containers are hidden in the clone (already done for active ones, this is a fallback)
+                    const clonedInputContainers = clonedDoc.querySelectorAll('.input-group-container');
+                    clonedInputContainers.forEach(div => div.style.display = 'none');
                 }
             })
             .then(canvas => {
-                activeInputGroupsInNodes.forEach(group => group.style.display = 'flex'); 
+                activeInputGroups.forEach(group => group.style.display = 'flex'); // Restore visibility
                 const image = canvas.toDataURL('image/png');
                 const link = document.createElement('a');
                 link.download = 'rca-plus-diagram.png';
@@ -1221,9 +1458,11 @@
             }).catch(err => {
                 console.error('匯出圖表失敗:', err);
                 alert('匯出圖表失敗，請檢查控制台錯誤訊息。');
-                activeInputGroupsInNodes.forEach(group => group.style.display = 'flex');
+                activeInputGroups.forEach(group => group.style.display = 'flex'); // Restore visibility on error
             });
         }
+        
+        // --- 執行初始化 ---
         initialize();
     </script>
 </body>
