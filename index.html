@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RCA+ 矛盾分析繪圖工具 (v4)</title>
+    <title>RCA+ 矛盾分析繪圖工具 (v5 PDF 中文字型嘗試)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -239,7 +239,7 @@
 <body class="p-4 md:p-8">
     <div class="container mx-auto max-w-7xl"> 
         <header class="mb-6 text-center">
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-700">RCA+ 矛盾分析繪圖工具 (v4 PDF字型調整)</h1>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-700">RCA+ 矛盾分析繪圖工具 (v5 PDF 中文字型嘗試)</h1>
             <p class="text-gray-500 mt-1">視覺化根本原因、正面/負面效果，支援「且」關係連接、矛盾點標示、效果參數與發明原理。新增檔案選單、上一步、下一步、畫布縮放、自動調整節點與 PDF 匯出功能。</p>
         </header>
 
@@ -364,6 +364,10 @@
     </div>
 
     <script>
+        // --- (所有先前的 JavaScript 變數和函數定義保持不變) ---
+        // ... (此處省略了大部分與之前版本相同的 JS 程式碼以節省空間) ...
+        // ... (請確保您擁有 v4 版本的所有 JS 程式碼) ...
+
         // --- Global Variables and Constants ---
         function deepCopy(obj) { return JSON.parse(JSON.stringify(obj)); }
         let rcaData = null; 
@@ -450,6 +454,14 @@
         EFFECT_PARAMETERS["其他"] = ["內部風險", "外部風險", "信息共享", "信息損失", "信息流", "回饋", "物料流", "適應性/多功能性", "顧客壓力", "顧客穩定性", "環境穩定性"];
         INVENTIVE_PRINCIPLES.push("分割", "取出/分離", "改變局部特性", "非對稱性", "合併/整合", "多用性/多功能", "套疊/巢狀結構", "反制行動", "預先反制行動", "預先行動", "事先補償/預防", "消除緊張", "另一方向/反向操作", "非直線姓", "動態化", "稍微少些或多些(的動作)", "另外維度/空間", "共鳴(協調)", "週期行動", "連續的有利作用", "快速行動", "轉有害為有利", "回饋", "中介物/媒介", "自助/自我服務", "使用複製品或模型", "廉價與短期[拋棄式]", "替換系統運作原理/使用其他原理", "流動性和靈活性", "改變邊界條件", "孔洞和網路", "改變外觀/可見度", "同質性", "丟棄與恢復", "改變特性", "模範轉移", "相對變化", "增強的環境", "鈍性(惰性)環境", "組合(複合)結構");
         
+        // --- Placeholder for Base64 Encoded Font Data ---
+        // IMPORTANT: Replace this with actual Base64 data of a CJK-compatible .ttf font
+        // For example, a small subset of Noto Sans CJK TC or a similar open-source font.
+        // This string will be VERY long.
+        const base64FontData = `PLACEHOLDER_FOR_VERY_LONG_BASE64_FONT_STRING`; 
+        const CJK_FONT_FILENAME = 'MyCJKFont.ttf'; // The name you give to the font in VFS
+        const CJK_FONT_NAME = 'CJKFont';          // The name you'll use with pdf.setFont()
+
         function initialize() {
             setProblemButton.addEventListener('click', handleSetInitialProblem);
             problemInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSetInitialProblem(); });
@@ -951,21 +963,37 @@
                  exportPdfButton.disabled = !rcaData;
                  return;
             }
-            console.info("jsPDF and jsPDF-AutoTable appear to be loaded correctly."); // Info for debugging
+            // console.info("jsPDF and jsPDF-AutoTable appear to be loaded correctly.");
 
-            alert('正在準備 PDF 報告，請稍候...\n注意：中文字元顯示可能因您的 PDF 檢視器及已安裝字型而異。');
+            alert('正在準備 PDF 報告，請稍候...\n注意：中文字元顯示可能因您的 PDF 檢視器及已安裝字型而異。\n若要正確顯示中文，您需要在程式碼中嵌入一個 Base64 編碼的 CJK 字型檔案。');
             exportPngButton.disabled = true;
             exportPdfButton.disabled = true;
 
             const pdf = new jsPDF('p', 'pt', 'a4'); 
-            // For CJK characters, jsPDF requires a font that supports them.
-            // Standard fonts like Helvetica might not. Embedding a CJK font is complex client-side.
-            // We'll use a standard font and rely on the PDF viewer's font substitution.
-            // For better CJK support, a library like 'pdfmake' or server-side generation is often preferred.
-            // Or, you can try to load a base64 encoded CJK font with jsPDF's `addFileToVFS` and `addFont` methods,
-            // but this significantly increases script size and complexity.
-            // For now, we stick to standard fonts and hope for the best with viewer substitution.
-            pdf.setFont("Helvetica", "normal"); // Using a standard font. Could try "Arial" as well.
+            
+            // --- Font Embedding (Placeholder) ---
+            // 1. Add the Base64 font data to VFS
+            //    The `base64FontData` variable should hold your font's Base64 string.
+            //    Ensure `CJK_FONT_FILENAME` matches the filename used when generating the Base64.
+            let fontToUse = "Helvetica"; // Default font
+            if (base64FontData && base64FontData !== 'PLACEHOLDER_FOR_VERY_LONG_BASE64_FONT_STRING' && base64FontData.length > 100) { // Basic check if placeholder was replaced
+                try {
+                    pdf.addFileToVFS(CJK_FONT_FILENAME, base64FontData);
+                    // 2. Add the font to jsPDF
+                    pdf.addFont(CJK_FONT_FILENAME, CJK_FONT_NAME, 'normal');
+                    fontToUse = CJK_FONT_NAME; // Use the custom font
+                    console.info(`已嘗試載入自訂字型: ${CJK_FONT_NAME}`);
+                } catch (fontError) {
+                    console.error(`載入自訂字型 ${CJK_FONT_NAME} 失敗:`, fontError);
+                    alert(`載入自訂中文字型失敗，將使用預設字型。\n錯誤: ${fontError.message}`);
+                    fontToUse = "Helvetica"; // Fallback to Helvetica
+                }
+            } else {
+                console.warn(`未提供有效的 Base64 字型資料，PDF 中的中文字元可能無法正確顯示。將使用預設字型: ${fontToUse}`);
+            }
+            pdf.setFont(fontToUse);
+            // --- End Font Embedding ---
+
 
             pdf.setFontSize(18);
             pdf.text('RCA+ 分析報告', 40, 40);
@@ -1062,6 +1090,7 @@
             } catch (err) {
                 console.error('產生圖表圖片失敗 (PDF):', err);
                 pdf.addPage(); 
+                pdf.setFont(fontToUse); // Ensure font is set for error message too
                 pdf.text('無法產生圖表圖片。錯誤: ' + err.message, 40, 40);
                 const activeInputGroups = diagramContainer.querySelectorAll('.input-group');
                 activeInputGroups.forEach(group => group.style.display = 'flex');
@@ -1076,8 +1105,9 @@
             } else { 
                  lastTableY = 100;
             }
+            pdf.setFont(fontToUse); // Ensure font is set for tables
 
-            const tableFontStyles = { font: "Helvetica", fontStyle: 'normal' }; // Use a standard font
+            const tableFontStyles = { font: fontToUse, fontStyle: 'normal' }; 
 
             const causeEffectData = getCauseEffectTableData();
             if (causeEffectData.length > 0) {
@@ -1090,14 +1120,15 @@
                     head: [['原因', '原因類型', '正面效果', '負面效果']],
                     body: causeEffectData.map(row => [row.cause, row.type, row.positive, row.negative]),
                     styles: tableFontStyles, 
-                    headStyles: { fillColor: [22, 160, 133] },
+                    headStyles: { fillColor: [22, 160, 133], font: fontToUse }, // Specify font for header too
                     margin: { top: 40, right: 40, bottom: 40, left: 40 }, 
                     didDrawPage: function (data) {
                         lastTableY = data.cursor.y; 
+                        pdf.setFont(fontToUse); // Ensure font is reset for continued title
                          if (data.pageNumber > pdf.internal.getNumberOfPages() -1 && data.settings.startY !== undefined) { 
-                            lastTableY = data.settings.margin.top; // Reset Y for new page
+                            lastTableY = data.settings.margin.top; 
                             pdf.setFontSize(16); 
-                            pdf.text('原因效果表 (續)', 40, lastTableY - 20); // Add continued title
+                            pdf.text('原因效果表 (續)', 40, lastTableY - 20); 
                         }
                     }
                 });
@@ -1108,6 +1139,7 @@
                 pdf.text('原因效果表: 無資料', 40, lastTableY);
                 lastTableY += 20;
             }
+             pdf.setFont(fontToUse); // Ensure font is set for the next table
 
             const solutionData = getSolutionTableData();
             if (solutionData.length > 0) {
@@ -1125,14 +1157,15 @@
                     head: [['矛盾原因', '發明原理', '改善方案']],
                     body: solutionData.map(row => [row.contradictoryCause, row.principle, row.solution]),
                     styles: tableFontStyles,
-                    headStyles: { fillColor: [41, 128, 185] },
+                    headStyles: { fillColor: [41, 128, 185], font: fontToUse }, // Specify font for header too
                     margin: { top: 40, right: 40, bottom: 40, left: 40 },
                      didDrawPage: function (data) {
                         lastTableY = data.cursor.y;
+                        pdf.setFont(fontToUse); // Ensure font is reset for continued title
                         if (data.pageNumber > pdf.internal.getNumberOfPages() -1 && data.settings.startY !== undefined) {
-                            lastTableY = data.settings.margin.top; // Reset Y for new page
+                            lastTableY = data.settings.margin.top; 
                             pdf.setFontSize(16);
-                            pdf.text('矛盾點之創意改善方案表 (續)', 40, lastTableY - 20); // Add continued title
+                            pdf.text('矛盾點之創意改善方案表 (續)', 40, lastTableY - 20); 
                         }
                     }
                 });
