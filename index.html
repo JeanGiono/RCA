@@ -1531,7 +1531,7 @@
                     isDimmed = false;
                 } else if (currentAbcCauseFilter === 'none') {
                     isDimmed = nodeData.abcCategory !== null && typeof nodeData.abcCategory !== 'undefined';
-                } else { // Removed 'AB' case, directly checks for A, B, or C
+                } else { 
                     isDimmed = nodeData.abcCategory !== currentAbcCauseFilter;
                 }
                 if (isDimmed) {
@@ -2298,7 +2298,7 @@
                 const nodeText = nodeInput.value.trim(); 
                 const connectorLabel = connectorLabelInput.value.trim(); 
                 if (nodeText) { 
-                    addNodeToData(parentId, nodeText, nodeType, connectorLabel); 
+                    addNodeToData(parentId, nodeText, nodeTypeToAdd, connectorLabel); // FIX: Use nodeTypeToAdd
                     inputContainer.innerHTML = ''; 
                 } else { 
                     alert('描述不能為空！'); 
@@ -2902,7 +2902,7 @@
             domElements.nodeCustomizationModal.style.display = 'flex';
         }
 
-        function getDefaultNodeColor(nodeType, property) { // Helper to get default colors
+        function getDefaultNodeColor(nodeType, property) { 
             if (property === 'bg') {
                 if (nodeType === 'initial-problem') return '#fee2e2';
                 if (nodeType === 'cause') return '#fef9c3';
@@ -2914,7 +2914,7 @@
                 if (nodeType === 'positive-effect') return '#3b82f6';
                 if (nodeType === 'negative-effect') return '#f97316';
             }
-            return '#ffffff'; // Default fallback
+            return '#ffffff'; 
         }
 
 
