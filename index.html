@@ -262,16 +262,18 @@
             display: none; 
             position: absolute; 
             background-color: #f9f9f9; 
-            min-width: 230px; 
+            min-width: 230px; /* Default min-width */
             box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); 
             z-index: 10; 
             border-radius: 0.375rem; 
             padding: 0.5rem 0; 
         }
+        /* Specific positioning for the file dropdown when in sidebar */
         #sidebar-file-menu-container > #file-dropdown-content {
-            left: 100%; 
-            top: 0;      
-            margin-left: 0.5rem; 
+            left: 0; /* Align to the left of the parent container */
+            top: 100%; /* Position below the trigger item */
+            width: 100%; /* Make it full width of the parent container */
+            margin-left: 0; /* Remove left margin */
             z-index: 60; 
         }
 
@@ -1023,7 +1025,6 @@
             if (domElements.setProblemButton) domElements.setProblemButton.addEventListener('click', handleSetInitialProblem);
             if (domElements.problemInput) domElements.problemInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSetInitialProblem(); });
             
-            // Corrected: Specific listener for the sidebar file menu trigger
             if (domElements.sidebarFileMenuTrigger) {
                 domElements.sidebarFileMenuTrigger.addEventListener('click', (event) => {
                     event.stopPropagation(); 
@@ -1167,7 +1168,7 @@
                 });
 
                 document.querySelectorAll('#dashboard-menu .menu-item').forEach(item => {
-                    if (item.id === 'sidebar-file-menu-trigger') return; // Skip specific trigger for generic handler
+                    if (item.id === 'sidebar-file-menu-trigger') return; 
 
                     item.addEventListener('click', function(event) {
                         if (this.classList.contains('disabled')) {
