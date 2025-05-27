@@ -1973,8 +1973,11 @@
                     const ncButtonText = nodeData.isNonChangeable ? '取消NC標記' : '設為NC';
                     actionsDiv.appendChild(createActionButton(ncButtonText, 'toggle-nc', () => toggleNonChangeable(nodeData.id)));
                     actionsDiv.appendChild(createActionButton('設定ABC分類', 'set-abc', () => openAbcCauseCategoryModal(nodeData.id)));
-                    // Modified: Always show "設定衝突參數/方案" for cause nodes
-                    actionsDiv.appendChild(createActionButton('設定衝突參數/方案', 'set-triz', () => openTrizSolutionModal(nodeData.id)));
+                    // Reverted: Only show "設定衝突參數/方案" if it's a contradictory cause
+                    const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(nodeData);
+                    if (hasPositiveChild && hasNegativeChild) {
+                        actionsDiv.appendChild(createActionButton('設定衝突參數/方案', 'set-triz', () => openTrizSolutionModal(nodeData.id)));
+                    }
                     if (nodeData.parentId) {
                         actionsDiv.appendChild(createActionButton('移除此原因', 'remove-button', () => removeNode(nodeData.id)));
                     }
@@ -2235,7 +2238,7 @@
             if (modalNodeText) modalNodeText.textContent = `節點：${node.text.substring(0,30)}${node.text.length > 30 ? '...' : ''}`;
             modal.querySelectorAll('button[data-abc-cause]').forEach(btn => {
                 btn.classList.remove('ring-2', 'ring-offset-2', 'ring-blue-500');
-                if (btn.dataset.abc-cause === (node.abcCategory || 'null')) {
+                if (btn.dataset.abcCause === (node.abcCategory || 'null')) {
                     btn.classList.add('ring-2', 'ring-offset-2', 'ring-blue-500');
                 }
             });
@@ -2835,24 +2838,29 @@
             const solutionsList = [];
             function findSolutionsRecursive(node) {
                 if (!node) return;
-                // Modified: Now collect solutions from ALL cause nodes, not just contradictory ones
-                if (node.type === 'cause' && node.solutionsGenerated && node.solutionsGenerated.length > 0) {
-                    node.solutionsGenerated.forEach(sol => {
-                        solutionsList.push({
-                            causeId: node.id,
-                            causeText: node.text,
-                            improvingParameter: node.improvingParameter,
-                            worseningParameter: node.worseningParameter,
-                            solutionId: sol.id,
-                            principleName: sol.principleName,
-                            description: sol.description,
-                            abcCategory: sol.abcCategory,
-                            timeRequired: sol.timeRequired,
-                            mcdmScore: sol.mcdmScore,
-                            cost: sol.cost,
-                            idealityAssessment: sol.idealityAssessment || getDefaultIdealityAssessment()
-                        });
-                    });
+                // Only collect solutions from contradictory cause nodes for the table
+                if (node.type === 'cause') {
+                    const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(node);
+                    if (hasPositiveChild && hasNegativeChild) {
+                        if (node.solutionsGenerated && node.solutionsGenerated.length > 0) {
+                            node.solutionsGenerated.forEach(sol => {
+                                solutionsList.push({
+                                    causeId: node.id,
+                                    causeText: node.text,
+                                    improvingParameter: node.improvingParameter,
+                                    worseningParameter: node.worseningParameter,
+                                    solutionId: sol.id,
+                                    principleName: sol.principleName,
+                                    description: sol.description,
+                                    abcCategory: sol.abcCategory,
+                                    timeRequired: sol.timeRequired,
+                                    mcdmScore: sol.mcdmScore,
+                                    cost: sol.cost,
+                                    idealityAssessment: sol.idealityAssessment || getDefaultIdealityAssessment()
+                                });
+                            });
+                        }
+                    }
                 }
                 if (node.children && Array.isArray(node.children)) {
                     node.children.forEach(findSolutionsRecursive);
@@ -2888,6 +2896,7 @@
         }
 
         function getChartDataPoints() {
+            // Chart data points still from all solutions, regardless of contradiction status
             const solutions = getAllSolutionsWithDetails().filter(s => s.timeRequired !== null && s.mcdmScore !== null && s.mcdmScore !== undefined);
             return solutions.map(sol => ({
                 x: sol.timeRequired,
