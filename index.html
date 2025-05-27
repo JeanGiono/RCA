@@ -13,110 +13,110 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        #diagram-render-area { 
-            position: relative; 
+        #diagram-render-area {
+            position: relative;
             overflow: auto;
-            padding: 0; 
-            background-color: #fff; 
-            border-radius: 0.5rem; 
+            padding: 0;
+            background-color: #fff;
+            border-radius: 0.5rem;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            min-height: 450px; 
-            width: 100%; 
-            -webkit-user-select: none; 
-            -ms-user-select: none; 
-            user-select: none; 
+            min-height: 450px;
+            width: 100%;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
         }
         #scalable-content-wrapper {
             position: relative;
             transform-origin: top left;
-            display: inline-block; 
-            padding: 20px; 
-            cursor: grab; 
+            display: inline-block;
+            padding: 20px;
+            cursor: grab;
         }
         #scalable-content-wrapper:active {
             cursor: grabbing;
         }
         #svg-connector-layer {
-            position: absolute; 
-            top: 20px; 
+            position: absolute;
+            top: 20px;
             left: 20px;
-            pointer-events: none; 
-            z-index: 0; 
+            pointer-events: none;
+            z-index: 0;
         }
         #rca-diagram-container {
-            display: inline-block; 
-            text-align: center; 
-            position: relative; 
-            z-index: 1; 
+            display: inline-block;
+            text-align: center;
+            position: relative;
+            z-index: 1;
         }
 
         .rca-node-wrapper {
-            display: inline-flex; 
-            flex-direction: column; 
-            align-items: center; 
-            margin: 0 1rem; 
-            vertical-align: top; 
-            transition: margin 0.3s ease-in-out, opacity 0.3s ease-in-out; 
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 1rem;
+            vertical-align: top;
+            transition: margin 0.3s ease-in-out, opacity 0.3s ease-in-out;
         }
         .rca-node {
-            border: 2px solid #4b5563; 
-            padding: 0.6rem 1.1rem; 
-            margin-top: 30px; 
-            margin-bottom: 15px; 
+            border: 2px solid #4b5563;
+            padding: 0.6rem 1.1rem;
+            margin-top: 30px;
+            margin-bottom: 15px;
             box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
-            display: inline-flex; 
-            flex-direction: column; 
-            align-items: center; 
-            max-width: 350px; 
-            border-radius: 0.375rem; 
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 350px;
+            border-radius: 0.375rem;
             position: relative;
-            z-index: 1; 
-            background-color: #ffffff; 
-            overflow-wrap: break-word; 
+            z-index: 1;
+            background-color: #ffffff;
+            overflow-wrap: break-word;
             transition: opacity 0.3s ease-in-out, border-color 0.3s ease-in-out, background-color 0.3s ease-in-out;
         }
         .rca-node.dimmed {
             opacity: 0.3;
         }
-        .rca-node-content { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 0.4rem; 
-            width: 100%; 
-            align-items: center; 
-        }
-        .rca-node-header { 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 0.4rem; 
+        .rca-node-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
             width: 100%;
-            position: relative; 
-            margin-bottom: 0.25rem; 
+            align-items: center;
+        }
+        .rca-node-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            width: 100%;
+            position: relative;
+            margin-bottom: 0.25rem;
         }
         .rca-node-icon {
-            font-weight: bold; font-size: 0.85em; 
-            padding: 0.2em 0.4em; border-radius: 50%; 
+            font-weight: bold; font-size: 0.85em;
+            padding: 0.2em 0.4em; border-radius: 50%;
             color: white;
             position: absolute;
-            top: 0.4rem; 
+            top: 0.4rem;
             right: 0.4rem;
-            min-width: 22px; 
+            min-width: 22px;
             height: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 2px solid white; 
+            border: 2px solid white;
             box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-            z-index: 10; 
+            z-index: 10;
             transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
         }
-        .node-badge { 
-            font-size: 0.65em; font-weight: bold; color: #374151; 
-            background-color: #e5e7eb; padding: 0.15rem 0.35rem; 
-            border-radius: 0.25rem; 
-            align-self: center; 
-            margin-left: 0.25rem; 
+        .node-badge {
+            font-size: 0.65em; font-weight: bold; color: #374151;
+            background-color: #e5e7eb; padding: 0.15rem 0.35rem;
+            border-radius: 0.25rem;
+            align-self: center;
+            margin-left: 0.25rem;
         }
         .abc-badge {
             position: absolute;
@@ -131,53 +131,53 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.2);
             z-index: 10;
         }
-        .abc-badge-A { background-color: #ef4444; } 
-        .abc-badge-B { background-color: #f97316; } 
-        .abc-badge-C { background-color: #f59e0b; } 
+        .abc-badge-A { background-color: #ef4444; }
+        .abc-badge-B { background-color: #f97316; }
+        .abc-badge-C { background-color: #f59e0b; }
 
-        .rca-node-text { 
-            font-weight: 500; 
-            font-size: 0.9rem; 
-            text-align: center; 
-            overflow-wrap: break-word; 
-            line-height: 1.4; 
-            box-sizing: border-box; 
+        .rca-node-text {
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-align: center;
+            overflow-wrap: break-word;
+            line-height: 1.4;
+            box-sizing: border-box;
         }
         .rca-node:not(.rca-node-positive-effect):not(.rca-node-negative-effect) .rca-node-text {
-            width: 9em; 
-            padding-right: 2.5em; 
+            width: 9em;
+            padding-right: 2.5em;
             padding-left: 1.5em; /* Adjusted padding-left */
-            display: inline-block; 
+            display: inline-block;
             vertical-align: middle;
         }
         .rca-node-positive-effect .rca-node-text,
         .rca-node-negative-effect .rca-node-text {
-            display: block; 
-            width: 100%;    
-            padding-right: 3em; 
+            display: block;
+            width: 100%;
+            padding-right: 3em;
         }
 
-        .selected-items-list { 
-            font-size: 0.75rem; 
-            color: #374151; 
-            margin-top: 0.5rem; 
-            padding-top: 0.375rem; 
-            border-top: 1px dashed #d1d5db; 
-            width: 100%; 
-            text-align: left; 
+        .selected-items-list {
+            font-size: 0.75rem;
+            color: #374151;
+            margin-top: 0.5rem;
+            padding-top: 0.375rem;
+            border-top: 1px dashed #d1d5db;
+            width: 100%;
+            text-align: left;
         }
-        .selected-items-list strong { 
-            color: #111827; 
-            display: block; 
-            margin-bottom: 0.25rem; 
+        .selected-items-list strong {
+            color: #111827;
+            display: block;
+            margin-bottom: 0.25rem;
         }
-        .selected-items-list ul { 
-            list-style-type: disc; 
-            margin-left: 1.25rem; 
-            padding-left: 0.25rem; 
-        } 
-        .selected-items-list li { 
-            margin-bottom: 0.25rem; 
+        .selected-items-list ul {
+            list-style-type: disc;
+            margin-left: 1.25rem;
+            padding-left: 0.25rem;
+        }
+        .selected-items-list li {
+            margin-bottom: 0.25rem;
         }
         .selected-items-list .solution-text { color: #059669; margin-left: 0.3rem; font-style: italic;}
         .engineering-param-display { font-size: 0.7rem; color: #4b5563; margin-top: 0.25rem; }
@@ -193,26 +193,26 @@
         .rca-node-negative-effect { background-color: #ffedd5; border-color: #f97316; border-radius: 50px; padding: 0.6rem 1.2rem; }
         .rca-node-negative-effect .rca-node-icon { background-color: #f97316; }
 
-        .rca-children-container { 
-            display: flex; 
-            flex-direction: row; 
-            justify-content: center; 
-            align-items: flex-start; 
-            margin-top: 15px; 
-            position: relative; 
-            padding-top: 25px; 
-            width: max-content; 
+        .rca-children-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            margin-top: 15px;
+            position: relative;
+            padding-top: 25px;
+            width: max-content;
         }
-        
-        .rca-node-actions { 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 0.25rem; 
-            margin-top: 0.5rem; 
-            border-top: 1px solid #e5e7eb; 
-            padding-top: 0.5rem; 
-            width: 100%; 
-            justify-content: flex-start; 
+
+        .rca-node-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 0.5rem;
+            width: 100%;
+            justify-content: flex-start;
         }
         .action-button { background-color: #6b7280; color: white; padding: 0.375rem 0.75rem; border-radius: 0.25rem; font-size: 0.75rem; border: none; cursor: pointer; transition: background-color 0.2s; }
         .action-button:hover:not(:disabled) { background-color: #4b5563; } .action-button:disabled { background-color: #9ca3af; cursor: not-allowed; }
@@ -220,15 +220,15 @@
         .action-button.add-positive { background-color: #10b981; } .action-button.add-positive:hover:not(:disabled) { background-color: #059669; }
         .action-button.add-negative { background-color: #f97316; } .action-button.add-negative:hover:not(:disabled) { background-color: #ea580c; }
         .action-button.toggle-nc { background-color: #a855f7; } .action-button.toggle-nc:hover:not(:disabled) { background-color: #9333ea; }
-        .action-button.set-abc { background-color: #14b8a6; } 
+        .action-button.set-abc { background-color: #14b8a6; }
         .action-button.set-abc:hover:not(:disabled) { background-color: #0d9488; }
-        .action-button.set-triz { background-color: #ec4899; } 
+        .action-button.set-triz { background-color: #ec4899; }
         .action-button.set-triz:hover:not(:disabled) { background-color: #db2777; }
         .action-button.set-and-sources { background-color: #6d28d9; } .action-button.set-and-sources:hover:not(:disabled) { background-color: #5b21b6; }
         .action-button.edit-node { background-color: #f59e0b; } .action-button.edit-node:hover:not(:disabled) { background-color: #d97706; }
         .action-button.set-parameters { background-color: #0ea5e9; } .action-button.set-parameters:hover:not(:disabled) { background-color: #0284c7; }
         .remove-button { background-color: #ef4444; } .remove-button:hover:not(:disabled) { background-color: #dc2626; }
-        
+
         .input-group-container { margin-top: 0.5rem; width: calc(100% - 1rem); }
         .input-group { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.25rem; background-color: #f9fafb; }
         .input-field, .select-field { border: 1px solid #d1d5db; padding: 0.5rem; border-radius: 0.25rem; font-size: 0.875rem; width: 100%; }
@@ -244,27 +244,27 @@
         .data-table .abc-select { padding: 0.25rem; font-size: 0.8rem; border-radius: 0.25rem; border: 1px solid #d1d5db; }
         .data-table .ideality-assess-button { font-size: 0.75rem; padding: 0.25rem 0.5rem; }
 
-        .modal { z-index: 50; } .modal-content { position: relative; } 
+        .modal { z-index: 50; } .modal-content { position: relative; }
         .modal-close-button { position: absolute; top: 0.75rem; right: 0.75rem; background: none; border: none; font-size: 1.5rem; color: #6b7280; cursor: pointer; line-height: 1; }
         .modal-close-button:hover { color: #1f2937; }
-        .modal-options-container { max-height: 60vh; overflow-y: auto; } 
+        .modal-options-container { max-height: 60vh; overflow-y: auto; }
         .modal-options-container label { cursor: pointer; display: block; margin-bottom: 0.25rem; }
         .modal-options-container h4 { font-weight:600; margin-top: 0.75rem; margin-bottom: 0.25rem; color: #374151; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.25rem; }
         .modal-options-container h4:first-child { margin-top: 0; }
         .principle-solution-input { width: calc(100% - 2rem); margin-left: 1.5rem; margin-top: 0.25rem; margin-bottom: 0.5rem; padding: 0.25rem 0.5rem; border: 1px solid #d1d5db; border-radius: 0.25rem; font-size: 0.8rem; }
-        
+
         .zoom-controls { display: flex; gap: 0.5rem; align-items: center; }
         .zoom-controls span { font-size: 0.875rem; color: #4b5563; min-width: 50px; text-align: center; }
-        
-        .dropdown-content { 
-            display: none; 
-            position: absolute; 
-            background-color: #f9f9f9; 
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
             min-width: 230px; /* Default min-width */
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); 
-            z-index: 10; 
-            border-radius: 0.375rem; 
-            padding: 0.5rem 0; 
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 10;
+            border-radius: 0.375rem;
+            padding: 0.5rem 0;
         }
         /* Specific positioning for the file dropdown when in sidebar */
         #sidebar-file-menu-container > #file-dropdown-content {
@@ -272,14 +272,14 @@
             top: 100%; /* Position below the trigger item */
             width: 100%; /* Make it full width of the parent container */
             margin-left: 0; /* Remove left margin */
-            z-index: 60; 
+            z-index: 60;
         }
 
         .dropdown-content button, .dropdown-content label { color: black; padding: 0.75rem 1rem; text-decoration: none; display: block; text-align: left; background: none; border: none; width: 100%; font-size: 0.875rem; cursor: pointer; }
         .dropdown-content button:hover, .dropdown-content label:hover { background-color: #e5e7eb; }
         .dropdown-content button:disabled { color: #9ca3af; cursor: not-allowed; background-color: #f9f9f9; }
         .dropdown-content button i, .dropdown-content label i { margin-right: 0.5rem; width: 1.25rem; text-align: center; }
-        
+
         .abc-filter-button {
             padding: 0.5rem 1rem;
             border-radius: 0.25rem;
@@ -302,15 +302,15 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            color: #6b7280; 
+            color: #6b7280;
             font-size: 0.875rem;
             padding: 1rem;
-            background-color: #f9fafb; 
+            background-color: #f9fafb;
             border-radius: 0.375rem;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
         .quadrant-label { /* Style for labels drawn by Chart.js plugin */ }
-        
+
         /* Styles for Ideality Assessment Modal */
         .ideality-criterion { margin-bottom: 0.75rem; }
         .ideality-criterion label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.25rem; }
@@ -368,21 +368,21 @@
         #suggested-principles-container {
             margin-top: 1rem;
             padding: 0.75rem;
-            background-color: #f3f4f6; 
+            background-color: #f3f4f6;
             border-radius: 0.375rem;
-            border: 1px solid #e5e7eb; 
+            border: 1px solid #e5e7eb;
         }
         #suggested-principles-container h5 {
             font-size: 0.9rem;
             font-weight: 600;
-            color: #374151; 
+            color: #374151;
             margin-bottom: 0.5rem;
         }
         #suggested-principles-list {
             list-style-type: decimal; /* Changed to decimal for ordered list numbering */
             margin-left: 1.25rem;
             font-size: 0.85rem;
-            color: #4b5563; 
+            color: #4b5563;
         }
         #suggested-principles-list li {
             margin-bottom: 0.25rem;
@@ -391,25 +391,25 @@
         /* Dashboard Menu Styles */
         .menu-item {
             display: block;
-            padding: 0.75rem 1rem; 
-            border-radius: 0.375rem; 
-            color: #d1d5db; 
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            color: #d1d5db;
             transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-            font-weight: 500; 
-            cursor: pointer; 
+            font-weight: 500;
+            cursor: pointer;
         }
         .menu-item:hover, .menu-item.active {
-            background-color: #374151; 
-            color: #ffffff; 
+            background-color: #374151;
+            color: #ffffff;
         }
-        .menu-item.disabled { 
+        .menu-item.disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            background-color: transparent !important; 
-            color: #9ca3af !important; 
+            background-color: transparent !important;
+            color: #9ca3af !important;
         }
-        .menu-item i.fa-fw { 
-            width: 1.25em; 
+        .menu-item i.fa-fw {
+            width: 1.25em;
             text-align: center;
         }
          /* Connector Label Style */
@@ -471,7 +471,7 @@
         }
     </style>
 </head>
-<body class="flex h-screen bg-gray-100"> 
+<body class="flex h-screen bg-gray-100">
     <aside id="dashboard-menu" class="w-64 bg-gray-800 text-white p-4 space-y-6 fixed top-0 left-0 h-full z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-lg overflow-y-auto">
         <div class="text-center py-2 border-b border-gray-700">
             <a href="#" class="flex items-center justify-center">
@@ -500,21 +500,21 @@
                 <i class="fas fa-project-diagram fa-fw mr-3"></i>
                 RCA+ 分析圖
             </a>
-             <hr class="border-gray-700 my-2"> 
+             <hr class="border-gray-700 my-2">
             <span class="px-1 pt-2 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">圖表操作</span>
             <a href="#" id="menu-item-toggle-view" class="menu-item group">
-                <i class="fas fa-edit fa-fw mr-3"></i> 
+                <i class="fas fa-edit fa-fw mr-3"></i>
                 編輯模式
             </a>
             <a href="#" id="menu-item-auto-adjust" class="menu-item group">
-                <i class="fas fa-sitemap fa-fw mr-3"></i> 
+                <i class="fas fa-sitemap fa-fw mr-3"></i>
                 自動調整節點
             </a>
             <a href="#" id="menu-item-export-png" class="menu-item group">
                 <i class="fas fa-image fa-fw mr-3"></i>
                 匯出圖檔 (PNG)
             </a>
-            <hr class="border-gray-700 my-2"> 
+            <hr class="border-gray-700 my-2">
             <span class="px-1 pt-2 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">分析表格</span>
             <a href="#cause-effect-table-section" id="menu-item-cause-effect-table" class="menu-item group">
                 <i class="fas fa-table fa-fw mr-3"></i>
@@ -528,7 +528,7 @@
                 <i class="fas fa-map-signs fa-fw mr-3"></i>
                 創意景觀圖
             </a>
-            <hr class="border-gray-700 my-2"> 
+            <hr class="border-gray-700 my-2">
              <a href="#" id="menu-item-settings" class="menu-item group"> <i class="fas fa-cog fa-fw mr-3"></i>
                 設定
             </a>
@@ -540,7 +540,7 @@
     </button>
 
     <main id="main-content-area" class="flex-1 p-4 md:p-8 overflow-y-auto md:ml-64 transition-all duration-300 ease-in-out">
-        <div class="container mx-auto max-w-7xl"> 
+        <div class="container mx-auto max-w-7xl">
             <header class="mb-6 text-center">
                 <h1 id="main-tool-title" class="text-2xl md:text-3xl font-bold text-gray-700">創新問題解決工具</h1>
                 <p class="text-gray-500 mt-1">視覺化根本原因，支援衝突參數設定、發明原理應用、解決方案ABC分類、創意景觀圖與TRIZ理想性評估等功能。</p>
@@ -584,9 +584,9 @@
 
             <section id="rca-diagram-section" class="bg-white p-0 md:p-0 rounded-lg shadow min-h-[400px]">
                 <h2 class="text-xl font-semibold text-gray-700 my-4 text-center" id="diagram-title" style="display: none;">2. RCA+ 分析圖</h2>
-                <div id="diagram-render-area"> 
+                <div id="diagram-render-area">
                     <div id="scalable-content-wrapper">
-                        <div id="rca-diagram-container"></div> 
+                        <div id="rca-diagram-container"></div>
                         <svg id="svg-connector-layer"></svg>
                     </div>
                 </div>
@@ -664,12 +664,12 @@
                 </div>
 
             <div id="triz-solution-modal" class="modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center" style="display: none;">
-                <div class="modal-content mx-auto p-5 border w-11/12 md:w-3/5 lg:w-3/5 shadow-lg rounded-md bg-white"> 
+                <div class="modal-content mx-auto p-5 border w-11/12 md:w-3/5 lg:w-3/5 shadow-lg rounded-md bg-white">
                     <button class="modal-close-button" onclick="closeTrizSolutionModal()">&times;</button>
                     <div class="mt-3">
                         <h3 class="text-lg leading-6 font-medium text-gray-900 text-center" id="triz-solution-modal-title">設定衝突參數、解決方案與評估資料</h3>
                         <p id="triz-modal-cause-text" class="text-sm text-gray-600 my-2 text-center"></p>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label for="improving-parameter-select" class="block text-sm font-medium text-gray-700">改善時特性參數:</label>
@@ -680,17 +680,17 @@
                                 <select id="worsening-parameter-select" class="select-field mt-1"></select>
                             </div>
                         </div>
-                        
+
                         <div id="suggested-principles-container" style="display: none;">
                             <h5>建議發明原理 (根據矛盾矩陣):</h5>
                             <ol id="suggested-principles-list"></ol> </div>
 
                         <h4 class="text-md font-semibold text-gray-800 mt-4 mb-2">解決方案列表:</h4>
-                        <div id="solutions-list-container" class="max-h-48 overflow-y-auto mb-3"></div> 
+                        <div id="solutions-list-container" class="max-h-48 overflow-y-auto mb-3"></div>
                         <button id="add-new-solution-entry-button" class="action-button bg-green-500 hover:bg-green-600 text-sm py-1 px-2 mb-2">
                             <i class="fas fa-plus mr-1"></i> 新增解決方案
                         </button>
-                        
+
                         <div id="edit-solution-entry-container" style="display:none;" class="p-3 border rounded-md bg-gray-50 mb-3">
                             <h5 id="edit-solution-title" class="text-sm font-semibold text-gray-700 mb-2"></h5>
                             <input type="hidden" id="editing-solution-id">
@@ -741,7 +741,7 @@
 
                         <div id="ideality-criteria-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-4">
                             </div>
-                        
+
                         <div class="text-center my-3">
                             <span class="text-md font-semibold">理想性加權總分: </span>
                             <span id="ideality-total-score-display" class="text-lg font-bold text-blue-600">0.00</span>
@@ -795,11 +795,11 @@
                     <button class="modal-close-button" onclick="closeSettingsModal()">&times;</button>
                     <div class="mt-3">
                         <h3 class="text-lg leading-6 font-medium text-gray-900 text-center">工具設定</h3>
-                        
+
                         <div class="mt-4">
                             <h4 class="text-md font-semibold text-gray-800 mb-2">自訂理想性評估準則</h4>
                             <p class="text-sm text-gray-600 mb-3">在這裡管理您的自訂理想性評估準則。這些準則將用於所有解決方案的理想性評估。</p>
-                            
+
                             <div id="custom-criteria-list" class="max-h-60 overflow-y-auto border rounded-md p-2 bg-gray-50">
                                 </div>
 
@@ -1006,18 +1006,18 @@
         function deepCopy(obj) { return JSON.parse(JSON.stringify(obj)); }
 
         var domElements = {}; // Changed from let to var
-        let rcaData = null; 
+        let rcaData = null;
         let nodeIdCounter = 0;
-        let currentAndTargetNodeId = null; 
-        let isFinalizedView = false; 
-        let currentParameterTargetNodeId = null; 
+        let currentAndTargetNodeId = null;
+        let isFinalizedView = false;
+        let currentParameterTargetNodeId = null;
         let currentZoom = 1.0;
         let historyStack = [];
-        let historyIndex = -1; 
-        let currentAbcCauseTargetNodeId = null; 
-        let currentAbcCauseFilter = 'all'; 
+        let historyIndex = -1;
+        let currentAbcCauseTargetNodeId = null;
+        let currentAbcCauseFilter = 'all';
         let currentAbcSolutionFilter = 'all';
-        let currentTrizCauseNodeId = null; 
+        let currentTrizCauseNodeId = null;
         let ideasLandscapeChartInstance = null;
         let currentAssessingSolution = { causeId: null, solutionId: null };
 
@@ -1038,12 +1038,12 @@
         const ZOOM_STEP = 0.1;
         const MIN_ZOOM = 0.2;
         const MAX_ZOOM = 3.0;
-        const MAX_HISTORY_STATES = 50; 
+        const MAX_HISTORY_STATES = 50;
         const QUADRANT_COLORS = {
-            Q1: 'rgba(220, 252, 231, 0.4)', 
-            Q2: 'rgba(219, 234, 254, 0.4)', 
-            Q3: 'rgba(254, 226, 226, 0.4)', 
-            Q4: 'rgba(254, 249, 195, 0.4)', 
+            Q1: 'rgba(220, 252, 231, 0.4)',
+            Q2: 'rgba(219, 234, 254, 0.4)',
+            Q3: 'rgba(254, 226, 226, 0.4)',
+            Q4: 'rgba(254, 249, 195, 0.4)',
         };
         const QUADRANT_LABELS = {
             Q1: '長期規劃 (Q1)',
@@ -1052,16 +1052,16 @@
             Q4: '不應執行 (Q4)'
         };
         const ABC_POINT_STYLES = {
-            'A': 'rectRot', 
-            'B': 'triangle',  
-            'C': 'star',    
-            'none': 'circle'  
+            'A': 'rectRot',
+            'B': 'triangle',
+            'C': 'star',
+            'none': 'circle'
         };
         const ABC_COLORS = {
-            'A': 'rgba(239, 68, 68, 0.8)', 
-            'B': 'rgba(249, 115, 22, 0.8)', 
-            'C': 'rgba(245, 158, 11, 0.8)', 
-            'none': 'rgba(107, 114, 128, 0.7)' 
+            'A': 'rgba(239, 68, 68, 0.8)',
+            'B': 'rgba(249, 115, 22, 0.8)',
+            'C': 'rgba(245, 158, 11, 0.8)',
+            'none': 'rgba(107, 114, 128, 0.7)'
         };
         const ABC_BORDER_COLORS = {
             'A': 'rgba(220, 38, 38, 1)',
@@ -1075,7 +1075,7 @@
             "系統": ["系統有效性", "系統可變性", "系統費用", "系統時間", "系統複雜性", "系統方便性", "系統安全性", "系統可靠性", "對系統的有害影響", "系統產生的有害影響", "組織壓力", "組織穩定性"],
             "其他": ["內部風險", "外部風險", "信息共享", "信息損失", "信息流", "回饋", "物料流", "適應性/多功能性", "顧客壓力", "顧客穩定性", "環境穩定性"]
         };
-        
+
         // 從 TRIZMatrix 獲取參數和原理名稱
         const BUSINESS_MANAGEMENT_PARAMETERS = ["未選擇", ...trizMatrix.getParameters()];
         const INVENTIVE_PRINCIPLES = trizMatrix.getInventivePrinciplesNames();
@@ -1083,7 +1083,7 @@
         // --- Initialization ---
         function initializeDomElements() {
             domElements = {
-                mainToolTitle: document.getElementById('main-tool-title'), 
+                mainToolTitle: document.getElementById('main-tool-title'),
                 problemInput: document.getElementById('problem-statement-input'),
                 setProblemButton: document.getElementById('set-problem-button'),
                 diagramRenderArea: document.getElementById('diagram-render-area'),
@@ -1092,9 +1092,9 @@
                 svgLayer: document.getElementById('svg-connector-layer'),
                 diagramTitle: document.getElementById('diagram-title'),
                 problemInputArea: document.getElementById('problem-input-area'),
-                toolButtonsContainer: document.getElementById('tool-buttons'), 
+                toolButtonsContainer: document.getElementById('tool-buttons'),
                 sidebarFileMenuTrigger: document.getElementById('sidebar-file-menu-trigger'),
-                fileDropdownContent: document.getElementById('file-dropdown-content'), 
+                fileDropdownContent: document.getElementById('file-dropdown-content'),
                 saveDiagramButton: document.getElementById('save-diagram-button'),
                 loadDiagramButton: document.getElementById('load-diagram-button'),
                 saveToFileButton: document.getElementById('save-to-file-button'),
@@ -1111,10 +1111,10 @@
                 solutionTableSection: document.getElementById('solution-table-section'),
                 solutionTableBody: document.getElementById('solution-table-body'),
                 andSourceModal: document.getElementById('and-source-modal'),
-                andSourceModalNodeText: document.getElementById('and-source-modal-node-text'), 
-                andSourceOptionsContainer: document.getElementById('and-source-options-container'), 
-                cancelAndSourcesButton: document.getElementById('cancel-and-sources-button'), 
-                saveAndSourcesButton: document.getElementById('save-and-sources-button'),     
+                andSourceModalNodeText: document.getElementById('and-source-modal-node-text'),
+                andSourceOptionsContainer: document.getElementById('and-source-options-container'),
+                cancelAndSourcesButton: document.getElementById('cancel-and-sources-button'),
+                saveAndSourcesButton: document.getElementById('save-and-sources-button'),
                 effectParameterModal: document.getElementById('effect-parameter-modal'),
                 abcCategoryModal: document.getElementById('abc-category-modal'),
                 abcCauseFilterControls: document.getElementById('abc-cause-filter-controls'),
@@ -1123,8 +1123,8 @@
                 trizModalCauseText: document.getElementById('triz-modal-cause-text'),
                 improvingParameterSelect: document.getElementById('improving-parameter-select'),
                 worseningParameterSelect: document.getElementById('worsening-parameter-select'),
-                suggestedPrinciplesContainer: document.getElementById('suggested-principles-container'), 
-                suggestedPrinciplesList: document.getElementById('suggested-principles-list'),       
+                suggestedPrinciplesContainer: document.getElementById('suggested-principles-container'),
+                suggestedPrinciplesList: document.getElementById('suggested-principles-list'),
                 solutionsListContainer: document.getElementById('solutions-list-container'),
                 addNewSolutionEntryButton: document.getElementById('add-new-solution-entry-button'),
                 editSolutionEntryContainer: document.getElementById('edit-solution-entry-container'),
@@ -1137,10 +1137,10 @@
                 saveSolutionEntryButton: document.getElementById('save-solution-entry-button'),
                 cancelEditSolutionButton: document.getElementById('cancel-edit-solution-button'),
                 editSolutionTitle: document.getElementById('edit-solution-title'),
-                ideasLandscapeSection: document.getElementById('ideas-landscape-section'), 
+                ideasLandscapeSection: document.getElementById('ideas-landscape-section'),
                 ideasLandscapeChartCanvas: document.getElementById('ideas-landscape-chart'),
                 ideasLandscapeNoDataMessage: document.getElementById('ideas-landscape-no-data-message'),
-                updateIdeasLandscapeChartButton: document.getElementById('update-ideas-landscape-chart-button'), 
+                updateIdeasLandscapeChartButton: document.getElementById('update-ideas-landscape-chart-button'),
                 landscapeTimeThresholdInput: document.getElementById('landscape-time-threshold'),
                 landscapeScoreThresholdInput: document.getElementById('landscape-score-threshold'),
                 idealityAssessmentModal: document.getElementById('ideality-assessment-modal'),
@@ -1152,7 +1152,7 @@
                 idealityWeightsSumWarning: document.getElementById('ideality-weights-sum-warning'),
                 saveIdealityAssessmentButton: document.getElementById('save-ideality-assessment-button'),
                 cancelIdealityAssessmentButton: document.getElementById('cancel-ideality-assessment-button'),
-                resetIdealityWeightsButton: document.getElementById('reset-ideality-weights-button'), 
+                resetIdealityWeightsButton: document.getElementById('reset-ideality-weights-button'),
                 effectParameterModalNodeText: document.getElementById('effect-parameter-modal-node-text'),
                 effectParameterOptionsContainer: document.getElementById('effect-parameter-options-container'),
                 cancelEffectParametersButton: document.getElementById('cancel-effect-parameters-button'),
@@ -1184,40 +1184,40 @@
         }
 
         function initialize() {
-            initializeDomElements(); 
+            initializeDomElements();
             loadCustomIdealityCriteria(); // Load custom criteria first
             populateSelects();
             setupEventListeners();
-            if (domElements.scalableContentWrapper) { 
-                 new ResizeObserver(() => drawAllSvgConnectors()).observe(domElements.scalableContentWrapper); 
+            if (domElements.scalableContentWrapper) {
+                 new ResizeObserver(() => drawAllSvgConnectors()).observe(domElements.scalableContentWrapper);
             }
-            if (domElements.toolButtonsContainer) { 
-                domElements.toolButtonsContainer.style.display = 'flex'; 
+            if (domElements.toolButtonsContainer) {
+                domElements.toolButtonsContainer.style.display = 'flex';
             }
-            applyZoom(1.0, true); 
-            updateButtonStates(); 
-            setupDashboardMenu(); 
+            applyZoom(1.0, true);
+            updateButtonStates();
+            setupDashboardMenu();
         }
 
         function populateSelects() {
             // 使用 trizMatrix 實例獲取參數和原理名稱
-            populateSelect(domElements.improvingParameterSelect, trizMatrix.getParameters(), true); 
-            populateSelect(domElements.worseningParameterSelect, trizMatrix.getParameters(), true); 
-            populateSelect(domElements.solutionPrincipleSelect, trizMatrix.getInventivePrinciplesNames(), false); 
+            populateSelect(domElements.improvingParameterSelect, trizMatrix.getParameters(), true);
+            populateSelect(domElements.worseningParameterSelect, trizMatrix.getParameters(), true);
+            populateSelect(domElements.solutionPrincipleSelect, trizMatrix.getInventivePrinciplesNames(), false);
         }
 
         function setupEventListeners() {
             if (domElements.setProblemButton) domElements.setProblemButton.addEventListener('click', handleSetInitialProblem);
             if (domElements.problemInput) domElements.problemInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSetInitialProblem(); });
-            
+
             if (domElements.sidebarFileMenuTrigger) {
                 domElements.sidebarFileMenuTrigger.addEventListener('click', (event) => {
-                    event.stopPropagation(); 
+                    event.stopPropagation();
                     if (domElements.fileDropdownContent) {
                         const isDisplayed = domElements.fileDropdownContent.style.display === 'block';
                         domElements.fileDropdownContent.style.display = isDisplayed ? 'none' : 'block';
-                        if (!isDisplayed) { 
-                            updateButtonStates(); 
+                        if (!isDisplayed) {
+                            updateButtonStates();
                         }
                     }
                 });
@@ -1226,7 +1226,7 @@
             if (domElements.saveDiagramButton) domElements.saveDiagramButton.addEventListener('click', () => { handleSaveToLocalStorage(); if (domElements.fileDropdownContent) domElements.fileDropdownContent.style.display = 'none'; });
             if (domElements.loadDiagramButton) domElements.loadDiagramButton.addEventListener('click', () => { handleLoadFromLocalStorage(); if (domElements.fileDropdownContent) domElements.fileDropdownContent.style.display = 'none'; });
             if (domElements.saveToFileButton) domElements.saveToFileButton.addEventListener('click', () => { handleSaveToFile(); if (domElements.fileDropdownContent) domElements.fileDropdownContent.style.display = 'none'; });
-            if (domElements.loadFromFileLabel) domElements.loadFromFileLabel.addEventListener('click', () => { if (domElements.fileInputForLoad) domElements.fileInputForLoad.click(); }); 
+            if (domElements.loadFromFileLabel) domElements.loadFromFileLabel.addEventListener('click', () => { if (domElements.fileInputForLoad) domElements.fileInputForLoad.click(); });
             if (domElements.fileInputForLoad) domElements.fileInputForLoad.addEventListener('change', (event) => { handleLoadFromFile(event); if (domElements.fileDropdownContent) domElements.fileDropdownContent.style.display = 'none'; });
 
 
@@ -1236,15 +1236,15 @@
             if (domElements.zoomInButton) domElements.zoomInButton.addEventListener('click', () => applyZoom(currentZoom + ZOOM_STEP));
             if (domElements.zoomOutButton) domElements.zoomOutButton.addEventListener('click', () => applyZoom(currentZoom - ZOOM_STEP));
             if (domElements.resetZoomButton) domElements.resetZoomButton.addEventListener('click', () => applyZoom(1.0));
-            
+
             if (domElements.updateIdeasLandscapeChartButton) domElements.updateIdeasLandscapeChartButton.addEventListener('click', renderIdeasLandscapeChart);
-            
+
             if (domElements.saveAndSourcesButton) domElements.saveAndSourcesButton.addEventListener('click', handleSaveAndSources);
             if (domElements.cancelAndSourcesButton) domElements.cancelAndSourcesButton.addEventListener('click', () => { if(domElements.andSourceModal) domElements.andSourceModal.style.display = 'none'; currentAndTargetNodeId = null; });
-            
+
             if (domElements.saveEffectParametersButton) domElements.saveEffectParametersButton.addEventListener('click', handleSaveEffectParameters);
             if (domElements.cancelEffectParametersButton) domElements.cancelEffectParametersButton.addEventListener('click', () => { if(domElements.effectParameterModal) domElements.effectParameterModal.style.display = 'none'; currentParameterTargetNodeId = null; });
-            
+
             if (domElements.abcCauseFilterControls) domElements.abcCauseFilterControls.querySelectorAll('button[data-filter-type="cause"]').forEach(button => {
                 button.addEventListener('click', (event) => {
                     applyAbcCauseFilter(event.target.dataset.filter);
@@ -1255,12 +1255,12 @@
                     applyAbcSolutionFilter(event.target.dataset.filter);
                 });
             });
-            
+
             const closeTrizModalBtn = document.getElementById('close-triz-modal-button');
-            if (closeTrizModalBtn) closeTrizModalBtn.addEventListener('click', closeTrizSolutionModal); 
-            
-            if (domElements.improvingParameterSelect) domElements.improvingParameterSelect.addEventListener('change', handleSaveTrizParameters); 
-            if (domElements.worseningParameterSelect) domElements.worseningParameterSelect.addEventListener('change', handleSaveTrizParameters); 
+            if (closeTrizModalBtn) closeTrizModalBtn.addEventListener('click', closeTrizSolutionModal);
+
+            if (domElements.improvingParameterSelect) domElements.improvingParameterSelect.addEventListener('change', handleSaveTrizParameters);
+            if (domElements.worseningParameterSelect) domElements.worseningParameterSelect.addEventListener('change', handleSaveTrizParameters);
             if (domElements.addNewSolutionEntryButton) domElements.addNewSolutionEntryButton.addEventListener('click', () => showEditSolutionEntry(null));
             if (domElements.saveSolutionEntryButton) domElements.saveSolutionEntryButton.addEventListener('click', handleSaveSolutionEntry);
             if (domElements.cancelEditSolutionButton) domElements.cancelEditSolutionButton.addEventListener('click', () => {
@@ -1272,13 +1272,13 @@
             // These listeners are now added dynamically in openIdealityAssessmentModal
             if (domElements.saveIdealityAssessmentButton) domElements.saveIdealityAssessmentButton.addEventListener('click', handleSaveIdealityAssessment);
             if (domElements.cancelIdealityAssessmentButton) domElements.cancelIdealityAssessmentButton.addEventListener('click', closeIdealityAssessmentModal);
-            if (domElements.resetIdealityWeightsButton) domElements.resetIdealityWeightsButton.addEventListener('click', resetIdealityWeights); 
-            
-            window.addEventListener('click', (event) => { 
-                if (domElements.fileDropdownContent && domElements.sidebarFileMenuTrigger && 
-                    !domElements.sidebarFileMenuTrigger.contains(event.target) && 
-                    !domElements.fileDropdownContent.contains(event.target)) { 
-                    domElements.fileDropdownContent.style.display = 'none'; 
+            if (domElements.resetIdealityWeightsButton) domElements.resetIdealityWeightsButton.addEventListener('click', resetIdealityWeights);
+
+            window.addEventListener('click', (event) => {
+                if (domElements.fileDropdownContent && domElements.sidebarFileMenuTrigger &&
+                    !domElements.sidebarFileMenuTrigger.contains(event.target) &&
+                    !domElements.fileDropdownContent.contains(event.target)) {
+                    domElements.fileDropdownContent.style.display = 'none';
                 }
             });
 
@@ -1303,12 +1303,12 @@
             if (includeDefault) {
                 const defaultOption = document.createElement('option');
                 defaultOption.value = "";
-                defaultOption.textContent = "未選擇"; 
+                defaultOption.textContent = "未選擇";
                 selectElement.appendChild(defaultOption);
             }
             optionsArray.forEach(optionText => {
-                if (includeDefault && optionText === "未選擇" && optionsArray.indexOf("未選擇") !== 0) return; 
-                
+                if (includeDefault && optionText === "未選擇" && optionsArray.indexOf("未選擇") !== 0) return;
+
                 const option = document.createElement('option');
                 option.value = optionText;
                 option.textContent = optionText;
@@ -1325,18 +1325,18 @@
                     if (domElements.dashboardMenu.classList.contains('-translate-x-full')) {
                         icon.classList.remove('fa-times');
                         icon.classList.add('fa-bars');
-                        domElements.mainContentArea.classList.remove('md:ml-0'); 
-                        domElements.mainContentArea.classList.add('md:ml-64'); 
+                        domElements.mainContentArea.classList.remove('md:ml-0');
+                        domElements.mainContentArea.classList.add('md:ml-64');
                     } else {
                         icon.classList.remove('fa-bars');
                         icon.classList.add('fa-times');
-                        domElements.mainContentArea.classList.remove('md:ml-64'); 
-                        domElements.mainContentArea.classList.add('md:ml-0'); 
+                        domElements.mainContentArea.classList.remove('md:ml-64');
+                        domElements.mainContentArea.classList.add('md:ml-0');
                     }
                 });
 
                 document.querySelectorAll('#dashboard-menu .menu-item').forEach(item => {
-                    if (item.id === 'sidebar-file-menu-trigger') return; 
+                    if (item.id === 'sidebar-file-menu-trigger') return;
 
                     item.addEventListener('click', function(event) {
                         if (this.classList.contains('disabled')) {
@@ -1351,17 +1351,17 @@
 
 
                         const targetId = this.getAttribute('href');
-                        if (targetId && targetId.startsWith('#') && targetId.length > 1) { 
-                            event.preventDefault(); 
+                        if (targetId && targetId.startsWith('#') && targetId.length > 1) {
+                            event.preventDefault();
                             const targetElement = document.querySelector(targetId);
                             if (targetElement) {
                                 targetElement.scrollIntoView({ behavior: 'smooth' });
                             }
                         } else if (targetId === '#') {
-                            event.preventDefault(); 
+                            event.preventDefault();
                         }
 
-                        if (window.innerWidth < 768) { 
+                        if (window.innerWidth < 768) {
                             if (domElements.dashboardMenu) domElements.dashboardMenu.classList.add('-translate-x-full');
                             const icon = domElements.mobileMenuButton.querySelector('i');
                             if (icon) {
@@ -1386,32 +1386,32 @@
 
         // --- Diagram Interaction and Zoom ---
         function handleDiagramContextMenu(event) {
-            event.preventDefault(); 
+            event.preventDefault();
         }
-        
+
         function applyZoom(newZoomLevel, avoidRedraw = false) { currentZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoomLevel)); if(domElements.scalableContentWrapper) domElements.scalableContentWrapper.style.transform = `scale(${currentZoom})`; if(domElements.zoomLevelDisplay) domElements.zoomLevelDisplay.textContent = `${Math.round(currentZoom * 100)}%`; if (!avoidRedraw && rcaData) { requestAnimationFrame(() => drawAllSvgConnectors()); } updateButtonStates(); }
-        
+
         // --- UI State Management ---
-        function updateButtonStates() { 
-            if (!domElements.undoButton) return; 
+        function updateButtonStates() {
+            if (!domElements.undoButton) return;
 
-            const noData = !rcaData; 
-            const noLocalStorageData = !localStorage.getItem('rcaDiagramData'); 
-            
-            domElements.undoButton.disabled = historyIndex <= 0; 
-            domElements.redoButton.disabled = historyIndex >= historyStack.length - 1; 
-            
-            if(domElements.saveDiagramButton) domElements.saveDiagramButton.disabled = noData; 
-            if(domElements.loadDiagramButton) domElements.loadDiagramButton.disabled = noLocalStorageData; 
-            if(domElements.saveToFileButton) domElements.saveToFileButton.disabled = noData; 
+            const noData = !rcaData;
+            const noLocalStorageData = !localStorage.getItem('rcaDiagramData');
 
-            domElements.zoomInButton.disabled = currentZoom >= MAX_ZOOM; 
-            domElements.zoomOutButton.disabled = currentZoom <= MIN_ZOOM; 
-            domElements.resetZoomButton.disabled = currentZoom === 1.0; 
-            
+            domElements.undoButton.disabled = historyIndex <= 0;
+            domElements.redoButton.disabled = historyIndex >= historyStack.length - 1;
+
+            if(domElements.saveDiagramButton) domElements.saveDiagramButton.disabled = noData;
+            if(domElements.loadDiagramButton) domElements.loadDiagramButton.disabled = noLocalStorageData;
+            if(domElements.saveToFileButton) domElements.saveToFileButton.disabled = noData;
+
+            domElements.zoomInButton.disabled = currentZoom >= MAX_ZOOM;
+            domElements.zoomOutButton.disabled = currentZoom <= MIN_ZOOM;
+            domElements.resetZoomButton.disabled = currentZoom === 1.0;
+
             const menuItemsToToggle = [
-                domElements.menuItemToggleView, 
-                domElements.menuItemAutoAdjust, 
+                domElements.menuItemToggleView,
+                domElements.menuItemAutoAdjust,
                 domElements.menuItemExportPng,
                 domElements.menuItemCauseEffectTable,
                 domElements.menuItemSolutionTable,
@@ -1423,9 +1423,9 @@
                     item.classList.toggle('disabled', noData);
                 }
             });
-            
+
             if(domElements.updateIdeasLandscapeChartButton) domElements.updateIdeasLandscapeChartButton.disabled = noData;
-            
+
             if(domElements.abcCauseFilterControls) {
                 domElements.abcCauseFilterControls.querySelectorAll('button[data-filter-type="cause"]').forEach(button => {
                     button.classList.toggle('active', button.dataset.filter === currentAbcCauseFilter);
@@ -1439,91 +1439,91 @@
                 });
             }
         }
-        
+
         // --- History Management (Undo/Redo) ---
-        function pushStateToHistory(currentState, clearRedoStack = true) { 
+        function pushStateToHistory(currentState, clearRedoStack = true) {
             // If there's no current state and no history, and no RCA data, it's an initial empty state.
             // Or if current state is null, and there's existing history, and no RCA data, it means we're clearing the diagram.
             // In these specific cases, we allow pushing a null/empty state.
-            if ((currentState === null && historyStack.length === 0 && historyIndex === -1 && !rcaData) || 
+            if ((currentState === null && historyStack.length === 0 && historyIndex === -1 && !rcaData) ||
                 (currentState === null && rcaData === null && historyStack.length > 0)) {
                 // This branch handles initial empty state or clearing the diagram
-            } else if (!currentState && rcaData) { 
+            } else if (!currentState && rcaData) {
                 // If currentState is explicitly null/undefined but rcaData exists, it means the diagram is not empty,
                 // so we don't want to push a "null" state that would incorrectly represent an empty diagram.
-                updateButtonStates(); 
-                return; 
-            } 
-            
-            const stateCopy = deepCopy(currentState); 
-            if (clearRedoStack) { 
-                historyStack = historyStack.slice(0, historyIndex + 1); 
-            } 
-            historyStack.push({ 
-                data: stateCopy, 
-                counter: nodeIdCounter, 
-                zoom: currentZoom, 
-                abcCauseFilter: currentAbcCauseFilter, 
+                updateButtonStates();
+                return;
+            }
+
+            const stateCopy = deepCopy(currentState);
+            if (clearRedoStack) {
+                historyStack = historyStack.slice(0, historyIndex + 1);
+            }
+            historyStack.push({
+                data: stateCopy,
+                counter: nodeIdCounter,
+                zoom: currentZoom,
+                abcCauseFilter: currentAbcCauseFilter,
                 abcSolutionFilter: currentAbcSolutionFilter,
                 customIdealityCriteria: deepCopy(customIdealityCriteria) // Save custom criteria with history
-            }); 
-            historyIndex = historyStack.length - 1; 
-            if (historyStack.length > MAX_HISTORY_STATES) { 
-                historyStack.shift(); 
-                historyIndex--; 
-            } 
-            updateButtonStates(); 
+            });
+            historyIndex = historyStack.length - 1;
+            if (historyStack.length > MAX_HISTORY_STATES) {
+                historyStack.shift();
+                historyIndex--;
+            }
+            updateButtonStates();
         }
-        function restoreStateFromHistory(historyEntry) { 
-            if (historyEntry && typeof historyEntry.data !== 'undefined') { 
-                rcaData = deepCopy(historyEntry.data); 
-                nodeIdCounter = historyEntry.counter; 
-                recalculateNodeIdCounter(rcaData); 
-                currentAbcCauseFilter = historyEntry.abcCauseFilter || 'all'; 
-                currentAbcSolutionFilter = historyEntry.abcSolutionFilter || 'all'; 
+        function restoreStateFromHistory(historyEntry) {
+            if (historyEntry && typeof historyEntry.data !== 'undefined') {
+                rcaData = deepCopy(historyEntry.data);
+                nodeIdCounter = historyEntry.counter;
+                recalculateNodeIdCounter(rcaData);
+                currentAbcCauseFilter = historyEntry.abcCauseFilter || 'all';
+                currentAbcSolutionFilter = historyEntry.abcSolutionFilter || 'all';
                 customIdealityCriteria = historyEntry.customIdealityCriteria ? deepCopy(historyEntry.customIdealityCriteria) : deepCopy(DEFAULT_IDEALITY_CRITERIA); // Restore custom criteria
 
                 // Ensure problem input area visibility is correct after loading
                 if (rcaData) {
                     if(domElements.problemInputArea) domElements.problemInputArea.style.display = 'none';
                     if(domElements.diagramTitle) domElements.diagramTitle.style.display = 'block';
-                } else { 
+                } else {
                     if(domElements.problemInputArea) domElements.problemInputArea.style.display = 'flex';
                     if(domElements.diagramTitle) domElements.diagramTitle.style.display = 'none';
-                    if(domElements.diagramContainer) domElements.diagramContainer.innerHTML = ''; 
-                    if(domElements.svgLayer) domElements.svgLayer.innerHTML = ''; 
+                    if(domElements.diagramContainer) domElements.diagramContainer.innerHTML = '';
+                    if(domElements.svgLayer) domElements.svgLayer.innerHTML = '';
                 }
 
-                renderRcaDiagram(); 
-                renderCauseEffectTable(); 
-                renderSolutionTable(); 
-                renderIdeasLandscapeChart(); 
-                applyZoom(historyEntry.zoom, true); 
-            } else { 
-                console.error("無法從歷史紀錄中檢索狀態。"); 
-                return false; 
-            } 
-            return true; 
-        } 
-        function handleUndo() { 
-            if (historyIndex > 0) { 
-                historyIndex--; 
-                if (!restoreStateFromHistory(historyStack[historyIndex])) { 
+                renderRcaDiagram();
+                renderCauseEffectTable();
+                renderSolutionTable();
+                renderIdeasLandscapeChart();
+                applyZoom(historyEntry.zoom, true);
+            } else {
+                console.error("無法從歷史紀錄中檢索狀態。");
+                return false;
+            }
+            return true;
+        }
+        function handleUndo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                if (!restoreStateFromHistory(historyStack[historyIndex])) {
                     historyIndex++; // Restore index if restoration failed
-                } 
-            } 
-            updateButtonStates(); 
+                }
+            }
+            updateButtonStates();
         }
-        function handleRedo() { 
-            if (historyIndex < historyStack.length - 1) { 
-                historyIndex++; 
-                if (!restoreStateFromHistory(historyStack[historyIndex])) { 
+        function handleRedo() {
+            if (historyIndex < historyStack.length - 1) {
+                historyIndex++;
+                if (!restoreStateFromHistory(historyStack[historyIndex])) {
                     historyIndex--; // Restore index if restoration failed
-                } 
-            } 
-            updateButtonStates(); 
+                }
+            }
+            updateButtonStates();
         }
-        
+
         // --- Data Loading and Saving ---
         function getDefaultIdealityAssessment() {
             // Returns a new assessment object based on current customIdealityCriteria
@@ -1555,9 +1555,9 @@
                      alert('載入失敗：圖表資料 (diagramData) 缺失。');
                      return false;
                 }
-                
-                rcaData = parsedJson.diagramData; 
-                
+
+                rcaData = parsedJson.diagramData;
+
                 if (rcaData !== null && typeof rcaData !== 'object') {
                     alert('載入失敗：圖表資料 (diagramData) 格式不正確，應為物件或 null。');
                     return false;
@@ -1579,10 +1579,10 @@
                         if (!node) return;
                         if (typeof node.andSourceNodeIds === 'undefined') node.andSourceNodeIds = [];
                         if (typeof node.effectParameters === 'undefined') node.effectParameters = [];
-                        if (typeof node.connectorLabelToParent === 'undefined') { 
+                        if (typeof node.connectorLabelToParent === 'undefined') {
                             node.connectorLabelToParent = "";
                         }
-                        
+
                         if (node.type === 'cause') {
                             if (typeof node.improvingParameter === 'undefined') node.improvingParameter = null;
                             if (typeof node.worseningParameter === 'undefined') node.worseningParameter = null;
@@ -1598,22 +1598,22 @@
                                             principleName: oldIp.name,
                                             description: oldIp.solution,
                                             abcCategory: oldIp.abcCategory || null,
-                                            timeRequired: oldIp.timeRequired || null, 
-                                            mcdmScore: oldIp.mcdmScore || null,     
-                                            cost: oldIp.cost || null,               
+                                            timeRequired: oldIp.timeRequired || null,
+                                            mcdmScore: oldIp.mcdmScore || null,
+                                            cost: oldIp.cost || null,
                                             idealityAssessment: oldIp.idealityAssessment || getDefaultIdealityAssessment()
                                         });
                                     }
                                 });
-                                delete node.inventivePrinciples; 
+                                delete node.inventivePrinciples;
                             }
 
                             if(node.solutionsGenerated) {
                                 node.solutionsGenerated.forEach(sol => {
                                     if (typeof sol.timeRequired === 'undefined') sol.timeRequired = null;
-                                    if (typeof sol.mcdmScore === 'undefined') sol.mcdmScore = null; 
+                                    if (typeof sol.mcdmScore === 'undefined') sol.mcdmScore = null;
                                     if (typeof sol.cost === 'undefined') sol.cost = null;
-                                    
+
                                     // Ensure idealityAssessment is fully initialized with custom criteria
                                     if (typeof sol.idealityAssessment === 'undefined' || sol.idealityAssessment === null || !Array.isArray(sol.idealityAssessment.criteria)) {
                                         sol.idealityAssessment = getDefaultIdealityAssessment();
@@ -1658,125 +1658,125 @@
                     migrateNodeDataRecursive(rcaData);
                 }
 
-                recalculateNodeIdCounter(rcaData); 
-                
-                currentAbcCauseFilter = parsedJson.abcCauseFilter || parsedJson.abcFilter || 'all'; 
+                recalculateNodeIdCounter(rcaData);
+
+                currentAbcCauseFilter = parsedJson.abcCauseFilter || parsedJson.abcFilter || 'all';
                 currentAbcSolutionFilter = parsedJson.abcSolutionFilter || 'all';
                 currentZoom = typeof parsedJson.zoomLevel === 'number' ? parsedJson.zoomLevel : 1.0;
-                
-                historyStack = []; 
-                historyIndex = -1; 
-                pushStateToHistory(rcaData); 
+
+                historyStack = [];
+                historyIndex = -1;
+                pushStateToHistory(rcaData);
 
                 if (rcaData) {
                     if(domElements.problemInputArea) domElements.problemInputArea.style.display = 'none';
                     if(domElements.diagramTitle) domElements.diagramTitle.style.display = 'block';
-                } else { 
+                } else {
                     if(domElements.problemInputArea) domElements.problemInputArea.style.display = 'flex';
                     if(domElements.diagramTitle) domElements.diagramTitle.style.display = 'none';
-                    if(domElements.diagramContainer) domElements.diagramContainer.innerHTML = ''; 
-                    if(domElements.svgLayer) domElements.svgLayer.innerHTML = ''; 
+                    if(domElements.diagramContainer) domElements.diagramContainer.innerHTML = '';
+                    if(domElements.svgLayer) domElements.svgLayer.innerHTML = '';
                 }
-                
-                if(domElements.toolButtonsContainer) domElements.toolButtonsContainer.style.display = 'flex'; 
-                renderRcaDiagram(); 
-                renderCauseEffectTable(); 
-                renderSolutionTable(); 
-                renderIdeasLandscapeChart(); 
-                applyZoom(currentZoom, true); 
-                alert('圖表進度已成功載入！'); 
-                return true; 
 
-            } catch (e) { 
-                console.error("載入資料時發生錯誤:", e); 
+                if(domElements.toolButtonsContainer) domElements.toolButtonsContainer.style.display = 'flex';
+                renderRcaDiagram();
+                renderCauseEffectTable();
+                renderSolutionTable();
+                renderIdeasLandscapeChart();
+                applyZoom(currentZoom, true);
+                alert('圖表進度已成功載入！');
+                return true;
+
+            } catch (e) {
+                console.error("載入資料時發生錯誤:", e);
                 let userMessage = '載入失敗：檔案內容可能不是有效的JSON格式，或已損毀。';
                 if (e instanceof SyntaxError) {
                     userMessage = '載入失敗：檔案內容不是有效的JSON格式。請檢查檔案是否正確。';
                 } else {
                     userMessage += '\n錯誤訊息: ' + e.message;
                 }
-                alert(userMessage); 
-                return false; 
+                alert(userMessage);
+                return false;
             }
         }
 
-        function handleSaveToLocalStorage() { 
-            if (rcaData || rcaData === null) { 
-                try { 
-                    const dataToSave = { 
-                        diagramData: rcaData, 
-                        counter: nodeIdCounter, 
-                        zoomLevel: currentZoom, 
-                        abcCauseFilter: currentAbcCauseFilter, 
+        function handleSaveToLocalStorage() {
+            if (rcaData || rcaData === null) {
+                try {
+                    const dataToSave = {
+                        diagramData: rcaData,
+                        counter: nodeIdCounter,
+                        zoomLevel: currentZoom,
+                        abcCauseFilter: currentAbcCauseFilter,
                         abcSolutionFilter: currentAbcSolutionFilter,
                         customIdealityCriteria: customIdealityCriteria // Save custom criteria
-                    }; 
-                    localStorage.setItem('rcaDiagramData', JSON.stringify(dataToSave)); 
-                    alert('圖表進度已儲存至瀏覽器！'); 
-                } catch (e) { 
-                    console.error("Error saving to localStorage:", e); 
-                    alert('儲存失敗，可能是瀏覽器儲存空間已滿或功能受限。'); 
-                } 
-            } else { 
-                alert('沒有圖表資料可儲存。'); 
-            } 
-            updateButtonStates(); 
+                    };
+                    localStorage.setItem('rcaDiagramData', JSON.stringify(dataToSave));
+                    alert('圖表進度已儲存至瀏覽器！');
+                } catch (e) {
+                    console.error("Error saving to localStorage:", e);
+                    alert('儲存失敗，可能是瀏覽器儲存空間已滿或功能受限。');
+                }
+            } else {
+                alert('沒有圖表資料可儲存。');
+            }
+            updateButtonStates();
         }
-        function handleLoadFromLocalStorage() { 
-            const savedDataString = localStorage.getItem('rcaDiagramData'); 
-            if (savedDataString) { 
-                if(!processLoadedData(savedDataString)) { /* error handled by processLoadedData */ } 
-            } else { 
-                alert('瀏覽器中沒有儲存的圖表進度。'); 
-            } 
-            updateButtonStates(); 
+        function handleLoadFromLocalStorage() {
+            const savedDataString = localStorage.getItem('rcaDiagramData');
+            if (savedDataString) {
+                if(!processLoadedData(savedDataString)) { /* error handled by processLoadedData */ }
+            } else {
+                alert('瀏覽器中沒有儲存的圖表進度。');
+            }
+            updateButtonStates();
         }
-        function handleSaveToFile() { 
-            if (rcaData || rcaData === null) { 
-                const dataToSave = { 
-                    diagramData: rcaData, 
-                    counter: nodeIdCounter, 
-                    zoomLevel: currentZoom, 
-                    abcCauseFilter: currentAbcCauseFilter, 
+        function handleSaveToFile() {
+            if (rcaData || rcaData === null) {
+                const dataToSave = {
+                    diagramData: rcaData,
+                    counter: nodeIdCounter,
+                    zoomLevel: currentZoom,
+                    abcCauseFilter: currentAbcCauseFilter,
                     abcSolutionFilter: currentAbcSolutionFilter,
                     customIdealityCriteria: customIdealityCriteria // Save custom criteria
-                }; 
-                const jsonData = JSON.stringify(dataToSave, null, 2); 
-                const blob = new Blob([jsonData], { type: 'application/json' }); 
-                const url = URL.createObjectURL(blob); 
-                const a = document.createElement('a'); 
-                a.href = url; 
-                a.download = `創新問題解決工具-資料-${new Date().toISOString().slice(0,10)}.json`; 
-                document.body.appendChild(a); 
-                a.click(); 
-                document.body.removeChild(a); 
-                URL.revokeObjectURL(url); 
-                alert('圖表資料已準備下載。'); 
-            } else { 
+                };
+                const jsonData = JSON.stringify(dataToSave, null, 2);
+                const blob = new Blob([jsonData], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `創新問題解決工具-資料-${new Date().toISOString().slice(0,10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                alert('圖表資料已準備下載。');
+            } else {
                 alert('沒有圖表資料可儲存至檔案。');
-            } 
+            }
         }
-        
+
         function handleLoadFromFile(event) {
             const file = event.target.files[0];
-            const inputElement = event.target; 
+            const inputElement = event.target;
             if (file) {
                 if (file.type === "application/json" || file.name.endsWith(".json")) {
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         const fileContent = e.target.result;
-                        processLoadedData(fileContent); 
-                        inputElement.value = ''; 
+                        processLoadedData(fileContent);
+                        inputElement.value = '';
                     };
                     reader.onerror = (e) => {
                         alert('讀取檔案時發生錯誤。');
                         console.error("FileReader error:", e);
-                        inputElement.value = ''; 
+                        inputElement.value = '';
                     };
                     reader.readAsText(file);
                 } else {
                     alert('載入失敗：請選擇一個有效的 .json 檔案。');
-                    inputElement.value = ''; 
+                    inputElement.value = '';
                 }
             }
             updateButtonStates();
@@ -1793,46 +1793,46 @@
                         maxId = idNum;
                     }
                 }
-                if (node.children && Array.isArray(node.children)) { 
+                if (node.children && Array.isArray(node.children)) {
                     node.children.forEach(childNode => {
-                         if (childNode && typeof childNode === 'object') { 
+                         if (childNode && typeof childNode === 'object') {
                             findMaxIdRecursive(childNode);
                         }
                     });
                 }
             }
-            if (currentData && typeof currentData === 'object') { 
+            if (currentData && typeof currentData === 'object') {
                 findMaxIdRecursive(currentData);
             }
-            nodeIdCounter = maxId; 
+            nodeIdCounter = maxId;
         }
-        
-        function handleSetInitialProblem() { 
+
+        function handleSetInitialProblem() {
             if (!domElements.problemInput) return;
-            const problemText = domElements.problemInput.value.trim(); 
-            if (!problemText) { alert('請輸入主要負面效果！'); return; } 
-            nodeIdCounter = 0; 
-            rcaData = createNode(problemText, 'initial-problem', null); 
-            historyStack = []; 
-            historyIndex = -1; 
-            currentAbcCauseFilter = 'all'; 
-            currentAbcSolutionFilter = 'all'; 
-            pushStateToHistory(rcaData); 
-            isFinalizedView = false; 
-            if(domElements.problemInputArea) domElements.problemInputArea.style.display = 'none'; 
-            if(domElements.diagramTitle) domElements.diagramTitle.style.display = 'block'; 
-            if(domElements.toolButtonsContainer) domElements.toolButtonsContainer.style.display = 'flex'; 
-            applyZoom(1.0, true); 
-            renderRcaDiagram(); 
-            renderCauseEffectTable(); 
-            renderSolutionTable(); 
-            renderIdeasLandscapeChart(); 
-            updateButtonStates(); 
-        } 
-        
-        function handleToggleFinalizeView() { 
-            isFinalizedView = !isFinalizedView; 
-            renderRcaDiagram(); 
+            const problemText = domElements.problemInput.value.trim();
+            if (!problemText) { alert('請輸入主要負面效果！'); return; }
+            nodeIdCounter = 0;
+            rcaData = createNode(problemText, 'initial-problem', null);
+            historyStack = [];
+            historyIndex = -1;
+            currentAbcCauseFilter = 'all';
+            currentAbcSolutionFilter = 'all';
+            pushStateToHistory(rcaData);
+            isFinalizedView = false;
+            if(domElements.problemInputArea) domElements.problemInputArea.style.display = 'none';
+            if(domElements.diagramTitle) domElements.diagramTitle.style.display = 'block';
+            if(domElements.toolButtonsContainer) domElements.toolButtonsContainer.style.display = 'flex';
+            applyZoom(1.0, true);
+            renderRcaDiagram();
+            renderCauseEffectTable();
+            renderSolutionTable();
+            renderIdeasLandscapeChart();
+            updateButtonStates();
+        }
+
+        function handleToggleFinalizeView() {
+            isFinalizedView = !isFinalizedView;
+            renderRcaDiagram();
             const menuItem = domElements.menuItemToggleView;
             if (menuItem) {
                 const icon = menuItem.querySelector('i');
@@ -1842,44 +1842,44 @@
                 menuItem.innerHTML = `<i class="${isFinalizedView ? 'fas fa-lock' : 'fas fa-edit'} fa-fw mr-3"></i> ${isFinalizedView ? '檢視模式 (已鎖定)' : '編輯模式'}`;
             }
         }
-        
-        function createNode(text, type, parentId, isNonChangeable = false) { 
-            nodeIdCounter++; 
-            const node = { 
-                id: `node-${nodeIdCounter}`, 
-                text: text, 
-                type: type, 
-                parentId: parentId, 
-                children: [], 
-                andSourceNodeIds: [], 
-                effectParameters: [],  
+
+        function createNode(text, type, parentId, isNonChangeable = false) {
+            nodeIdCounter++;
+            const node = {
+                id: `node-${nodeIdCounter}`,
+                text: text,
+                type: type,
+                parentId: parentId,
+                children: [],
+                andSourceNodeIds: [],
+                effectParameters: [],
                 improvingParameter: null,
                 worseningParameter: null,
-                solutionsGenerated: [], 
+                solutionsGenerated: [],
                 abcCategory: null,
-                connectorLabelToParent: "" 
-            }; 
-            if (type === 'cause') node.isNonChangeable = isNonChangeable; 
-            return node; 
-        }
-        
-        function renderRcaDiagram() { 
-            if (!domElements.diagramContainer) return;
-            domElements.diagramContainer.innerHTML = ''; 
-            if (rcaData) { 
-                domElements.diagramContainer.appendChild(createNodeElement(rcaData)); 
-            } 
-            requestAnimationFrame(() => drawAllSvgConnectors()); 
-            updateButtonStates(); 
+                connectorLabelToParent: ""
+            };
+            if (type === 'cause') node.isNonChangeable = isNonChangeable;
+            return node;
         }
 
-        function createNodeElement(nodeData) { 
-            const nodeWrapper = document.createElement('div'); 
-            nodeWrapper.classList.add('rca-node-wrapper'); 
-            const nodeDiv = document.createElement('div'); 
-            nodeDiv.classList.add('rca-node', `rca-node-${nodeData.type}`); 
-            nodeDiv.id = nodeData.id; 
-            nodeDiv.dataset.nodeId = nodeData.id; 
+        function renderRcaDiagram() {
+            if (!domElements.diagramContainer) return;
+            domElements.diagramContainer.innerHTML = '';
+            if (rcaData) {
+                domElements.diagramContainer.appendChild(createNodeElement(rcaData));
+            }
+            requestAnimationFrame(() => drawAllSvgConnectors());
+            updateButtonStates();
+        }
+
+        function createNodeElement(nodeData) {
+            const nodeWrapper = document.createElement('div');
+            nodeWrapper.classList.add('rca-node-wrapper');
+            const nodeDiv = document.createElement('div');
+            nodeDiv.classList.add('rca-node', `rca-node-${nodeData.type}`);
+            nodeDiv.id = nodeData.id;
+            nodeDiv.dataset.nodeId = nodeData.id;
 
             if (nodeData.type === 'cause') {
                 let isDimmed = false;
@@ -1887,51 +1887,51 @@
                     isDimmed = false;
                 } else if (currentAbcCauseFilter === 'none') {
                     isDimmed = nodeData.abcCategory !== null && typeof nodeData.abcCategory !== 'undefined';
-                } else { 
+                } else {
                     isDimmed = nodeData.abcCategory !== currentAbcCauseFilter;
                 }
                 if (isDimmed) {
                     nodeDiv.classList.add('dimmed');
                 }
             }
-            
-            const contentDiv = document.createElement('div'); 
-            contentDiv.classList.add('rca-node-content'); 
-            const headerDiv = document.createElement('div'); 
-            headerDiv.classList.add('rca-node-header'); 
-            const textSpan = document.createElement('span'); 
-            textSpan.classList.add('rca-node-text'); 
-            textSpan.textContent = nodeData.text; 
-            headerDiv.appendChild(textSpan); 
+
+            const contentDiv = document.createElement('div');
+            contentDiv.classList.add('rca-node-content');
+            const headerDiv = document.createElement('div');
+            headerDiv.classList.add('rca-node-header');
+            const textSpan = document.createElement('span');
+            textSpan.classList.add('rca-node-text');
+            textSpan.textContent = nodeData.text;
+            headerDiv.appendChild(textSpan);
 
             if (nodeData.type === 'cause' && nodeData.abcCategory) {
                 const abcBadge = document.createElement('span');
                 abcBadge.classList.add('abc-badge', `abc-badge-${nodeData.abcCategory}`);
                 abcBadge.textContent = nodeData.abcCategory;
-                nodeDiv.appendChild(abcBadge); 
+                nodeDiv.appendChild(abcBadge);
             }
 
-            if (nodeData.type === 'cause' && nodeData.isNonChangeable) { 
-                const ncBadge = document.createElement('span'); 
-                ncBadge.classList.add('node-badge'); 
-                ncBadge.textContent = 'NC'; 
-                headerDiv.appendChild(ncBadge); 
-            } 
-            contentDiv.appendChild(headerDiv); 
-            
-            const iconSpan = document.createElement('span'); 
+            if (nodeData.type === 'cause' && nodeData.isNonChangeable) {
+                const ncBadge = document.createElement('span');
+                ncBadge.classList.add('node-badge');
+                ncBadge.textContent = 'NC';
+                headerDiv.appendChild(ncBadge);
+            }
+            contentDiv.appendChild(headerDiv);
+
+            const iconSpan = document.createElement('span');
             iconSpan.classList.add('rca-node-icon');
-            if (nodeData.type === 'initial-problem') iconSpan.textContent = '(-)'; 
-            else if (nodeData.type === 'cause') { 
-                const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(nodeData); 
-                if (hasPositiveChild && hasNegativeChild) { 
-                    iconSpan.textContent = '+/-'; 
-                    iconSpan.classList.add('contradictory'); 
-                } else { iconSpan.style.display = 'none'; } 
-            } else if (nodeData.type === 'positive-effect') iconSpan.textContent = '(+)'; 
-            else if (nodeData.type === 'negative-effect') iconSpan.textContent = '(-)'; 
+            if (nodeData.type === 'initial-problem') iconSpan.textContent = '(-)';
+            else if (nodeData.type === 'cause') {
+                const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(nodeData);
+                if (hasPositiveChild && hasNegativeChild) {
+                    iconSpan.textContent = '+/-';
+                    iconSpan.classList.add('contradictory');
+                } else { iconSpan.style.display = 'none'; }
+            } else if (nodeData.type === 'positive-effect') iconSpan.textContent = '(+)';
+            else if (nodeData.type === 'negative-effect') iconSpan.textContent = '(-)';
             else { iconSpan.style.display = 'none'; }
-            
+
             // Apply default background colors for icons based on node type
             if (nodeData.type === 'initial-problem') iconSpan.style.backgroundColor = '#ef4444';
             else if (nodeData.type === 'cause' && iconSpan.classList.contains('contradictory')) iconSpan.style.backgroundColor = '#8b5cf6';
@@ -1939,7 +1939,7 @@
             else if (nodeData.type === 'negative-effect') iconSpan.style.backgroundColor = '#f97316';
 
 
-            nodeDiv.appendChild(iconSpan); 
+            nodeDiv.appendChild(iconSpan);
 
             if (nodeData.type === 'cause' && (nodeData.improvingParameter || nodeData.worseningParameter)) {
                 let paramsText = '';
@@ -1953,81 +1953,79 @@
                 }
             }
 
-            if (nodeData.effectParameters && nodeData.effectParameters.length > 0) { 
-                const paramsDiv = document.createElement('div'); 
-                paramsDiv.classList.add('selected-items-list'); 
-                paramsDiv.innerHTML = `<strong>效果參數:</strong> <ul>${nodeData.effectParameters.map(p => `<li>${p}</li>`).join('')}</ul>`; 
-                contentDiv.appendChild(paramsDiv); 
-            } 
-            
-            if (!isFinalizedView) { 
-                const actionsDiv = document.createElement('div'); 
-                actionsDiv.classList.add('rca-node-actions'); 
-                actionsDiv.appendChild(createActionButton('修訂此項', 'edit-node', () => promptEditNode(nodeData.id, contentDiv))); 
-                if (nodeData.type === 'initial-problem') { 
-                    actionsDiv.appendChild(createActionButton('新增原因', 'add-cause', () => promptAddNode(nodeData.id, contentDiv, 'cause', '輸入原因描述', '與父節點關係描述 (選填)'))); 
-                } else if (nodeData.type === 'cause') { 
-                    actionsDiv.appendChild(createActionButton('新增子原因', 'add-cause', () => promptAddNode(nodeData.id, contentDiv, 'cause', '輸入子原因描述', '與父節點關係描述 (選填)'))); 
-                    actionsDiv.appendChild(createActionButton('(+) 正面效果', 'add-positive', () => promptAddNode(nodeData.id, contentDiv, 'positive-effect', '輸入此原因帶來的正面效果', '與父節點關係描述 (選填)'))); 
-                    actionsDiv.appendChild(createActionButton('(-) 負面效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入此原因導致的負面效果', '與父節點關係描述 (選填)'))); 
-                    const ncButtonText = nodeData.isNonChangeable ? '取消NC標記' : '設為NC'; 
-                    actionsDiv.appendChild(createActionButton(ncButtonText, 'toggle-nc', () => toggleNonChangeable(nodeData.id))); 
-                    actionsDiv.appendChild(createActionButton('設定ABC分類', 'set-abc', () => openAbcCauseCategoryModal(nodeData.id))); 
-                    const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(nodeData);
-                    if (hasPositiveChild && hasNegativeChild) { 
-                        actionsDiv.appendChild(createActionButton('設定衝突參數/方案', 'set-triz', () => openTrizSolutionModal(nodeData.id))); 
+            if (nodeData.effectParameters && nodeData.effectParameters.length > 0) {
+                const paramsDiv = document.createElement('div');
+                paramsDiv.classList.add('selected-items-list');
+                paramsDiv.innerHTML = `<strong>效果參數:</strong> <ul>${nodeData.effectParameters.map(p => `<li>${p}</li>`).join('')}</ul>`;
+                contentDiv.appendChild(paramsDiv);
+            }
+
+            if (!isFinalizedView) {
+                const actionsDiv = document.createElement('div');
+                actionsDiv.classList.add('rca-node-actions');
+                actionsDiv.appendChild(createActionButton('修訂此項', 'edit-node', () => promptEditNode(nodeData.id, contentDiv)));
+                if (nodeData.type === 'initial-problem') {
+                    actionsDiv.appendChild(createActionButton('新增原因', 'add-cause', () => promptAddNode(nodeData.id, contentDiv, 'cause', '輸入原因描述', '與父節點關係描述 (選填)')));
+                } else if (nodeData.type === 'cause') {
+                    actionsDiv.appendChild(createActionButton('新增子原因', 'add-cause', () => promptAddNode(nodeData.id, contentDiv, 'cause', '輸入子原因描述', '與父節點關係描述 (選填)')));
+                    actionsDiv.appendChild(createActionButton('(+) 正面效果', 'add-positive', () => promptAddNode(nodeData.id, contentDiv, 'positive-effect', '輸入此原因帶來的正面效果', '與父節點關係描述 (選填)')));
+                    actionsDiv.appendChild(createActionButton('(-) 負面效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入此原因導致的負面效果', '與父節點關係描述 (選填)')));
+                    const ncButtonText = nodeData.isNonChangeable ? '取消NC標記' : '設為NC';
+                    actionsDiv.appendChild(createActionButton(ncButtonText, 'toggle-nc', () => toggleNonChangeable(nodeData.id)));
+                    actionsDiv.appendChild(createActionButton('設定ABC分類', 'set-abc', () => openAbcCauseCategoryModal(nodeData.id)));
+                    // Modified: Always show "設定衝突參數/方案" for cause nodes
+                    actionsDiv.appendChild(createActionButton('設定衝突參數/方案', 'set-triz', () => openTrizSolutionModal(nodeData.id)));
+                    if (nodeData.parentId) {
+                        actionsDiv.appendChild(createActionButton('移除此原因', 'remove-button', () => removeNode(nodeData.id)));
                     }
-                    if (nodeData.parentId) { 
-                        actionsDiv.appendChild(createActionButton('移除此原因', 'remove-button', () => removeNode(nodeData.id))); 
-                    } 
-                } else if (nodeData.type === 'positive-effect' || nodeData.type === 'negative-effect') { 
-                    actionsDiv.appendChild(createActionButton('(+) 新增正面子效果', 'add-positive', () => promptAddNode(nodeData.id, contentDiv, 'positive-effect', '輸入正面子效果描述', '與父節點關係描述 (選填)'))); 
-                    actionsDiv.appendChild(createActionButton('(-) 新增負面子效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入負面子效果描述', '與父節點關係描述 (選填)'))); 
-                    actionsDiv.appendChild(createActionButton('設定效果參數', 'set-parameters', () => openEffectParameterModal(nodeData.id))); 
-                    actionsDiv.appendChild(createActionButton('設定AND輸入源', 'set-and-sources', () => openAndSourceModal(nodeData.id))); 
-                    actionsDiv.appendChild(createActionButton('移除效果', 'remove-button', () => removeNode(nodeData.id))); 
-                } 
-                contentDiv.appendChild(actionsDiv); 
-                const inputContainer = document.createElement('div'); 
-                inputContainer.classList.add('input-group-container'); 
-                contentDiv.appendChild(inputContainer); 
-            } 
-            nodeDiv.appendChild(contentDiv); 
-            nodeWrapper.appendChild(nodeDiv); 
-            if (nodeData.children && Array.isArray(nodeData.children) && nodeData.children.length > 0) { 
-                const childrenContainer = document.createElement('div'); 
-                childrenContainer.classList.add('rca-children-container'); 
+                } else if (nodeData.type === 'positive-effect' || nodeData.type === 'negative-effect') {
+                    actionsDiv.appendChild(createActionButton('(+) 新增正面子效果', 'add-positive', () => promptAddNode(nodeData.id, contentDiv, 'positive-effect', '輸入正面子效果描述', '與父節點關係描述 (選填)')));
+                    actionsDiv.appendChild(createActionButton('(-) 新增負面子效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入負面子效果描述', '與父節點關係描述 (選填)')));
+                    actionsDiv.appendChild(createActionButton('設定效果參數', 'set-parameters', () => openEffectParameterModal(nodeData.id)));
+                    actionsDiv.appendChild(createActionButton('設定AND輸入源', 'set-and-sources', () => openAndSourceModal(nodeData.id)));
+                    actionsDiv.appendChild(createActionButton('移除效果', 'remove-button', () => removeNode(nodeData.id)));
+                }
+                contentDiv.appendChild(actionsDiv);
+                const inputContainer = document.createElement('div');
+                inputContainer.classList.add('input-group-container');
+                contentDiv.appendChild(inputContainer);
+            }
+            nodeDiv.appendChild(contentDiv);
+            nodeWrapper.appendChild(nodeDiv);
+            if (nodeData.children && Array.isArray(nodeData.children) && nodeData.children.length > 0) {
+                const childrenContainer = document.createElement('div');
+                childrenContainer.classList.add('rca-children-container');
                 nodeData.children.forEach(childNode => {
                      if (childNode && typeof childNode === 'object') {
                         childrenContainer.appendChild(createNodeElement(childNode));
                     }
-                }); 
-                nodeWrapper.appendChild(childrenContainer); 
-            } 
-            return nodeWrapper; 
+                });
+                nodeWrapper.appendChild(childrenContainer);
+            }
+            return nodeWrapper;
         }
-        
-        function promptEditNode(nodeId, parentNodeContentDiv) { 
+
+        function promptEditNode(nodeId, parentNodeContentDiv) {
             if (isFinalizedView) {
                 alert('目前處於檢視模式，請切換到編輯模式以修改節點。');
                 return;
             }
-            const nodeToEdit = findNodeById(rcaData, nodeId); 
-            if (!nodeToEdit) return; 
-            const inputContainer = parentNodeContentDiv.querySelector('.input-group-container'); 
-            if (!inputContainer) { console.error("Input container not found for node:", nodeId); return; } 
-            document.querySelectorAll('.input-group').forEach(ig => ig.remove()); 
-            inputContainer.innerHTML = ''; 
-            const inputGroup = document.createElement('div'); 
-            inputGroup.classList.add('input-group'); 
-            
-            const nodeInput = document.createElement('input'); 
-            nodeInput.type = 'text'; 
-            nodeInput.value = nodeToEdit.text; 
+            const nodeToEdit = findNodeById(rcaData, nodeId);
+            if (!nodeToEdit) return;
+            const inputContainer = parentNodeContentDiv.querySelector('.input-group-container');
+            if (!inputContainer) { console.error("Input container not found for node:", nodeId); return; }
+            document.querySelectorAll('.input-group').forEach(ig => ig.remove());
+            inputContainer.innerHTML = '';
+            const inputGroup = document.createElement('div');
+            inputGroup.classList.add('input-group');
+
+            const nodeInput = document.createElement('input');
+            nodeInput.type = 'text';
+            nodeInput.value = nodeToEdit.text;
             nodeInput.classList.add('input-field');
             inputGroup.appendChild(nodeInput);
 
-            let connectorLabelInput; 
+            let connectorLabelInput;
             if (nodeToEdit.parentId) {
                 connectorLabelInput = document.createElement('input');
                 connectorLabelInput.type = 'text';
@@ -2036,43 +2034,43 @@
                 connectorLabelInput.classList.add('input-field', 'mt-2');
                 inputGroup.appendChild(connectorLabelInput);
             }
-            
-            const saveEditButton = document.createElement('button'); 
-            saveEditButton.textContent = '儲存修訂'; 
-            saveEditButton.classList.add('action-button', 'save-edit-button', 'w-full', 'mt-2'); 
-            saveEditButton.onclick = () => { 
-                const newText = nodeInput.value.trim(); 
-                if (newText) { 
-                    nodeToEdit.text = newText; 
-                    if (nodeToEdit.parentId && connectorLabelInput) { 
+
+            const saveEditButton = document.createElement('button');
+            saveEditButton.textContent = '儲存修訂';
+            saveEditButton.classList.add('action-button', 'save-edit-button', 'w-full', 'mt-2');
+            saveEditButton.onclick = () => {
+                const newText = nodeInput.value.trim();
+                if (newText) {
+                    nodeToEdit.text = newText;
+                    if (nodeToEdit.parentId && connectorLabelInput) {
                          nodeToEdit.connectorLabelToParent = connectorLabelInput.value.trim();
                     }
-                    pushStateToHistory(rcaData); 
-                    renderRcaDiagram(); 
-                    renderCauseEffectTable(); 
-                    renderSolutionTable(); 
-                    inputContainer.innerHTML = ''; 
-                } else { 
-                    alert('描述不能為空！'); 
-                } 
-            }; 
-            nodeInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') saveEditButton.click(); }); 
+                    pushStateToHistory(rcaData);
+                    renderRcaDiagram();
+                    renderCauseEffectTable();
+                    renderSolutionTable();
+                    inputContainer.innerHTML = '';
+                } else {
+                    alert('描述不能為空！');
+                }
+            };
+            nodeInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') saveEditButton.click(); });
             if (connectorLabelInput) {
-                connectorLabelInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') saveEditButton.click(); }); 
+                connectorLabelInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') saveEditButton.click(); });
             }
-            
-            const cancelButton = document.createElement('button'); 
-            cancelButton.textContent = '取消修訂'; 
-            cancelButton.classList.add('action-button', 'bg-gray-400', 'hover:bg-gray-500', 'w-full', 'mt-1'); 
-            cancelButton.onclick = () => { inputContainer.innerHTML = ''; }; 
-            
-            inputGroup.appendChild(saveEditButton); 
-            inputGroup.appendChild(cancelButton); 
-            inputContainer.appendChild(inputGroup); 
-            nodeInput.focus(); 
-            nodeInput.select(); 
+
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = '取消修訂';
+            cancelButton.classList.add('action-button', 'bg-gray-400', 'hover:bg-gray-500', 'w-full', 'mt-1');
+            cancelButton.onclick = () => { inputContainer.innerHTML = ''; };
+
+            inputGroup.appendChild(saveEditButton);
+            inputGroup.appendChild(cancelButton);
+            inputContainer.appendChild(inputGroup);
+            nodeInput.focus();
+            nodeInput.select();
         }
-        
+
         function openAndSourceModal(targetNodeId) {
             if (isFinalizedView) return;
             currentAndTargetNodeId = targetNodeId;
@@ -2085,7 +2083,7 @@
             if(domElements.andSourceModalNodeText) domElements.andSourceModalNodeText.textContent = `為效果「${targetNode.text.substring(0,30)}...」設定 AND 輸入源:`;
             const optionsContainer = domElements.andSourceOptionsContainer;
             if(!optionsContainer) return;
-            optionsContainer.innerHTML = ''; 
+            optionsContainer.innerHTML = '';
 
             const potentialSources = [];
             function collectPotentialSourcesRecursive(node) {
@@ -2133,7 +2131,7 @@
 
             targetNode.andSourceNodeIds = selectedSources;
             pushStateToHistory(rcaData);
-            renderRcaDiagram(); 
+            renderRcaDiagram();
             if(domElements.andSourceModal) domElements.andSourceModal.style.display = 'none';
             currentAndTargetNodeId = null;
         }
@@ -2150,7 +2148,7 @@
             if(domElements.effectParameterModalNodeText) domElements.effectParameterModalNodeText.textContent = `為效果「${targetNode.text.substring(0,30)}...」設定參數:`;
             const optionsContainer = domElements.effectParameterOptionsContainer;
             if(!optionsContainer) return;
-            optionsContainer.innerHTML = ''; 
+            optionsContainer.innerHTML = '';
 
             Object.entries(EFFECT_PARAMETERS).forEach(([category, params]) => {
                 const categoryTitle = document.createElement('h4');
@@ -2159,11 +2157,11 @@
 
                 params.forEach(param => {
                     const label = document.createElement('label');
-                    label.className = 'block text-sm text-gray-700 mb-1 items-center'; 
+                    label.className = 'block text-sm text-gray-700 mb-1 items-center';
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
                     checkbox.value = param;
-                    checkbox.name = 'effectParamOption'; 
+                    checkbox.name = 'effectParamOption';
                     checkbox.className = 'mr-2 rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 align-middle';
                     if (targetNode.effectParameters && targetNode.effectParameters.includes(param)) {
                         checkbox.checked = true;
@@ -2190,12 +2188,12 @@
 
             targetNode.effectParameters = selectedParams;
             pushStateToHistory(rcaData);
-            renderRcaDiagram(); 
-            renderCauseEffectTable(); 
+            renderRcaDiagram();
+            renderCauseEffectTable();
             if(domElements.effectParameterModal) domElements.effectParameterModal.style.display = 'none';
             currentParameterTargetNodeId = null;
         }
-        
+
         // --- ABC Category Management ---
         function openAbcCauseCategoryModal(nodeId) {
             if (isFinalizedView) return;
@@ -2205,9 +2203,9 @@
                 alert('只能為原因節點設定ABC分類。');
                 return;
             }
-            const modal = domElements.abcCategoryModal; 
+            const modal = domElements.abcCategoryModal;
             if (!modal) return;
-            if (!modal.innerHTML.trim()) { 
+            if (!modal.innerHTML.trim()) {
                 modal.innerHTML = `
                     <div class="modal-content mx-auto p-5 border w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white">
                         <button class="modal-close-button" onclick="document.getElementById('abc-category-modal').style.display='none'; currentAbcCauseTargetNodeId = null;">&times;</button>
@@ -2228,16 +2226,16 @@
                     button.addEventListener('click', (event) => {
                         const category = event.target.dataset.abcCause === 'null' ? null : event.target.dataset.abcCause;
                         handleSaveAbcCauseCategory(category);
-                        modal.style.display = 'none'; 
+                        modal.style.display = 'none';
                     });
                 });
             }
-            
+
             const modalNodeText = modal.querySelector('#abc-modal-node-text');
             if (modalNodeText) modalNodeText.textContent = `節點：${node.text.substring(0,30)}${node.text.length > 30 ? '...' : ''}`;
             modal.querySelectorAll('button[data-abc-cause]').forEach(btn => {
                 btn.classList.remove('ring-2', 'ring-offset-2', 'ring-blue-500');
-                if (btn.dataset.abcCause === (node.abcCategory || 'null')) {
+                if (btn.dataset.abc-cause === (node.abcCategory || 'null')) {
                     btn.classList.add('ring-2', 'ring-offset-2', 'ring-blue-500');
                 }
             });
@@ -2248,30 +2246,30 @@
             if (!currentAbcCauseTargetNodeId) return;
             const node = findNodeById(rcaData, currentAbcCauseTargetNodeId);
             if (node && node.type === 'cause') {
-                node.abcCategory = category; 
+                node.abcCategory = category;
                 pushStateToHistory(rcaData);
                 renderRcaDiagram();
-                renderCauseEffectTable(); 
+                renderCauseEffectTable();
                 currentAbcCauseTargetNodeId = null;
             }
         }
 
         function applyAbcCauseFilter(filterType) {
             currentAbcCauseFilter = filterType;
-            pushStateToHistory(rcaData); 
-            renderRcaDiagram(); 
-            updateButtonStates(); 
+            pushStateToHistory(rcaData);
+            renderRcaDiagram();
+            updateButtonStates();
         }
         function applyAbcSolutionFilter(filterType) {
             currentAbcSolutionFilter = filterType;
-            renderSolutionTable(); 
+            renderSolutionTable();
             if(domElements.abcSolutionFilterControls) {
                 domElements.abcSolutionFilterControls.querySelectorAll('button[data-filter-type="solution"]').forEach(button => {
                     button.classList.toggle('active', button.dataset.filter === currentAbcSolutionFilter);
                 });
             }
         }
-        
+
         // --- TRIZ Solution Management ---
         function openTrizSolutionModal(causeNodeId) {
             if (isFinalizedView) return;
@@ -2282,10 +2280,10 @@
             if(domElements.trizModalCauseText) domElements.trizModalCauseText.textContent = `矛盾原因: ${causeNode.text.substring(0,50)}${causeNode.text.length > 50 ? '...' : ''}`;
             if(domElements.improvingParameterSelect) domElements.improvingParameterSelect.value = causeNode.improvingParameter || "";
             if(domElements.worseningParameterSelect) domElements.worseningParameterSelect.value = causeNode.worseningParameter || "";
-            
-            updateSuggestedPrinciples(); 
+
+            updateSuggestedPrinciples();
             renderSolutionsListForCause(causeNodeId);
-            if(domElements.editSolutionEntryContainer) domElements.editSolutionEntryContainer.style.display = 'none'; 
+            if(domElements.editSolutionEntryContainer) domElements.editSolutionEntryContainer.style.display = 'none';
             if(domElements.trizSolutionModal) domElements.trizSolutionModal.style.display = 'flex';
         }
 
@@ -2294,17 +2292,17 @@
 
             const improvingParam = domElements.improvingParameterSelect.value;
             const worseningParam = domElements.worseningParameterSelect.value;
-            domElements.suggestedPrinciplesList.innerHTML = ''; 
+            domElements.suggestedPrinciplesList.innerHTML = '';
 
             if (improvingParam && worseningParam && improvingParam !== "未選擇" && worseningParam !== "未選擇") {
                 // 使用 trizMatrix 實例獲取建議原理
                 const principlesNames = trizMatrix.getRecommendedPrinciplesByName(improvingParam, worseningParam);
-                
+
                 if (principlesNames && principlesNames.length > 0) {
                     if(domElements.suggestedPrinciplesContainer) domElements.suggestedPrinciplesContainer.style.display = 'block';
-                    principlesNames.forEach((principleName) => { 
+                    principlesNames.forEach((principleName) => {
                         const li = document.createElement('li');
-                        li.textContent = principleName; 
+                        li.textContent = principleName;
                         domElements.suggestedPrinciplesList.appendChild(li);
                     });
                 } else {
@@ -2319,8 +2317,8 @@
         function closeTrizSolutionModal() {
             if(domElements.trizSolutionModal) domElements.trizSolutionModal.style.display = 'none';
             currentTrizCauseNodeId = null;
-            renderRcaDiagram(); 
-            renderSolutionTable(); 
+            renderRcaDiagram();
+            renderSolutionTable();
         }
 
         function handleSaveTrizParameters() {
@@ -2331,16 +2329,16 @@
                 const oldWorsening = causeNode.worseningParameter;
                 causeNode.improvingParameter = domElements.improvingParameterSelect.value === "未選擇" ? null : domElements.improvingParameterSelect.value;
                 causeNode.worseningParameter = domElements.worseningParameterSelect.value === "未選擇" ? null : domElements.worseningParameterSelect.value;
-                
-                updateSuggestedPrinciples(); 
+
+                updateSuggestedPrinciples();
 
                 if (oldImproving !== causeNode.improvingParameter || oldWorsening !== causeNode.worseningParameter) {
                     pushStateToHistory(rcaData);
-                    renderSolutionTable(); 
+                    renderSolutionTable();
                 }
             }
         }
-        
+
         function renderSolutionsListForCause(causeNodeId) {
             if(!domElements.solutionsListContainer) return;
             domElements.solutionsListContainer.innerHTML = '';
@@ -2373,7 +2371,7 @@
             });
         }
 
-        function showEditSolutionEntry(solutionId) { 
+        function showEditSolutionEntry(solutionId) {
             const causeNode = findNodeById(rcaData, currentTrizCauseNodeId);
             if (!causeNode || !domElements.editingSolutionIdInput || !domElements.editSolutionTitle || !domElements.solutionPrincipleSelect || !domElements.solutionDescriptionInput || !domElements.solutionTimeRequiredInput || !domElements.solutionMcdmScoreInput || !domElements.solutionCostInput || !domElements.editSolutionEntryContainer) return;
 
@@ -2387,13 +2385,13 @@
                     domElements.solutionTimeRequiredInput.value = solution.timeRequired || '';
                     domElements.solutionMcdmScoreInput.value = solution.mcdmScore !== null && solution.mcdmScore !== undefined ? solution.mcdmScore.toFixed(2) : '';
                     domElements.solutionCostInput.value = solution.cost || '';
-                } else { return; } 
+                } else { return; }
             } else {
                 domElements.editSolutionTitle.textContent = "新增解決方案";
-                domElements.solutionPrincipleSelect.value = trizMatrix.getInventivePrinciplesNames()[0]; 
+                domElements.solutionPrincipleSelect.value = trizMatrix.getInventivePrinciplesNames()[0];
                 domElements.solutionDescriptionInput.value = '';
                 domElements.solutionTimeRequiredInput.value = '';
-                domElements.solutionMcdmScoreInput.value = ''; 
+                domElements.solutionMcdmScoreInput.value = '';
                 domElements.solutionCostInput.value = '';
             }
             domElements.editSolutionEntryContainer.style.display = 'block';
@@ -2401,7 +2399,7 @@
         }
 
         function handleSaveSolutionEntry() {
-            if (!currentTrizCauseNodeId || !domElements.editingSolutionIdInput || !domElements.solutionPrincipleSelect || !domElements.solutionDescriptionInput || !domElements.solutionTimeRequiredInput || !domElements.solutionCostInput || !domElements.editSolutionEntryContainer) return; 
+            if (!currentTrizCauseNodeId || !domElements.editingSolutionIdInput || !domElements.solutionPrincipleSelect || !domElements.solutionDescriptionInput || !domElements.solutionTimeRequiredInput || !domElements.solutionCostInput || !domElements.editSolutionEntryContainer) return;
             const causeNode = findNodeById(rcaData, currentTrizCauseNodeId);
             if (!causeNode) return;
 
@@ -2417,7 +2415,7 @@
 
             if (!causeNode.solutionsGenerated) causeNode.solutionsGenerated = [];
 
-            if (solutionId) { 
+            if (solutionId) {
                 const solIndex = causeNode.solutionsGenerated.findIndex(s => s.id === solutionId);
                 if (solIndex > -1) {
                     causeNode.solutionsGenerated[solIndex].principleName = principle;
@@ -2431,14 +2429,14 @@
                          causeNode.solutionsGenerated[solIndex].mcdmScore = calculateWeightedScore(causeNode.solutionsGenerated[solIndex].idealityAssessment.criteria);
                     }
                 }
-            } else { 
+            } else {
                 causeNode.solutionsGenerated.push({
                     id: `sol-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
                     principleName: principle,
                     description: description,
                     abcCategory: null,
                     timeRequired: timeRequired,
-                    mcdmScore: null, 
+                    mcdmScore: null,
                     cost: cost,
                     idealityAssessment: getDefaultIdealityAssessment() // New solutions get default assessment
                 });
@@ -2447,8 +2445,8 @@
             renderSolutionsListForCause(currentTrizCauseNodeId);
             domElements.editSolutionEntryContainer.style.display = 'none';
             domElements.editingSolutionIdInput.value = '';
-            renderSolutionTable(); 
-            renderIdeasLandscapeChart(); 
+            renderSolutionTable();
+            renderIdeasLandscapeChart();
         }
 
         function handleRemoveSolutionEntry(solutionId) {
@@ -2458,118 +2456,118 @@
                 causeNode.solutionsGenerated = causeNode.solutionsGenerated.filter(s => s.id !== solutionId);
                 pushStateToHistory(rcaData);
                 renderSolutionsListForCause(currentTrizCauseNodeId);
-                renderSolutionTable(); 
-                renderIdeasLandscapeChart(); 
+                renderSolutionTable();
+                renderIdeasLandscapeChart();
             }
         }
 
         // --- SVG Connector Drawing ---
-        function drawAllSvgConnectors(targetSvgLayer = domElements.svgLayer, targetDiagramContainer = domElements.diagramContainer, targetScalableWrapper = domElements.scalableContentWrapper, zoom = currentZoom) { 
+        function drawAllSvgConnectors(targetSvgLayer = domElements.svgLayer, targetDiagramContainer = domElements.diagramContainer, targetScalableWrapper = domElements.scalableContentWrapper, zoom = currentZoom) {
             if (!targetSvgLayer || !targetDiagramContainer || !targetScalableWrapper) return;
-            targetSvgLayer.innerHTML = ''; 
-            if (!rcaData || !targetDiagramContainer.querySelector(`#${rcaData.id}`)) { 
-                targetSvgLayer.setAttribute('width', 0); 
-                targetSvgLayer.setAttribute('height', 0); 
-                return; 
-            } 
-            
+            targetSvgLayer.innerHTML = '';
+            if (!rcaData || !targetDiagramContainer.querySelector(`#${rcaData.id}`)) {
+                targetSvgLayer.setAttribute('width', 0);
+                targetSvgLayer.setAttribute('height', 0);
+                return;
+            }
+
             const wrapperStyle = getComputedStyle(targetScalableWrapper);
             const wrapperPaddingLeft = parseFloat(wrapperStyle.paddingLeft) || 0;
             const wrapperPaddingTop = parseFloat(wrapperStyle.paddingTop) || 0;
 
-            const unscaledDiagramWidth = targetDiagramContainer.scrollWidth; 
-            const unscaledDiagramHeight = targetDiagramContainer.scrollHeight; 
-            targetSvgLayer.setAttribute('width', unscaledDiagramWidth); 
-            targetSvgLayer.setAttribute('height', unscaledDiagramHeight); 
-            targetSvgLayer.setAttribute('viewBox', `0 0 ${unscaledDiagramWidth} ${unscaledDiagramHeight}`); 
-            
-            const lineVerticalOffset = 25; 
-            const scalableWrapperRect = targetScalableWrapper.getBoundingClientRect(); 
+            const unscaledDiagramWidth = targetDiagramContainer.scrollWidth;
+            const unscaledDiagramHeight = targetDiagramContainer.scrollHeight;
+            targetSvgLayer.setAttribute('width', unscaledDiagramWidth);
+            targetSvgLayer.setAttribute('height', unscaledDiagramHeight);
+            targetSvgLayer.setAttribute('viewBox', `0 0 ${unscaledDiagramWidth} ${unscaledDiagramHeight}`);
 
-            function drawRecursive(parentNodeData, currentContainer) { 
-                const parentElement = currentContainer.querySelector(`#${parentNodeData.id}`); 
-                if (!parentElement) return; 
-                
-                const parentRect = parentElement.getBoundingClientRect(); 
-                const parentBottomCenterX_svg = (parentRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + parentRect.width / 2) / zoom; 
-                const parentBottomY_svg = (parentRect.top - (scalableWrapperRect.top + wrapperPaddingTop) + parentRect.height) / zoom; 
-                const parentTopY_svg = (parentRect.top - (scalableWrapperRect.top + wrapperPaddingTop)) / zoom; 
-                const parentCenterX_svg = parentBottomCenterX_svg; 
+            const lineVerticalOffset = 25;
+            const scalableWrapperRect = targetScalableWrapper.getBoundingClientRect();
 
-                if (parentNodeData.andSourceNodeIds && parentNodeData.andSourceNodeIds.length > 0) { 
-                    const mergePointYOffset = 40; 
-                    const mergePoint_svg = { x: parentCenterX_svg, y: parentTopY_svg - mergePointYOffset }; 
-                    if(mergePoint_svg.y < 0) mergePoint_svg.y = 10; 
-                    _drawSvgCircle(targetSvgLayer, mergePoint_svg.x, mergePoint_svg.y, 6, '#6d28d9', zoom); 
-                    parentNodeData.andSourceNodeIds.forEach(sourceId => { 
-                        const sourceElement = domElements.diagramContainer.querySelector(`#${sourceId}`); 
-                        if (sourceElement) { 
-                            const sourceRect = sourceElement.getBoundingClientRect(); 
-                            const sourceConnX_svg = (sourceRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + sourceRect.width / 2) / zoom; 
-                            const sourceConnY_svg = (sourceRect.top - (scalableWrapperRect.top + wrapperPaddingTop) + sourceRect.height) / zoom; 
-                            if (sourceConnY_svg < mergePoint_svg.y) { 
-                                _drawSvgLine(targetSvgLayer, sourceConnX_svg, sourceConnY_svg, mergePoint_svg.x, mergePoint_svg.y, '#6b7280', 2, zoom); 
-                            } else { 
-                                const sourceTopY_svg = (sourceRect.top - (scalableWrapperRect.top + wrapperPaddingTop)) / zoom; 
-                                _drawSvgLine(targetSvgLayer, sourceConnX_svg, sourceTopY_svg, mergePoint_svg.x, mergePoint_svg.y, '#6b7280', 2, zoom); 
-                            } 
-                        } 
-                    }); 
-                    if (parentTopY_svg > mergePoint_svg.y) { 
-                        _drawSvgLine(targetSvgLayer, mergePoint_svg.x, mergePoint_svg.y, parentCenterX_svg, parentTopY_svg, '#6b7280', 2, zoom); 
-                    } 
-                } 
-                const standardChildren = parentNodeData.children ? parentNodeData.children.filter(c => c && !(c.andSourceNodeIds && c.andSourceNodeIds.length > 0 && c.andSourceNodeIds.includes(parentNodeData.id))) : []; 
-                if (standardChildren.length > 0) { 
-                    const horizontalLineY_svg = parentBottomY_svg + lineVerticalOffset; 
-                    _drawSvgLine(targetSvgLayer, parentBottomCenterX_svg, parentBottomY_svg, parentBottomCenterX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); 
-                    if (standardChildren.length > 1) { 
-                        const firstChildElement = currentContainer.querySelector(`#${standardChildren[0].id}`); 
-                        const lastChildElement = currentContainer.querySelector(`#${standardChildren[standardChildren.length - 1].id}`); 
-                        if (firstChildElement && lastChildElement) { 
-                            const firstChildRect = firstChildElement.getBoundingClientRect(); 
-                            const lastChildRect = lastChildElement.getBoundingClientRect(); 
-                            const hLineStartX_svg = (firstChildRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + firstChildRect.width / 2) / zoom; 
-                            const hLineEndX_svg = (lastChildRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + lastChildRect.width / 2) / zoom; 
-                            if (Math.abs(hLineStartX_svg - hLineEndX_svg) > 1) { 
-                                _drawSvgLine(targetSvgLayer, hLineStartX_svg, horizontalLineY_svg, hLineEndX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); 
-                            } 
-                        } 
-                    } else if (standardChildren.length === 1) { 
-                        const childElement = currentContainer.querySelector(`#${standardChildren[0].id}`); 
-                        if (childElement) { 
-                            const childRect = childElement.getBoundingClientRect(); 
-                            const childCenterX_svg = (childRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + childRect.width / 2) / zoom; 
-                            if (Math.abs(parentBottomCenterX_svg - childCenterX_svg) > 1) { 
-                                _drawSvgLine(targetSvgLayer, parentBottomCenterX_svg, horizontalLineY_svg, childCenterX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); 
-                            } 
-                        } 
-                    } 
-                    standardChildren.forEach(childNode => { 
-                        if (!childNode) return; 
-                        const childElement = currentContainer.querySelector(`#${childNode.id}`); 
-                        if (childElement) { 
-                            const childRect = childElement.getBoundingClientRect(); 
-                            const childCenterX_svg = (childRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + childRect.width / 2) / zoom; 
-                            const childTopY_svg = (childRect.top - (scalableWrapperRect.top + wrapperPaddingTop)) / zoom; 
-                            if (childTopY_svg > horizontalLineY_svg) { 
-                                _drawSvgLine(targetSvgLayer, childCenterX_svg, horizontalLineY_svg, childCenterX_svg, childTopY_svg, '#9ca3af', 2, zoom); 
+            function drawRecursive(parentNodeData, currentContainer) {
+                const parentElement = currentContainer.querySelector(`#${parentNodeData.id}`);
+                if (!parentElement) return;
+
+                const parentRect = parentElement.getBoundingClientRect();
+                const parentBottomCenterX_svg = (parentRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + parentRect.width / 2) / zoom;
+                const parentBottomY_svg = (parentRect.top - (scalableWrapperRect.top + wrapperPaddingTop) + parentRect.height) / zoom;
+                const parentTopY_svg = (parentRect.top - (scalableWrapperRect.top + wrapperPaddingTop)) / zoom;
+                const parentCenterX_svg = parentBottomCenterX_svg;
+
+                if (parentNodeData.andSourceNodeIds && parentNodeData.andSourceNodeIds.length > 0) {
+                    const mergePointYOffset = 40;
+                    const mergePoint_svg = { x: parentCenterX_svg, y: parentTopY_svg - mergePointYOffset };
+                    if(mergePoint_svg.y < 0) mergePoint_svg.y = 10;
+                    _drawSvgCircle(targetSvgLayer, mergePoint_svg.x, mergePoint_svg.y, 6, '#6d28d9', zoom);
+                    parentNodeData.andSourceNodeIds.forEach(source => {
+                        const sourceElement = domElements.diagramContainer.querySelector(`#${source.id}`);
+                        if (sourceElement) {
+                            const sourceRect = sourceElement.getBoundingClientRect();
+                            const sourceConnX_svg = (sourceRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + sourceRect.width / 2) / zoom;
+                            const sourceConnY_svg = (sourceRect.top - (scalableWrapperRect.top + wrapperPaddingTop) + sourceRect.height) / zoom;
+                            if (sourceConnY_svg < mergePoint_svg.y) {
+                                _drawSvgLine(targetSvgLayer, sourceConnX_svg, sourceConnY_svg, mergePoint_svg.x, mergePoint_svg.y, '#6b7280', 2, zoom);
+                            } else {
+                                const sourceTopY_svg = (sourceRect.top - (scalableWrapperRect.top + wrapperPaddingTop)) / zoom;
+                                _drawSvgLine(targetSvgLayer, sourceConnX_svg, sourceTopY_svg, mergePoint_svg.x, mergePoint_svg.y, '#6b7280', 2, zoom);
+                            }
+                        }
+                    });
+                    if (parentTopY_svg > mergePoint_svg.y) {
+                        _drawSvgLine(targetSvgLayer, mergePoint_svg.x, mergePoint_svg.y, parentCenterX_svg, parentTopY_svg, '#6b7280', 2, zoom);
+                    }
+                }
+                const standardChildren = parentNodeData.children ? parentNodeData.children.filter(c => c && !(c.andSourceNodeIds && c.andSourceNodeIds.length > 0 && c.andSourceNodeIds.includes(parentNodeData.id))) : [];
+                if (standardChildren.length > 0) {
+                    const horizontalLineY_svg = parentBottomY_svg + lineVerticalOffset;
+                    _drawSvgLine(targetSvgLayer, parentBottomCenterX_svg, parentBottomY_svg, parentBottomCenterX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom);
+                    if (standardChildren.length > 1) {
+                        const firstChildElement = currentContainer.querySelector(`#${standardChildren[0].id}`);
+                        const lastChildElement = currentContainer.querySelector(`#${standardChildren[standardChildren.length - 1].id}`);
+                        if (firstChildElement && lastChildElement) {
+                            const firstChildRect = firstChildElement.getBoundingClientRect();
+                            const lastChildRect = lastChildElement.getBoundingClientRect();
+                            const hLineStartX_svg = (firstChildRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + firstChildRect.width / 2) / zoom;
+                            const hLineEndX_svg = (lastChildRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + lastChildRect.width / 2) / zoom;
+                            if (Math.abs(hLineStartX_svg - hLineEndX_svg) > 1) {
+                                _drawSvgLine(targetSvgLayer, hLineStartX_svg, horizontalLineY_svg, hLineEndX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom);
+                            }
+                        }
+                    } else if (standardChildren.length === 1) {
+                        const childElement = currentContainer.querySelector(`#${standardChildren[0].id}`);
+                        if (childElement) {
+                            const childRect = childElement.getBoundingClientRect();
+                            const childCenterX_svg = (childRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + childRect.width / 2) / zoom;
+                            if (Math.abs(parentBottomCenterX_svg - childCenterX_svg) > 1) {
+                                _drawSvgLine(targetSvgLayer, parentBottomCenterX_svg, horizontalLineY_svg, childCenterX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom);
+                            }
+                        }
+                    }
+                    standardChildren.forEach(childNode => {
+                        if (!childNode) return;
+                        const childElement = currentContainer.querySelector(`#${childNode.id}`);
+                        if (childElement) {
+                            const childRect = childElement.getBoundingClientRect();
+                            const childCenterX_svg = (childRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + childRect.width / 2) / zoom;
+                            const childTopY_svg = (childRect.top - (scalableWrapperRect.top + wrapperPaddingTop)) / zoom;
+                            if (childTopY_svg > horizontalLineY_svg) {
+                                _drawSvgLine(targetSvgLayer, childCenterX_svg, horizontalLineY_svg, childCenterX_svg, childTopY_svg, '#9ca3af', 2, zoom);
                                 if (childNode.connectorLabelToParent && childNode.connectorLabelToParent.trim() !== "") {
                                     const labelX = childCenterX_svg;
                                     const labelY = (horizontalLineY_svg + childTopY_svg) / 2;
                                     _drawSvgTextWithBackground(targetSvgLayer, childNode.connectorLabelToParent, labelX, labelY, 10 / zoom, '#333333', zoom);
                                 }
-                            } 
-                        } 
-                    }); 
-                } 
-                if (parentNodeData.children && Array.isArray(parentNodeData.children)) { 
+                            }
+                        }
+                    });
+                }
+                if (parentNodeData.children && Array.isArray(parentNodeData.children)) {
                     parentNodeData.children.forEach(childNode => {
                         if (childNode && typeof childNode === 'object') drawRecursive(childNode, currentContainer)
-                    }); 
-                } 
-            } 
-            if(rcaData && typeof rcaData === 'object') drawRecursive(rcaData, domElements.diagramContainer); 
+                    });
+                }
+            }
+            if(rcaData && typeof rcaData === 'object') drawRecursive(rcaData, domElements.diagramContainer);
         }
         function _drawSvgLine(svg, x1, y1, x2, y2, color = 'black', strokeWidth = 2, zoomFactor = 1) { if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) { return; } const line = document.createElementNS('http://www.w3.org/2000/svg', 'line'); line.setAttribute('x1', x1); line.setAttribute('y1', y1); line.setAttribute('x2', x2); line.setAttribute('y2', y2); line.setAttribute('stroke', color); line.setAttribute('stroke-width', strokeWidth / zoomFactor); svg.appendChild(line); }
         function _drawSvgCircle(svg, cx, cy, r, fillColor = 'black', zoomFactor = 1) { if (isNaN(cx) || isNaN(cy) || isNaN(r)) { return; } const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); circle.setAttribute('cx', cx); circle.setAttribute('cy', cy); circle.setAttribute('r', r / zoomFactor); circle.setAttribute('fill', fillColor); svg.appendChild(circle); }
@@ -2585,10 +2583,10 @@
             textElement.setAttribute('dominant-baseline', 'middle');
             textElement.classList.add('connector-label-text');
             textElement.textContent = textContent;
-            
+
             svg.appendChild(textElement);
             const bbox = textElement.getBBox();
-            svg.removeChild(textElement); 
+            svg.removeChild(textElement);
 
             const padding = 2 / zoomFactor;
             const rectElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -2596,180 +2594,180 @@
             rectElement.setAttribute('y', bbox.y - padding);
             rectElement.setAttribute('width', bbox.width + (2 * padding));
             rectElement.setAttribute('height', bbox.height + (2 * padding));
-            rectElement.setAttribute('rx', 2 / zoomFactor); 
+            rectElement.setAttribute('rx', 2 / zoomFactor);
             rectElement.setAttribute('ry', 2 / zoomFactor);
             rectElement.classList.add('connector-label-bg');
-            
-            svg.appendChild(rectElement); 
-            svg.appendChild(textElement);  
+
+            svg.appendChild(rectElement);
+            svg.appendChild(textElement);
         }
-        
+
         // --- RCA Node Operations ---
         function checkChildrenEffects(nodeData) { let hasPositiveChild = false; let hasNegativeChild = false; if (nodeData.children && Array.isArray(nodeData.children)) { for (const child of nodeData.children) { if(!child) continue; if (child.type === 'positive-effect') hasPositiveChild = true; if (child.type === 'negative-effect') hasNegativeChild = true; if (hasPositiveChild && hasNegativeChild) break; } } return { hasPositiveChild, hasNegativeChild }; }
         function toggleNonChangeable(nodeId) { if (isFinalizedView) return; const node = findNodeById(rcaData, nodeId); if (node && node.type === 'cause') { node.isNonChangeable = !node.isNonChangeable; pushStateToHistory(rcaData); renderRcaDiagram(); renderCauseEffectTable(); } }
         function createActionButton(text, className, onClickHandler) { const button = document.createElement('button'); button.classList.add('action-button', ...className.split(' ')); button.textContent = text; button.addEventListener('click', onClickHandler); return button; }
-        
-        function promptAddNode(parentId, parentNodeContentDiv, nodeTypeToAdd, placeholderText, connectorLabelPlaceholderText = "") { 
-            if (isFinalizedView) return; 
-            const inputContainer = parentNodeContentDiv.querySelector('.input-group-container'); 
-            if (!inputContainer) return; 
-            inputContainer.innerHTML = ''; 
-            document.querySelectorAll('.input-group').forEach(ig => ig.remove()); 
-            const inputGroup = document.createElement('div'); 
-            inputGroup.classList.add('input-group'); 
-            
-            const nodeInput = document.createElement('input'); 
-            nodeInput.type = 'text'; 
-            nodeInput.placeholder = placeholderText; 
+
+        function promptAddNode(parentId, parentNodeContentDiv, nodeTypeToAdd, placeholderText, connectorLabelPlaceholderText = "") {
+            if (isFinalizedView) return;
+            const inputContainer = parentNodeContentDiv.querySelector('.input-group-container');
+            if (!inputContainer) return;
+            inputContainer.innerHTML = '';
+            document.querySelectorAll('.input-group').forEach(ig => ig.remove());
+            const inputGroup = document.createElement('div');
+            inputGroup.classList.add('input-group');
+
+            const nodeInput = document.createElement('input');
+            nodeInput.type = 'text';
+            nodeInput.placeholder = placeholderText;
             nodeInput.classList.add('input-field');
             inputGroup.appendChild(nodeInput);
 
             const connectorLabelInput = document.createElement('input');
             connectorLabelInput.type = 'text';
-            connectorLabelInput.value = connectorLabelPlaceholderText; 
+            connectorLabelInput.value = connectorLabelPlaceholderText;
             connectorLabelInput.placeholder = connectorLabelPlaceholderText;
             connectorLabelInput.classList.add('input-field', 'mt-2');
             inputGroup.appendChild(connectorLabelInput);
-            
-            const saveButton = document.createElement('button'); 
-            saveButton.textContent = '儲存'; 
-            saveButton.classList.add('action-button', 'save-button', 'w-full', 'mt-2'); 
-            saveButton.onclick = () => { 
-                const newText = nodeInput.value.trim(); 
-                const connectorLabel = connectorLabelInput.value.trim(); 
-                if (newText) { 
-                    addNodeToData(parentId, newText, nodeTypeToAdd, connectorLabel); 
-                    inputContainer.innerHTML = ''; 
-                } else { 
-                    alert('描述不能為空！'); 
-                } 
-            }; 
-            nodeInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') saveButton.click(); }); 
-            connectorLabelInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') saveButton.click(); }); 
 
-            const cancelButton = document.createElement('button'); 
-            cancelButton.textContent = '取消'; 
-            cancelButton.classList.add('action-button', 'bg-gray-400', 'hover:bg-gray-500', 'w-full', 'mt-1'); 
-            cancelButton.onclick = () => { inputContainer.innerHTML = ''; }; 
-            
-            inputGroup.appendChild(saveButton); 
-            inputGroup.appendChild(cancelButton); 
-            inputContainer.appendChild(inputGroup); 
-            nodeInput.focus(); 
+            const saveButton = document.createElement('button');
+            saveButton.textContent = '儲存';
+            saveButton.classList.add('action-button', 'save-button', 'w-full', 'mt-2');
+            saveButton.onclick = () => {
+                const newText = nodeInput.value.trim();
+                const connectorLabel = connectorLabelInput.value.trim();
+                if (newText) {
+                    addNodeToData(parentId, newText, nodeTypeToAdd, connectorLabel);
+                    inputContainer.innerHTML = '';
+                } else {
+                    alert('描述不能為空！');
+                }
+            };
+            nodeInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') saveButton.click(); });
+            connectorLabelInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') saveButton.click(); });
+
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = '取消';
+            cancelButton.classList.add('action-button', 'bg-gray-400', 'hover:bg-gray-500', 'w-full', 'mt-1');
+            cancelButton.onclick = () => { inputContainer.innerHTML = ''; };
+
+            inputGroup.appendChild(saveButton);
+            inputGroup.appendChild(cancelButton);
+            inputContainer.appendChild(inputGroup);
+            nodeInput.focus();
         }
-        function addNodeToData(parentId, nodeText, nodeType, connectorLabel = "") { 
-            const parentNode = findNodeById(rcaData, parentId); 
-            if (parentNode) { 
-                const newNode = createNode(nodeText, nodeType, parentId); 
-                newNode.connectorLabelToParent = connectorLabel; 
-                parentNode.children.push(newNode); 
-                pushStateToHistory(rcaData); 
-                renderRcaDiagram(); 
-                renderCauseEffectTable(); 
-                renderSolutionTable(); 
-            } 
+        function addNodeToData(parentId, nodeText, nodeType, connectorLabel = "") {
+            const parentNode = findNodeById(rcaData, parentId);
+            if (parentNode) {
+                const newNode = createNode(nodeText, nodeType, parentId);
+                newNode.connectorLabelToParent = connectorLabel;
+                parentNode.children.push(newNode);
+                pushStateToHistory(rcaData);
+                renderRcaDiagram();
+                renderCauseEffectTable();
+                renderSolutionTable();
+            }
         }
-        function removeNode(nodeIdToRemove) { 
-            if (isFinalizedView) return; 
-            if (rcaData && rcaData.id === nodeIdToRemove) { 
-                alert('不能移除主要問題根源節點！'); 
-                return; 
-            } 
-            let nodeRemoved = false; 
-            function filterRecursive(node, idToRemove) { 
-                if (!node) return null; 
-                if (node.id === idToRemove) { 
-                    nodeRemoved = true; 
-                    function removeAndSourceFromEntireTree(currentNodeData, removedId) { 
-                        if (!currentNodeData) return; 
-                        if (currentNodeData.andSourceNodeIds && currentNodeData.andSourceNodeIds.includes(removedId)) { 
-                            currentNodeData.andSourceNodeIds = currentNodeData.andSourceNodeIds.filter(srcId => srcId !== removedId); 
-                        } 
-                        if (currentNodeData.children && Array.isArray(currentNodeData.children)) { 
-                            currentNodeData.children.forEach(child => removeAndSourceFromEntireTree(child, removedId)); 
-                        } 
-                    } 
-                    removeAndSourceFromEntireTree(rcaData, idToRemove); 
-                    return null; 
-                } 
-                if (node.children && Array.isArray(node.children)) { 
-                    node.children = node.children.map(child => filterRecursive(child, idToRemove)).filter(child => child !== null); 
-                } 
-                return node; 
-            } 
-            rcaData = filterRecursive(rcaData, nodeIdToRemove); 
-            if (nodeRemoved) { 
-                pushStateToHistory(rcaData); 
-            } 
-            if (!rcaData) { 
-                if(domElements.problemInputArea) domElements.problemInputArea.style.display = 'flex'; 
-                if(domElements.diagramTitle) domElements.diagramTitle.style.display = 'none'; 
-                if(domElements.toolButtonsContainer) domElements.toolButtonsContainer.style.display = 'flex'; 
-                if(domElements.causeEffectTableSection) domElements.causeEffectTableSection.style.display = 'none'; 
-                if(domElements.solutionTableSection) domElements.solutionTableSection.style.display = 'none'; 
-                if(domElements.ideasLandscapeSection) domElements.ideasLandscapeSection.style.display = 'none'; 
-                historyStack = []; 
-                historyIndex = -1; 
-                applyZoom(1.0); 
-                currentAbcCauseFilter = 'all'; 
-                currentAbcSolutionFilter = 'all'; 
-            } 
-            renderRcaDiagram(); 
-            renderCauseEffectTable(); 
-            renderSolutionTable(); 
-            renderIdeasLandscapeChart(); 
-            updateButtonStates(); 
+        function removeNode(nodeIdToRemove) {
+            if (isFinalizedView) return;
+            if (rcaData && rcaData.id === nodeIdToRemove) {
+                alert('不能移除主要問題根源節點！');
+                return;
+            }
+            let nodeRemoved = false;
+            function filterRecursive(node, idToRemove) {
+                if (!node) return null;
+                if (node.id === idToRemove) {
+                    nodeRemoved = true;
+                    function removeAndSourceFromEntireTree(currentNodeData, removedId) {
+                        if (!currentNodeData) return;
+                        if (currentNodeData.andSourceNodeIds && currentNodeData.andSourceNodeIds.includes(removedId)) {
+                            currentNodeData.andSourceNodeIds = currentNodeData.andSourceNodeIds.filter(srcId => srcId !== removedId);
+                        }
+                        if (currentNodeData.children && Array.isArray(currentNodeData.children)) {
+                            currentNodeData.children.forEach(child => removeAndSourceFromEntireTree(child, removedId));
+                        }
+                    }
+                    removeAndSourceFromEntireTree(rcaData, idToRemove);
+                    return null;
+                }
+                if (node.children && Array.isArray(node.children)) {
+                    node.children = node.children.map(child => filterRecursive(child, idToRemove)).filter(child => child !== null);
+                }
+                return node;
+            }
+            rcaData = filterRecursive(rcaData, nodeIdToRemove);
+            if (nodeRemoved) {
+                pushStateToHistory(rcaData);
+            }
+            if (!rcaData) {
+                if(domElements.problemInputArea) domElements.problemInputArea.style.display = 'flex';
+                if(domElements.diagramTitle) domElements.diagramTitle.style.display = 'none';
+                if(domElements.toolButtonsContainer) domElements.toolButtonsContainer.style.display = 'flex';
+                if(domElements.causeEffectTableSection) domElements.causeEffectTableSection.style.display = 'none';
+                if(domElements.solutionTableSection) domElements.solutionTableSection.style.display = 'none';
+                if(domElements.ideasLandscapeSection) domElements.ideasLandscapeSection.style.display = 'none';
+                historyStack = [];
+                historyIndex = -1;
+                applyZoom(1.0);
+                currentAbcCauseFilter = 'all';
+                currentAbcSolutionFilter = 'all';
+            }
+            renderRcaDiagram();
+            renderCauseEffectTable();
+            renderSolutionTable();
+            renderIdeasLandscapeChart();
+            updateButtonStates();
         }
         function findNodeById(node, id) { if (!node || typeof node !== 'object') return null; if (node.id === id) return node; if (node.children && Array.isArray(node.children)) { for (const child of node.children) { if(!child) continue; const found = findNodeById(child, id); if (found) return found; } } return null; }
-        
+
         // --- Table Rendering ---
-        function handleToggleCauseEffectTable(forceShow = false) { 
-            if(!domElements.causeEffectTableSection) return; 
-            const isHidden = domElements.causeEffectTableSection.style.display === 'none'; 
+        function handleToggleCauseEffectTable(forceShow = false) {
+            if(!domElements.causeEffectTableSection) return;
+            const isHidden = domElements.causeEffectTableSection.style.display === 'none';
             if (forceShow || isHidden) {
                 domElements.causeEffectTableSection.style.display = 'block';
-                renderCauseEffectTable(); 
-            } else if (!forceShow) { 
+                renderCauseEffectTable();
+            } else if (!forceShow) {
                  domElements.causeEffectTableSection.style.display = 'none';
             }
         }
-        function getCauseEffectTableData() { 
-            const tableRowsData = []; 
-            function collectDataRecursive(node) { 
-                if (!node) return; 
-                if (node.type === 'cause') { 
-                    const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(node); 
-                    let causeType = ''; 
-                    if (node.isNonChangeable) causeType = 'NC'; 
-                    else if (hasPositiveChild && hasNegativeChild) causeType = 'N+P (矛盾)'; 
-                    else if (hasNegativeChild) causeType = 'N (純負面)'; 
-                    else if (hasPositiveChild) causeType = 'P (純正面)'; 
-                    else causeType = '未定義效果'; 
-                    
-                    if (causeType !== 'P (純正面)' || (hasPositiveChild || hasNegativeChild)) { 
-                        const positiveEffects = (node.children && Array.isArray(node.children) ? node.children.filter(c => c && c.type === 'positive-effect').map(c => c.text).join('; ') : '') || '無'; 
-                        const negativeEffects = (node.children && Array.isArray(node.children) ? node.children.filter(c => c && c.type === 'negative-effect').map(c => c.text).join('; ') : '') || '無'; 
-                        tableRowsData.push({ cause: node.text, abc: node.abcCategory || '-', type: causeType, positive: positiveEffects, negative: negativeEffects }); 
-                    } 
-                } 
-                if (node.children && Array.isArray(node.children)) node.children.forEach(collectDataRecursive); 
-            } 
-            if (rcaData) collectDataRecursive(rcaData); 
-            return tableRowsData; 
+        function getCauseEffectTableData() {
+            const tableRowsData = [];
+            function collectDataRecursive(node) {
+                if (!node) return;
+                if (node.type === 'cause') {
+                    const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(node);
+                    let causeType = '';
+                    if (node.isNonChangeable) causeType = 'NC';
+                    else if (hasPositiveChild && hasNegativeChild) causeType = 'N+P (矛盾)';
+                    else if (hasNegativeChild) causeType = 'N (純負面)';
+                    else if (hasPositiveChild) causeType = 'P (純正面)';
+                    else causeType = '未定義效果';
+
+                    if (causeType !== 'P (純正面)' || (hasPositiveChild || hasNegativeChild)) {
+                        const positiveEffects = (node.children && Array.isArray(node.children) ? node.children.filter(c => c && c.type === 'positive-effect').map(c => c.text).join('; ') : '') || '無';
+                        const negativeEffects = (node.children && Array.isArray(node.children) ? node.children.filter(c => c && c.type === 'negative-effect').map(c => c.text).join('; ') : '') || '無';
+                        tableRowsData.push({ cause: node.text, abc: node.abcCategory || '-', type: causeType, positive: positiveEffects, negative: negativeEffects });
+                    }
+                }
+                if (node.children && Array.isArray(node.children)) node.children.forEach(collectDataRecursive);
+            }
+            if (rcaData) collectDataRecursive(rcaData);
+            return tableRowsData;
         }
         function renderCauseEffectTable() { if (!domElements.causeEffectTableBody) return; if (!rcaData) { domElements.causeEffectTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500">請先設定主要負面效果並建立分析圖。</td></tr>'; return; } const tableData = getCauseEffectTableData(); domElements.causeEffectTableBody.innerHTML = ''; if (tableData.length === 0) { domElements.causeEffectTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500">目前圖表中沒有定義直接帶有正面或負面效果的原因 (且非純粹正面原因)。</td></tr>'; return; } tableData.forEach(rowData => { const row = domElements.causeEffectTableBody.insertRow(); row.insertCell().textContent = rowData.cause; row.insertCell().textContent = rowData.abc; row.insertCell().textContent = rowData.type; row.insertCell().textContent = rowData.positive; row.insertCell().textContent = rowData.negative; }); }
-        
-        function handleToggleSolutionTable(forceShow = false) { 
-            if(!domElements.solutionTableSection) return; 
-            const isHidden = domElements.solutionTableSection.style.display === 'none'; 
+
+        function handleToggleSolutionTable(forceShow = false) {
+            if(!domElements.solutionTableSection) return;
+            const isHidden = domElements.solutionTableSection.style.display === 'none';
             if (forceShow || isHidden) {
                 domElements.solutionTableSection.style.display = 'block';
-                renderSolutionTable(); 
+                renderSolutionTable();
             } else if (!forceShow) {
                 domElements.solutionTableSection.style.display = 'none';
             }
         }
-        
+
         function renderSolutionTable() {
             if (!domElements.solutionTableBody) return;
             if (!rcaData) {
@@ -2801,7 +2799,7 @@
                 row.insertCell().textContent = solDetail.worseningParameter || '-';
                 row.insertCell().textContent = solDetail.principleName;
                 row.insertCell().textContent = solDetail.description;
-                
+
                 const abcCell = row.insertCell();
                 const abcSelect = document.createElement('select');
                 abcSelect.classList.add('abc-select');
@@ -2824,11 +2822,11 @@
                     openIdealityAssessmentModal(solDetail.causeId, solDetail.solutionId);
                 });
                 assessCell.appendChild(assessButton);
-                
+
                 const scoreCell = row.insertCell();
                 scoreCell.classList.add('ideality-score-display');
                 scoreCell.textContent = solDetail.mcdmScore !== null && solDetail.mcdmScore !== undefined
-                    ? solDetail.mcdmScore.toFixed(2) 
+                    ? solDetail.mcdmScore.toFixed(2)
                     : '-';
             });
         }
@@ -2837,26 +2835,24 @@
             const solutionsList = [];
             function findSolutionsRecursive(node) {
                 if (!node) return;
+                // Modified: Now collect solutions from ALL cause nodes, not just contradictory ones
                 if (node.type === 'cause' && node.solutionsGenerated && node.solutionsGenerated.length > 0) {
-                    const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(node);
-                    if (hasPositiveChild && hasNegativeChild) { 
-                        node.solutionsGenerated.forEach(sol => {
-                            solutionsList.push({
-                                causeId: node.id,
-                                causeText: node.text,
-                                improvingParameter: node.improvingParameter,
-                                worseningParameter: node.worseningParameter,
-                                solutionId: sol.id,
-                                principleName: sol.principleName,
-                                description: sol.description,
-                                abcCategory: sol.abcCategory,
-                                timeRequired: sol.timeRequired,
-                                mcdmScore: sol.mcdmScore, 
-                                cost: sol.cost,
-                                idealityAssessment: sol.idealityAssessment || getDefaultIdealityAssessment() 
-                            });
+                    node.solutionsGenerated.forEach(sol => {
+                        solutionsList.push({
+                            causeId: node.id,
+                            causeText: node.text,
+                            improvingParameter: node.improvingParameter,
+                            worseningParameter: node.worseningParameter,
+                            solutionId: sol.id,
+                            principleName: sol.principleName,
+                            description: sol.description,
+                            abcCategory: sol.abcCategory,
+                            timeRequired: sol.timeRequired,
+                            mcdmScore: sol.mcdmScore,
+                            cost: sol.cost,
+                            idealityAssessment: sol.idealityAssessment || getDefaultIdealityAssessment()
                         });
-                    }
+                    });
                 }
                 if (node.children && Array.isArray(node.children)) {
                     node.children.forEach(findSolutionsRecursive);
@@ -2873,16 +2869,16 @@
                 if (solution) {
                     solution.abcCategory = newAbcCategory;
                     pushStateToHistory(rcaData);
-                    renderSolutionTable(); 
-                    renderIdeasLandscapeChart(); 
+                    renderSolutionTable();
+                    renderIdeasLandscapeChart();
                 }
             }
         }
-        
+
         // --- Ideas Landscape Chart Functions ---
-        function handleToggleIdeasLandscape(forceShow = false) { 
+        function handleToggleIdeasLandscape(forceShow = false) {
             if(!domElements.ideasLandscapeSection) return;
-            const isHidden = domElements.ideasLandscapeSection.style.display === 'none'; 
+            const isHidden = domElements.ideasLandscapeSection.style.display === 'none';
             if (forceShow || isHidden) {
                 domElements.ideasLandscapeSection.style.display = 'block';
                 renderIdeasLandscapeChart();
@@ -2890,14 +2886,14 @@
                  domElements.ideasLandscapeSection.style.display = 'none';
             }
         }
-        
+
         function getChartDataPoints() {
             const solutions = getAllSolutionsWithDetails().filter(s => s.timeRequired !== null && s.mcdmScore !== null && s.mcdmScore !== undefined);
             return solutions.map(sol => ({
                 x: sol.timeRequired,
-                y: sol.mcdmScore, 
-                label: sol.description, 
-                shortLabel: sol.description.substring(0, 20) + (sol.description.length > 20 ? "..." : ""), 
+                y: sol.mcdmScore,
+                label: sol.description,
+                shortLabel: sol.description.substring(0, 20) + (sol.description.length > 20 ? "..." : ""),
                 cost: sol.cost,
                 abc: sol.abcCategory || 'none',
                 ideality: sol.mcdmScore, // Use mcdmScore for ideality
@@ -2915,7 +2911,7 @@
                         grid: { color: '#e5e7eb' }
                     },
                     y: {
-                        title: { display: true, text: '理想性加權總分 (MCDM)', font: { weight: 'bold' } }, 
+                        title: { display: true, text: '理想性加權總分 (MCDM)', font: { weight: 'bold' } },
                         grid: { color: '#e5e7eb' }
                     }
                 },
@@ -2926,8 +2922,8 @@
                                 let label = context.raw.label || '';
                                 if (label) { label = `方案: ${label.substring(0,50)}${label.length > 50 ? '...' : ''}\n`; }
                                 else { label = `方案ID: ${context.raw.id}\n`;}
-                                
-                                label += `時間: ${context.raw.x}, 理想性總分: ${context.raw.y.toFixed(2)}`; 
+
+                                label += `時間: ${context.raw.x}, 理想性總分: ${context.raw.y.toFixed(2)}`;
                                 if (context.raw.cost !== null && context.raw.cost !== undefined) label += `\n成本: ${context.raw.cost}`;
                                 if (context.raw.abc && context.raw.abc !== 'none') label += `\nABC分類: ${context.raw.abc}`;
                                 return label.split('\n');
@@ -2940,14 +2936,14 @@
                         displayColors: false,
                     },
                     legend: { display: false },
-                    quadrantDrawer: { 
+                    quadrantDrawer: {
                         timeThreshold: timeThreshold,
                         scoreThreshold: scoreThreshold
                     }
                 },
             };
         }
-        
+
         const quadrantPlugin = {
             id: 'quadrantDrawer',
             afterDraw: (chart, args, options) => {
@@ -2956,22 +2952,22 @@
                 const scoreThreshold = options.scoreThreshold;
 
                 ctx.save();
-                ctx.globalCompositeOperation = 'destination-over'; 
+                ctx.globalCompositeOperation = 'destination-over';
 
                 const xThresholdPixel = x.getPixelForValue(timeThreshold);
                 const yThresholdPixel = y.getPixelForValue(scoreThreshold);
 
-                const q2 = { x: left, y: top, width: xThresholdPixel - left, height: yThresholdPixel - top }; 
-                const q1 = { x: xThresholdPixel, y: top, width: right - xThresholdPixel, height: yThresholdPixel - top }; 
-                const q3 = { x: left, y: yThresholdPixel, width: xThresholdPixel - left, height: bottom - yThresholdPixel }; 
-                const q4 = { x: xThresholdPixel, y: yThresholdPixel, width: right - xThresholdPixel, height: bottom - yThresholdPixel }; 
+                const q2 = { x: left, y: top, width: xThresholdPixel - left, height: yThresholdPixel - top };
+                const q1 = { x: xThresholdPixel, y: top, width: right - xThresholdPixel, height: yThresholdPixel - top };
+                const q3 = { x: left, y: yThresholdPixel, width: xThresholdPixel - left, height: bottom - yThresholdPixel };
+                const q4 = { x: xThresholdPixel, y: yThresholdPixel, width: right - xThresholdPixel, height: bottom - yThresholdPixel };
 
                 ctx.fillStyle = QUADRANT_COLORS.Q2; if (q2.width > 0 && q2.height > 0) ctx.fillRect(q2.x, q2.y, q2.width, q2.height);
                 ctx.fillStyle = QUADRANT_COLORS.Q1; if (q1.width > 0 && q1.height > 0) ctx.fillRect(q1.x, q1.y, q1.width, q1.height);
                 ctx.fillStyle = QUADRANT_COLORS.Q3; if (q3.width > 0 && q3.height > 0) ctx.fillRect(q3.x, q3.y, q3.width, q3.height);
                 ctx.fillStyle = QUADRANT_COLORS.Q4; if (q4.width > 0 && q4.height > 0) ctx.fillRect(q4.x, q4.y, q4.width, q4.height);
-                
-                ctx.globalCompositeOperation = 'source-over'; 
+
+                ctx.globalCompositeOperation = 'source-over';
 
                 if (xThresholdPixel >= left && xThresholdPixel <= right) {
                     ctx.beginPath(); ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)'; ctx.lineWidth = 1.5; ctx.setLineDash([6, 3]);
@@ -2981,12 +2977,12 @@
                     ctx.beginPath(); ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)'; ctx.lineWidth = 1.5; ctx.setLineDash([6, 3]);
                     ctx.moveTo(left, yThresholdPixel); ctx.lineTo(right, yThresholdPixel); ctx.stroke(); ctx.setLineDash([]);
                 }
-                
-                ctx.fillStyle = '#374151'; 
+
+                ctx.fillStyle = '#374151';
                 ctx.font = 'bold 11px Inter';
                 ctx.textAlign = 'center';
                 const padding = 8;
-                
+
                 if (q2.width > 20 && q2.height > 20) ctx.fillText(QUADRANT_LABELS.Q2, q2.x + q2.width / 2, q2.y + padding + 5);
                 if (q3.width > 20 && q3.height > 20) ctx.fillText(QUADRANT_LABELS.Q3, q3.x + q3.width / 2, q3.y + q3.height - padding);
                 if (q1.width > 20 && q1.height > 20) ctx.fillText(QUADRANT_LABELS.Q1, q1.x + q1.width / 2, q1.y + padding + 5);
@@ -2995,8 +2991,8 @@
                 ctx.restore();
             }
         };
-        if (typeof Chart !== 'undefined') { 
-            Chart.register(quadrantPlugin); 
+        if (typeof Chart !== 'undefined') {
+            Chart.register(quadrantPlugin);
         }
 
 
@@ -3009,7 +3005,7 @@
                 if (domElements.ideasLandscapeNoDataMessage) domElements.ideasLandscapeNoDataMessage.style.display = 'flex'; // Use flex to center content
                 return;
             }
-            
+
             const dataPoints = getChartDataPoints();
 
             if (dataPoints.length === 0) {
@@ -3020,7 +3016,7 @@
                 if (domElements.ideasLandscapeNoDataMessage) domElements.ideasLandscapeNoDataMessage.style.display = 'flex'; // Use flex to center content
                 return;
             }
-            if (domElements.ideasLandscapeNoDataMessage) domElements.ideasLandscapeNoDataMessage.style.display = 'none'; 
+            if (domElements.ideasLandscapeNoDataMessage) domElements.ideasLandscapeNoDataMessage.style.display = 'none';
 
             const timeThreshold = parseFloat(domElements.landscapeTimeThresholdInput.value) || 0;
             const scoreThreshold = parseFloat(domElements.landscapeScoreThresholdInput.value) || 0;
@@ -3042,11 +3038,11 @@
                         pointRadius: dataPoints.map(p => {
                             let radius = 5;
                             if (p.cost !== null && p.cost !== undefined && p.cost > 0) {
-                                radius += Math.log10(p.cost / 100 + 1) * 2; 
+                                radius += Math.log10(p.cost / 100 + 1) * 2;
                             } else if (p.ideality !== null && p.ideality !== undefined) {
-                                radius += p.ideality / 2; 
+                                radius += p.ideality / 2;
                             }
-                            return Math.min(Math.max(radius, 4), 15); 
+                            return Math.min(Math.max(radius, 4), 15);
                         }),
                         pointStyle: dataPoints.map(p => ABC_POINT_STYLES[p.abc] || ABC_POINT_STYLES['none']),
                         hoverRadius: dataPoints.map(p => {
@@ -3102,10 +3098,10 @@
                         if (existingCrit) {
                             newCriteriaState.push({
                                 id: existingCrit.id,
-                                name: defaultCrit.name, 
+                                name: defaultCrit.name,
                                 score: existingCrit.score,
                                 weight: existingCrit.weight,
-                                description: defaultCrit.description 
+                                description: defaultCrit.description
                             });
                         } else {
                             newCriteriaState.push({
@@ -3119,7 +3115,7 @@
                     });
                     solution.idealityAssessment.criteria = newCriteriaState;
                 }
-                
+
                 // Render dynamic criteria inputs
                 domElements.idealityCriteriaContainer.innerHTML = '';
                 solution.idealityAssessment.criteria.forEach((crit, index) => {
@@ -3138,7 +3134,7 @@
                             <span id="ideality-crit-${crit.id}-value" class="range-value">${crit.score}</span>
                         </div>
                         <label for="ideality-crit-${crit.id}-weight" class="text-xs mt-1">
-                            權重 (0-1): 
+                            權重 (0-1):
                             <input type="number" id="ideality-crit-${crit.id}-weight" value="${crit.weight}" step="0.01" min="0" max="1" class="input-field text-xs p-1 w-20 inline-block ml-1" data-criterion-id="${crit.id}">
                             <span class="tooltip-container">
                                 <i class="fas fa-info-circle text-gray-400 hover:text-gray-600"></i>
@@ -3166,9 +3162,9 @@
                         weightInput.addEventListener('input', updateIdealityTotalScoreDisplay);
                     }
                 });
-                
+
                 updateIdealityTotalScoreDisplay();
-                domElements.idealityAssessmentModal.style.display = 'flex'; 
+                domElements.idealityAssessmentModal.style.display = 'flex';
             } catch (e) {
                 console.error("openIdealityAssessmentModal 內部錯誤:", e);
                 alert("理想性評估視窗設定失敗，請檢查控制台錯誤訊息。");
@@ -3179,7 +3175,7 @@
             if(domElements.idealityAssessmentModal) domElements.idealityAssessmentModal.style.display = 'none';
             currentAssessingSolution = { causeId: null, solutionId: null };
         }
-        
+
         function calculateWeightedScore(criteriaArray) {
             let totalWeightedScore = 0;
             let totalWeightSum = 0;
@@ -3209,10 +3205,10 @@
                 totalWeightedScore += crit.score * crit.weight;
                 totalWeightSum += crit.weight;
             });
-            
+
             domElements.idealityTotalScoreDisplay.textContent = totalWeightedScore.toFixed(2);
 
-            if (Math.abs(totalWeightSum - 1.0) > 0.001) { 
+            if (Math.abs(totalWeightSum - 1.0) > 0.001) {
                 domElements.idealityWeightsSumWarning.textContent = `注意：目前權重總和為 ${totalWeightSum.toFixed(2)}，建議調整至 1。`;
                 domElements.idealityWeightsSumWarning.style.display = 'block';
             } else {
@@ -3242,7 +3238,7 @@
 
             // Re-render the modal content with reset values
             openIdealityAssessmentModal(causeId, solutionId);
-            updateIdealityTotalScoreDisplay(); 
+            updateIdealityTotalScoreDisplay();
         }
 
 
@@ -3259,7 +3255,7 @@
             if (!solution || !domElements.idealityCriteriaContainer) return;
 
             if (!solution.idealityAssessment) solution.idealityAssessment = getDefaultIdealityAssessment();
-            
+
             // Update scores and weights from current UI
             solution.idealityAssessment.criteria.forEach(crit => {
                 const rangeInput = domElements.idealityCriteriaContainer.querySelector(`#ideality-crit-${crit.id}-range`);
@@ -3267,13 +3263,13 @@
                 if (rangeInput) crit.score = parseFloat(rangeInput.value);
                 if (weightInput) crit.weight = parseFloat(weightInput.value);
             });
-            
+
             solution.idealityAssessment.weightedScore = calculateWeightedScore(solution.idealityAssessment.criteria);
-            solution.mcdmScore = solution.idealityAssessment.weightedScore; 
+            solution.mcdmScore = solution.idealityAssessment.weightedScore;
 
             pushStateToHistory(rcaData);
-            renderSolutionTable(); 
-            renderIdeasLandscapeChart(); 
+            renderSolutionTable();
+            renderIdeasLandscapeChart();
             closeIdealityAssessmentModal();
         }
 
@@ -3333,7 +3329,7 @@
                 entryDiv.className = 'criterion-entry';
                 entryDiv.innerHTML = `
                     <span>
-                        <strong>${crit.name}</strong> 
+                        <strong>${crit.name}</strong>
                         <span class="text-gray-500 text-xs ml-2"> (預設分數: ${crit.defaultScore}, 預設權重: ${crit.defaultWeight})</span>
                     </span>
                     <div>
@@ -3357,7 +3353,7 @@
                     domElements.criterionDefaultScoreInput.value = criterion.defaultScore;
                     domElements.criterionDefaultWeightInput.value = criterion.defaultWeight;
                     domElements.criterionDescriptionInput.value = criterion.description;
-                } else { return; } 
+                } else { return; }
             } else {
                 domElements.criterionFormTitle.textContent = "新增評估準則";
                 domElements.criterionNameInput.value = '';
@@ -3398,7 +3394,7 @@
                 criterionIdCounter++;
                 customIdealityCriteria.push({ id: `crit-${criterionIdCounter}`, name, defaultScore, defaultWeight, description });
             }
-            
+
             saveCustomIdealityCriteria(); // Implicitly handled by pushStateToHistory
             renderCustomCriteriaList();
             hideEditCriterionForm();
@@ -3428,7 +3424,7 @@
 
         // --- Other Functions ---
         function autoAdjustNodeLayout() { alert('自動調整節點功能尚待開發。'); }
-        async function exportDiagramAsPNG() { 
+        async function exportDiagramAsPNG() {
             if (!rcaData || !domElements.scalableContentWrapper || !domElements.diagramContainer || domElements.diagramContainer.children.length === 0) {
                 alert('圖表為空或找不到圖表元素！');
                 return;
@@ -3442,47 +3438,47 @@
             const originalRenderAreaScrollX = domElements.diagramRenderArea ? domElements.diagramRenderArea.scrollLeft : 0;
             const originalRenderAreaScrollY = domElements.diagramRenderArea ? domElements.diagramRenderArea.scrollTop : 0;
             const originalZoom = currentZoom;
-            const originalAbcCauseFilter = currentAbcCauseFilter; 
+            const originalAbcCauseFilter = currentAbcCauseFilter;
 
             // Reset scroll, zoom, and filter for clean export
             if(domElements.diagramRenderArea) {
                  domElements.diagramRenderArea.scrollLeft = 0;
                  domElements.diagramRenderArea.scrollTop = 0;
             }
-            applyZoom(1.0, true); 
-            currentAbcCauseFilter = 'all'; 
-            renderRcaDiagram(); 
+            applyZoom(1.0, true);
+            currentAbcCauseFilter = 'all';
+            renderRcaDiagram();
 
             // Ensure SVG connectors are redrawn after diagram re-render
             await new Promise(resolve => requestAnimationFrame(() => {
                 drawAllSvgConnectors(domElements.svgLayer, domElements.diagramContainer, domElements.scalableContentWrapper, 1.0);
                 resolve();
             }));
-            
+
             // Create a temporary container for html2canvas to render into
             const exportContainer = document.createElement('div');
             exportContainer.id = 'export-temp-container';
             exportContainer.style.position = 'absolute';
-            exportContainer.style.left = '-99999px'; 
+            exportContainer.style.left = '-99999px';
             exportContainer.style.top = '-99999px';
-            exportContainer.style.backgroundColor = '#ffffff'; 
-            exportContainer.style.padding = '0'; 
+            exportContainer.style.backgroundColor = '#ffffff';
+            exportContainer.style.padding = '0';
             exportContainer.style.margin = '0';
-            exportContainer.style.overflow = 'hidden'; 
+            exportContainer.style.overflow = 'hidden';
 
             // Calculate content dimensions
             const contentWidth = domElements.scalableContentWrapper.scrollWidth;
             const contentHeight = domElements.scalableContentWrapper.scrollHeight;
             exportContainer.style.width = contentWidth + 'px';
-            exportContainer.style.height = contentHeight + 'px'; 
-            
+            exportContainer.style.height = contentHeight + 'px';
+
             // Clone the scalable content wrapper for rendering
             const clonedScalableContent = domElements.scalableContentWrapper.cloneNode(true);
-            clonedScalableContent.style.transform = 'scale(1.0)'; 
-            clonedScalableContent.style.margin = '0'; 
-            clonedScalableContent.style.padding = getComputedStyle(domElements.scalableContentWrapper).padding; 
-            clonedScalableContent.style.backgroundColor = '#ffffff'; 
-            clonedScalableContent.style.cursor = 'default'; 
+            clonedScalableContent.style.transform = 'scale(1.0)';
+            clonedScalableContent.style.margin = '0';
+            clonedScalableContent.style.padding = getComputedStyle(domElements.scalableContentWrapper).padding;
+            clonedScalableContent.style.backgroundColor = '#ffffff';
+            clonedScalableContent.style.cursor = 'default';
 
             // Remove dimmed class from cloned cause nodes
             const clonedCauseNodes = clonedScalableContent.querySelectorAll('.rca-node-cause');
@@ -3490,15 +3486,15 @@
 
             // Hide action buttons and input containers in the cloned content
             const clonedActionDivs = clonedScalableContent.querySelectorAll('.rca-node-actions');
-            if (isFinalizedView) { 
+            if (isFinalizedView) {
                 clonedActionDivs.forEach(div => div.style.display = 'none');
             }
             const clonedInputContainers = clonedScalableContent.querySelectorAll('.input-group-container');
-            clonedInputContainers.forEach(div => div.style.display = 'none'); 
-            
+            clonedInputContainers.forEach(div => div.style.display = 'none');
+
             // Remove box shadow from cloned nodes
             const clonedNodes = clonedScalableContent.querySelectorAll('.rca-node');
-            clonedNodes.forEach(node => node.style.boxShadow = 'none'); 
+            clonedNodes.forEach(node => node.style.boxShadow = 'none');
 
             exportContainer.appendChild(clonedScalableContent);
             document.body.appendChild(exportContainer);
@@ -3506,25 +3502,25 @@
             // Redraw SVG connectors on the cloned content
             const clonedDiagramContainer = clonedScalableContent.querySelector('#rca-diagram-container');
             const clonedSvgLayer = clonedScalableContent.querySelector('#svg-connector-layer');
-            
+
             if (clonedDiagramContainer && clonedSvgLayer) {
                  await new Promise(resolve => requestAnimationFrame(() => {
                     drawAllSvgConnectors(clonedSvgLayer, clonedDiagramContainer, clonedScalableContent, 1.0);
                     resolve();
                 }));
             }
-            await new Promise(resolve => setTimeout(resolve, 300)); 
+            await new Promise(resolve => setTimeout(resolve, 300));
 
             try {
-                const canvas = await html2canvas(exportContainer, { 
-                    scale: 1.5, 
+                const canvas = await html2canvas(exportContainer, {
+                    scale: 1.5,
                     useCORS: true,
-                    backgroundColor: '#ffffff', 
-                    logging: false 
-                }); 
+                    backgroundColor: '#ffffff',
+                    logging: false
+                });
                 const image = canvas.toDataURL('image/png');
                 const link = document.createElement('a');
-                link.download = '創新問題解決工具-圖表.png'; 
+                link.download = '創新問題解決工具-圖表.png';
                 link.href = image;
                 link.click();
             } catch (err) {
@@ -3532,19 +3528,19 @@
                 alert('匯出圖表失敗，請檢查控制台錯誤訊息。');
             } finally {
                 // Clean up temporary container and restore original states
-                document.body.removeChild(exportContainer); 
-                activeInputGroups.forEach(group => group.style.display = 'flex'); 
-                currentAbcCauseFilter = originalAbcCauseFilter; 
-                applyZoom(originalZoom, true); 
-                renderRcaDiagram(); 
+                document.body.removeChild(exportContainer);
+                activeInputGroups.forEach(group => group.style.display = 'flex');
+                currentAbcCauseFilter = originalAbcCauseFilter;
+                applyZoom(originalZoom, true);
+                renderRcaDiagram();
                 if(domElements.diagramRenderArea) {
                     domElements.diagramRenderArea.scrollLeft = originalRenderAreaScrollX;
                     domElements.diagramRenderArea.scrollTop = originalRenderAreaScrollY;
                 }
-                requestAnimationFrame(() => drawAllSvgConnectors()); 
+                requestAnimationFrame(() => drawAllSvgConnectors());
             }
         }
-        
+
         document.addEventListener('DOMContentLoaded', initialize);
     </script>
 </body>
