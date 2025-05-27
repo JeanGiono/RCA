@@ -751,15 +751,15 @@
             let currentZoom = 1.0;
             let historyStack = [];
             let historyIndex = -1;
-            let currentAbcCauseTargetNodeId = null; // Still for cause nodes
+            let currentAbcCauseTargetNodeId = null;
             let currentAbcCauseFilter = 'all';
             let currentAbcSolutionFilter = 'all';
-            let currentTrizContradictionNodeId = null; // Renamed from currentTrizCauseNodeId
+            let currentTrizContradictionNodeId = null;
             let ideasLandscapeChartInstance = null;
-            let currentAssessingSolution = { contradictionNodeId: null, solutionId: null }; // Renamed causeId to contradictionNodeId
+            let currentAssessingSolution = { contradictionNodeId: null, solutionId: null };
 
             let customIdealityCriteria = [];
-            // Updated DEFAULT_IDEALITY_CRITERIA to be richer
+            // 更新預設理想性評估準則，使其更豐富
             const DEFAULT_IDEALITY_CRITERIA = [
                 { id: 'crit-1', name: '問題是否完全解決？', defaultScore: 5, defaultWeight: 0.15, description: '此方案解決問題的程度。\n0 分：完全沒有解決問題。\n5 分：部分解決問題，但仍有明顯缺陷或遺留問題。\n10 分：完美解決所有問題，無任何遺留或副作用。' },
                 { id: 'crit-2', name: '是否為雙贏局面？', defaultScore: 5, defaultWeight: 0.15, description: '此方案是否能為所有相關方（如顧客、員工、公司、環境）帶來正面效益，避免零和遊戲。\n0 分：對某些方有害，或只有一方受益。\n5 分：各方利益平衡，但無顯著增益。\n10 分：所有相關方皆能顯著受益，達到共贏。' },
@@ -803,6 +803,13 @@
 
             // --- 輔助函數 ---
             function deepCopy(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+            /**
+             * 填充下拉選單。
+             * @param {HTMLElement} selectElement - 要填充的 select 元素。
+             * @param {Array<string>} optionsArray - 包含選項文字的陣列。
+             * @param {boolean} includeDefault - 是否包含「未選擇」選項。
+             */
             function populateSelect(selectElement, optionsArray, includeDefault = true) {
                 if (!selectElement) return;
                 selectElement.innerHTML = '';
@@ -813,6 +820,7 @@
                     selectElement.appendChild(defaultOption);
                 }
                 optionsArray.forEach(optionText => {
+                    // 避免重複添加「未選擇」選項
                     if (includeDefault && optionText === "未選擇" && optionsArray.indexOf("未選擇") !== 0) return;
                     const option = document.createElement('option');
                     option.value = optionText;
@@ -820,6 +828,14 @@
                     selectElement.appendChild(option);
                 });
             }
+
+            /**
+             * 建立一個帶有樣式和事件監聽器的按鈕。
+             * @param {string} text - 按鈕上顯示的文字。
+             * @param {string} className - 要添加到按鈕的 CSS 類名。
+             * @param {function} onClickHandler - 按鈕點擊時執行的函式。
+             * @returns {HTMLButtonElement} 建立的按鈕元素。
+             */
             function createActionButton(text, className, onClickHandler) {
                 const button = document.createElement('button');
                 button.classList.add('action-button', ...className.split(' '));
@@ -827,6 +843,13 @@
                 button.addEventListener('click', onClickHandler);
                 return button;
             }
+
+            /**
+             * 遞迴地在 RCA 數據結構中按 ID 查找節點。
+             * @param {object} node - 當前要檢查的節點。
+             * @param {string} id - 要查找的節點 ID。
+             * @returns {object|null} 找到的節點對象，如果未找到則為 null。
+             */
             function findNodeById(node, id) {
                 if (!node || typeof node !== 'object') return null;
                 if (node.id === id) return node;
@@ -839,6 +862,12 @@
                 }
                 return null;
             }
+
+            /**
+             * 檢查節點的直接子節點是否同時包含正面效果和負面效果。
+             * @param {object} nodeData - 要檢查的節點數據。
+             * @returns {{hasPositiveChild: boolean, hasNegativeChild: boolean}} 包含檢查結果的對象。
+             */
             function checkChildrenEffects(nodeData) {
                 let hasPositiveChild = false;
                 let hasNegativeChild = false;
@@ -847,7 +876,7 @@
                         if(!child) continue;
                         if (child.type === 'positive-effect') hasPositiveChild = true;
                         if (child.type === 'negative-effect') hasNegativeChild = true;
-                        if (hasPositiveChild && hasNegativeChild) break;
+                        if (hasPositiveChild && hasNegativeChild) break; // 只要找到一個正面和一個負面就停止
                     }
                 }
                 return { hasPositiveChild, hasNegativeChild };
@@ -893,7 +922,7 @@
                     abcCauseFilterControls: document.getElementById('abc-cause-filter-controls'),
                     abcSolutionFilterControls: document.getElementById('abc-solution-filter-controls'),
                     trizSolutionModal: document.getElementById('triz-solution-modal'),
-                    trizModalContradictionNodeText: document.getElementById('triz-modal-contradiction-node-text'), // Renamed
+                    trizModalContradictionNodeText: document.getElementById('triz-modal-contradiction-node-text'),
                     improvingParameterSelect: document.getElementById('improving-parameter-select'),
                     worseningParameterSelect: document.getElementById('worsening-parameter-select'),
                     suggestedPrinciplesContainer: document.getElementById('suggested-principles-container'),
@@ -918,7 +947,7 @@
                     landscapeScoreThresholdInput: document.getElementById('landscape-score-threshold'),
                     idealityAssessmentModal: document.getElementById('ideality-assessment-modal'),
                     idealityModalSolutionText: document.getElementById('ideality-modal-solution-text'),
-                    assessingSolutionContradictionNodeIdInput: document.getElementById('assessing-solution-contradiction-node-id'), // Renamed
+                    assessingSolutionContradictionNodeIdInput: document.getElementById('assessing-solution-contradiction-node-id'),
                     assessingSolutionEntryIdInput: document.getElementById('assessing-solution-entry-id'),
                     idealityCriteriaContainer: document.getElementById('ideality-criteria-container'),
                     idealityTotalScoreDisplay: document.getElementById('ideality-total-score-display'),
@@ -958,28 +987,32 @@
             // --- 初始化與事件監聽 ---
             function initialize() {
                 initializeDomElements();
-                loadCustomIdealityCriteria();
-                populateSelects();
-                setupEventListeners();
+                loadCustomIdealityCriteria(); // 載入或初始化自訂評估準則
+                populateSelects(); // 填充下拉選單
+                setupEventListeners(); // 設定所有事件監聽器
                 if (domElements.scalableContentWrapper) {
+                     // 監聽可縮放內容區域的大小變化，以重新繪製連接線
                      new ResizeObserver(() => drawAllSvgConnectors()).observe(domElements.scalableContentWrapper);
                 }
                 if (domElements.toolButtonsContainer) { domElements.toolButtonsContainer.style.display = 'flex'; }
-                applyZoom(1.0, true);
-                updateButtonStates();
-                setupDashboardMenu();
+                applyZoom(1.0, true); // 初始化縮放級別
+                updateButtonStates(); // 更新按鈕狀態
+                setupDashboardMenu(); // 設定儀表板選單行為
             }
 
+            // 填充 TRIZ 參數和發明原理的下拉選單
             function populateSelects() {
                 populateSelect(domElements.improvingParameterSelect, trizMatrix.getParameters(), true);
                 populateSelect(domElements.worseningParameterSelect, trizMatrix.getParameters(), true);
                 populateSelect(domElements.solutionPrincipleSelect, trizMatrix.getInventivePrinciplesNames(), false);
             }
 
+            // 設定所有主要的事件監聽器
             function setupEventListeners() {
                 domElements.setProblemButton.addEventListener('click', handleSetInitialProblem);
                 domElements.problemInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSetInitialProblem(); });
 
+                // 檔案選單的顯示/隱藏
                 domElements.sidebarFileMenuTrigger.addEventListener('click', (event) => {
                     event.stopPropagation();
                     const isDisplayed = domElements.fileDropdownContent.style.display === 'block';
@@ -987,27 +1020,34 @@
                     if (!isDisplayed) { updateButtonStates(); }
                 });
 
+                // 檔案操作按鈕
                 domElements.saveDiagramButton.addEventListener('click', () => { handleSaveToLocalStorage(); domElements.fileDropdownContent.style.display = 'none'; });
                 domElements.loadDiagramButton.addEventListener('click', () => { handleLoadFromLocalStorage(); domElements.fileDropdownContent.style.display = 'none'; });
                 domElements.saveToFileButton.addEventListener('click', () => { handleSaveToFile(); domElements.fileDropdownContent.style.display = 'none'; });
                 domElements.loadFromFileLabel.addEventListener('click', () => { domElements.fileInputForLoad.click(); });
                 domElements.fileInputForLoad.addEventListener('change', (event) => { handleLoadFromFile(event); domElements.fileDropdownContent.style.display = 'none'; });
 
+                // 撤銷/重做按鈕
                 domElements.undoButton.addEventListener('click', handleUndo);
                 domElements.redoButton.addEventListener('click', handleRedo);
 
+                // 縮放控制按鈕
                 domElements.zoomInButton.addEventListener('click', () => applyZoom(currentZoom + ZOOM_STEP));
                 domElements.zoomOutButton.addEventListener('click', () => applyZoom(currentZoom - ZOOM_STEP));
                 domElements.resetZoomButton.addEventListener('click', () => applyZoom(1.0));
 
+                // 創意景觀圖更新按鈕
                 domElements.updateIdeasLandscapeChartButton.addEventListener('click', renderIdeasLandscapeChart);
 
+                // AND 輸入源模態視窗按鈕
                 domElements.saveAndSourcesButton.addEventListener('click', handleSaveAndSources);
                 domElements.cancelAndSourcesButton.addEventListener('click', () => { domElements.andSourceModal.style.display = 'none'; currentAndTargetNodeId = null; });
 
+                // 效果參數模態視窗按鈕
                 domElements.saveEffectParametersButton.addEventListener('click', handleSaveEffectParameters);
                 domElements.cancelEffectParametersButton.addEventListener('click', () => { domElements.effectParameterModal.style.display = 'none'; currentParameterTargetNodeId = null; });
 
+                // ABC 篩選按鈕
                 domElements.abcCauseFilterControls.querySelectorAll('button[data-filter-type="cause"]').forEach(button => {
                     button.addEventListener('click', (event) => { applyAbcCauseFilter(event.target.dataset.filter); });
                 });
@@ -1015,8 +1055,8 @@
                     button.addEventListener('click', (event) => { applyAbcSolutionFilter(event.target.dataset.filter); });
                 });
 
+                // TRIZ 解決方案模態視窗按鈕
                 document.getElementById('close-triz-modal-button').addEventListener('click', closeTrizSolutionModal);
-
                 domElements.improvingParameterSelect.addEventListener('change', handleSaveTrizParameters);
                 domElements.worseningParameterSelect.addEventListener('change', handleSaveTrizParameters);
                 domElements.addNewSolutionEntryButton.addEventListener('click', () => showEditSolutionEntry(null));
@@ -1026,10 +1066,12 @@
                     domElements.editingSolutionIdInput.value = '';
                 });
 
+                // 理想性評估模態視窗按鈕
                 domElements.saveIdealityAssessmentButton.addEventListener('click', handleSaveIdealityAssessment);
                 domElements.cancelIdealityAssessmentButton.addEventListener('click', closeIdealityAssessmentModal);
                 domElements.resetIdealityWeightsButton.addEventListener('click', resetIdealityWeights);
 
+                // 點擊視窗外部關閉檔案選單
                 window.addEventListener('click', (event) => {
                     if (domElements.fileDropdownContent && domElements.sidebarFileMenuTrigger &&
                         !domElements.sidebarFileMenuTrigger.contains(event.target) &&
@@ -1038,6 +1080,7 @@
                     }
                 });
 
+                // 設定模態視窗按鈕
                 domElements.menuItemSettings.addEventListener('click', (e) => { e.preventDefault(); openSettingsModal(); });
                 domElements.closeSettingsModalButton.addEventListener('click', closeSettingsModal);
                 domElements.addNewCriterionButton.addEventListener('click', () => showEditCriterionForm(null));
@@ -1047,6 +1090,7 @@
 
             // --- 儀表板選單邏輯 ---
             function setupDashboardMenu() {
+                // 手機版選單開關
                 domElements.mobileMenuButton.addEventListener('click', () => {
                     domElements.dashboardMenu.classList.toggle('-translate-x-full');
                     const icon = domElements.mobileMenuButton.querySelector('i');
@@ -1063,21 +1107,26 @@
                     }
                 });
 
+                // 導航選單項點擊事件
                 document.querySelectorAll('#dashboard-menu .menu-item').forEach(item => {
-                    if (item.id === 'sidebar-file-menu-trigger') return;
+                    if (item.id === 'sidebar-file-menu-trigger') return; // 排除檔案選單觸發器
                     item.addEventListener('click', function(event) {
-                        if (this.classList.contains('disabled')) { event.preventDefault(); return; }
+                        if (this.classList.contains('disabled')) { event.preventDefault(); return; } // 如果禁用則不響應
+                        // 移除所有選單項的 active 狀態
                         document.querySelectorAll('#dashboard-menu .menu-item').forEach(i => {
                             if (i.id !== 'sidebar-file-menu-trigger') i.classList.remove('active');
                         });
+                        // 為當前點擊的選單項添加 active 狀態
                         if (this.id !== 'sidebar-file-menu-trigger') this.classList.add('active');
 
                         const targetId = this.getAttribute('href');
+                        // 如果有目標 ID 且是錨點連結，則平滑滾動到對應區塊
                         if (targetId && targetId.startsWith('#') && targetId.length > 1) {
                             event.preventDefault();
                             document.querySelector(targetId).scrollIntoView({ behavior: 'smooth' });
-                        } else if (targetId === '#') { event.preventDefault(); }
+                        } else if (targetId === '#') { event.preventDefault(); } // 如果只是 # 則阻止預設行為
 
+                        // 在手機尺寸下，點擊選單項後自動關閉選單
                         if (window.innerWidth < 768) {
                             domElements.dashboardMenu.classList.add('-translate-x-full');
                             domElements.mobileMenuButton.querySelector('i').classList.remove('fa-times');
@@ -1087,6 +1136,7 @@
                     });
                 });
 
+                // 特定功能選單項的點擊事件
                 domElements.menuItemToggleView.addEventListener('click', (e) => { e.preventDefault(); if (!domElements.menuItemToggleView.classList.contains('disabled')) handleToggleFinalizeView(); });
                 domElements.menuItemAutoAdjust.addEventListener('click', (e) => { e.preventDefault(); if (!domElements.menuItemAutoAdjust.classList.contains('disabled')) alert('自動調整節點功能尚待開發。'); });
                 domElements.menuItemExportPng.addEventListener('click', (e) => { e.preventDefault(); if (!domElements.menuItemExportPng.classList.contains('disabled')) exportDiagramAsPNG(); });
@@ -1097,6 +1147,11 @@
             }
 
             // --- 圖表互動與縮放 ---
+            /**
+             * 應用新的縮放級別到圖表。
+             * @param {number} newZoomLevel - 新的縮放比例。
+             * @param {boolean} avoidRedraw - 如果為 true，則不重新繪製 SVG 連接線。
+             */
             function applyZoom(newZoomLevel, avoidRedraw = false) {
                 currentZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoomLevel));
                 domElements.scalableContentWrapper.style.transform = `scale(${currentZoom})`;
@@ -1106,6 +1161,7 @@
             }
 
             // --- UI 狀態管理 ---
+            // 更新所有可交互按鈕的啟用/禁用狀態
             function updateButtonStates() {
                 const noData = !rcaData;
                 const noLocalStorageData = !localStorage.getItem('rcaDiagramData');
@@ -1121,14 +1177,17 @@
                 domElements.resetZoomButton.disabled = currentZoom === 1.0;
                 domElements.updateIdeasLandscapeChartButton.disabled = noData;
 
+                // 禁用或啟用儀表板中的特定選單項
                 [domElements.menuItemToggleView, domElements.menuItemAutoAdjust, domElements.menuItemExportPng,
                  domElements.menuItemCauseEffectTable, domElements.menuItemSolutionTable, domElements.menuItemIdeasLandscape]
                  .forEach(item => { if (item) item.classList.toggle('disabled', noData); });
 
+                // 更新原因 ABC 篩選按鈕的 active 狀態和禁用狀態
                 domElements.abcCauseFilterControls.querySelectorAll('button[data-filter-type="cause"]').forEach(button => {
                     button.classList.toggle('active', button.dataset.filter === currentAbcCauseFilter);
                     button.disabled = noData;
                 });
+                // 更新方案 ABC 篩選按鈕的 active 狀態和禁用狀態
                 domElements.abcSolutionFilterControls.querySelectorAll('button[data-filter-type="solution"]').forEach(button => {
                     button.classList.toggle('active', button.dataset.filter === currentAbcSolutionFilter);
                     button.disabled = noData;
@@ -1136,13 +1195,19 @@
             }
 
             // --- 歷史紀錄管理 (Undo/Redo) ---
+            /**
+             * 將當前圖表狀態推送到歷史堆疊。
+             * @param {object|null} currentState - 要儲存的當前 RCA 數據。
+             * @param {boolean} clearRedoStack - 是否清空重做堆疊。
+             */
             function pushStateToHistory(currentState, clearRedoStack = true) {
+                // 處理初始空狀態或清空操作
                 if ((currentState === null && historyStack.length === 0 && historyIndex === -1 && !rcaData) ||
                     (currentState === null && rcaData === null && historyStack.length > 0)) { /* initial empty state or clearing */ }
-                else if (!currentState && rcaData) { updateButtonStates(); return; }
+                else if (!currentState && rcaData) { updateButtonStates(); return; } // 如果沒有新狀態但有現有數據，則只更新按鈕狀態
 
                 const stateCopy = deepCopy(currentState);
-                if (clearRedoStack) { historyStack = historyStack.slice(0, historyIndex + 1); }
+                if (clearRedoStack) { historyStack = historyStack.slice(0, historyIndex + 1); } // 清空重做堆疊
                 historyStack.push({
                     data: stateCopy,
                     counter: nodeIdCounter,
@@ -1152,19 +1217,26 @@
                     customIdealityCriteria: deepCopy(customIdealityCriteria)
                 });
                 historyIndex = historyStack.length - 1;
+                // 限制歷史堆疊大小
                 if (historyStack.length > MAX_HISTORY_STATES) { historyStack.shift(); historyIndex--; }
                 updateButtonStates();
             }
 
+            /**
+             * 從歷史堆疊中恢復指定狀態。
+             * @param {object} historyEntry - 要恢復的歷史狀態條目。
+             * @returns {boolean} 恢復是否成功。
+             */
             function restoreStateFromHistory(historyEntry) {
                 if (!historyEntry || typeof historyEntry.data === 'undefined') { console.error("無法從歷史紀錄中檢索狀態。"); return false; }
                 rcaData = deepCopy(historyEntry.data);
                 nodeIdCounter = historyEntry.counter;
-                recalculateNodeIdCounter(rcaData);
+                recalculateNodeIdCounter(rcaData); // 確保節點計數器正確
                 currentAbcCauseFilter = historyEntry.abcCauseFilter || 'all';
                 currentAbcSolutionFilter = historyEntry.abcSolutionFilter || 'all';
                 customIdealityCriteria = historyEntry.customIdealityCriteria ? deepCopy(historyEntry.customIdealityCriteria) : deepCopy(DEFAULT_IDEALITY_CRITERIA);
 
+                // 根據是否有數據顯示或隱藏問題輸入區和圖表標題
                 if (rcaData) {
                     domElements.problemInputArea.style.display = 'none';
                     domElements.diagramTitle.style.display = 'block';
@@ -1175,6 +1247,7 @@
                     domElements.svgLayer.innerHTML = '';
                 }
 
+                // 重新渲染所有相關 UI
                 renderRcaDiagram();
                 renderCauseEffectTable();
                 renderSolutionTable();
@@ -1183,10 +1256,16 @@
                 return true;
             }
 
+            // 處理撤銷操作
             function handleUndo() { if (historyIndex > 0) { historyIndex--; if (!restoreStateFromHistory(historyStack[historyIndex])) historyIndex++; } updateButtonStates(); }
+            // 處理重做操作
             function handleRedo() { if (historyIndex < historyStack.length - 1) { historyIndex++; if (!restoreStateFromHistory(historyStack[historyIndex])) historyIndex--; } updateButtonStates(); }
 
             // --- 資料載入與儲存 ---
+            /**
+             * 獲取預設的理想性評估結構。
+             * @returns {object} 包含預設評估準則的對象。
+             */
             function getDefaultIdealityAssessment() {
                 const assessment = { criteria: [], weightedScore: null };
                 customIdealityCriteria.forEach(crit => {
@@ -1195,9 +1274,15 @@
                 return assessment;
             }
 
+            /**
+             * 處理從儲存載入的數據字串。
+             * @param {string} dataString - 包含圖表數據的 JSON 字串。
+             * @returns {boolean} 數據是否成功處理。
+             */
             function processLoadedData(dataString) {
                 try {
                     const parsedJson = JSON.parse(dataString);
+                    // 驗證載入數據的基本結構
                     if (!parsedJson || typeof parsedJson !== 'object' || typeof parsedJson.diagramData === 'undefined') {
                         alert('載入失敗：檔案內容不是有效的物件格式或資料缺失。'); return false;
                     }
@@ -1206,17 +1291,17 @@
                     }
 
                     rcaData = parsedJson.diagramData;
-                    // Load custom criteria from saved data, or use default if not present
+                    // 從載入的數據中獲取自訂準則，如果沒有則使用預設值
                     customIdealityCriteria = parsedJson.customIdealityCriteria ? deepCopy(parsedJson.customIdealityCriteria) : deepCopy(DEFAULT_IDEALITY_CRITERIA);
                     
-                    // Update criterionIdCounter based on loaded criteria
+                    // 更新 criterionIdCounter
                     criterionIdCounter = 0;
                     customIdealityCriteria.forEach(crit => {
                         const idNum = parseInt(crit.id.replace('crit-', ''));
                         if (!isNaN(idNum) && idNum > criterionIdCounter) { criterionIdCounter = idNum; }
                     });
 
-                    // Merge new default criteria if they don't exist in loaded custom criteria
+                    // 合併新的預設準則，如果它們在載入的自訂準則中不存在
                     DEFAULT_IDEALITY_CRITERIA.forEach(defaultCrit => {
                         if (!customIdealityCriteria.some(c => c.id === defaultCrit.id)) {
                             customIdealityCriteria.push(deepCopy(defaultCrit));
@@ -1227,18 +1312,19 @@
 
 
                     if (rcaData) {
+                        // 遞迴地遷移節點數據，確保所有節點都有新屬性並更新解決方案結構
                         function migrateNodeDataRecursive(node) {
                             if (!node) return;
-                            // Ensure all nodes have these properties for consistency, even if not used by all types
+                            // 確保所有節點都有這些屬性以保持一致性
                             if (typeof node.andSourceNodeIds === 'undefined') node.andSourceNodeIds = [];
                             if (typeof node.effectParameters === 'undefined') node.effectParameters = [];
                             if (typeof node.connectorLabelToParent === 'undefined') node.connectorLabelToParent = "";
                             if (typeof node.improvingParameter === 'undefined') node.improvingParameter = null;
                             if (typeof node.worseningParameter === 'undefined') node.worseningParameter = null;
-                            if (typeof node.abcCategory === 'undefined') node.abcCategory = null; // ABC category for causes only
+                            if (typeof node.abcCategory === 'undefined') node.abcCategory = null;
                             if (typeof node.solutionsGenerated === 'undefined') node.solutionsGenerated = [];
 
-                            // Migrate old inventivePrinciples to new solutionsGenerated structure
+                            // 將舊的 inventivePrinciples 遷移到新的 solutionsGenerated 結構
                             if (node.inventivePrinciples && Array.isArray(node.inventivePrinciples)) {
                                 node.inventivePrinciples.forEach(oldIp => {
                                     if (!node.solutionsGenerated.some(s => s.principleName === oldIp.name && s.description === oldIp.solution)) {
@@ -1251,25 +1337,28 @@
                                         });
                                     }
                                 });
-                                delete node.inventivePrinciples; // Remove old property
+                                delete node.inventivePrinciples; // 移除舊屬性
                             }
 
-                            // Ensure solutionsGenerated entries have all necessary properties and up-to-date ideality assessment
+                            // 確保 solutionsGenerated 條目具有所有必要屬性並更新理想性評估
                             if(node.solutionsGenerated) {
                                 node.solutionsGenerated.forEach(sol => {
                                     if (typeof sol.timeRequired === 'undefined') sol.timeRequired = null;
                                     if (typeof sol.mcdmScore === 'undefined') sol.mcdmScore = null;
                                     if (typeof sol.cost === 'undefined') sol.cost = null;
+                                    // 如果 idealityAssessment 不存在或格式不正確，則重新生成預設值
                                     if (typeof sol.idealityAssessment === 'undefined' || sol.idealityAssessment === null || !Array.isArray(sol.idealityAssessment.criteria)) {
                                         sol.idealityAssessment = getDefaultIdealityAssessment();
                                         sol.mcdmScore = calculateWeightedScore(sol.idealityAssessment.criteria);
                                     } else {
+                                        // 更新現有準則的名稱和描述，並添加新的預設準則
                                         const newCriteriaState = [];
                                         customIdealityCriteria.forEach(defaultCrit => {
                                             const existingCrit = sol.idealityAssessment.criteria.find(c => c.id === defaultCrit.id);
                                             newCriteriaState.push(existingCrit ? { ...existingCrit, name: defaultCrit.name, description: defaultCrit.description } : { ...defaultCrit });
                                         });
-                                        sol.idealityAssessment.criteria = newCriteriaState;
+                                        // 過濾掉不再在 customIdealityCriteria 中的準則
+                                        sol.idealityAssessment.criteria = newCriteriaState.filter(crit => customIdealityCriteria.some(c => c.id === crit.id));
                                         sol.idealityAssessment.weightedScore = calculateWeightedScore(sol.idealityAssessment.criteria);
                                         sol.mcdmScore = sol.idealityAssessment.weightedScore;
                                     }
@@ -1280,17 +1369,19 @@
                         migrateNodeDataRecursive(rcaData);
                     }
 
-                    recalculateNodeIdCounter(rcaData);
+                    recalculateNodeIdCounter(rcaData); // 重新計算節點 ID 計數器
                     currentAbcCauseFilter = parsedJson.abcCauseFilter || parsedJson.abcFilter || 'all';
                     currentAbcSolutionFilter = parsedJson.abcSolutionFilter || 'all';
                     currentZoom = typeof parsedJson.zoomLevel === 'number' ? parsedJson.zoomLevel : 1.0;
 
-                    historyStack = []; historyIndex = -1; pushStateToHistory(rcaData);
+                    historyStack = []; historyIndex = -1; pushStateToHistory(rcaData); // 清空並初始化歷史記錄
 
+                    // 根據是否有數據顯示或隱藏問題輸入區和圖表標題
                     if (rcaData) { domElements.problemInputArea.style.display = 'none'; domElements.diagramTitle.style.display = 'block'; }
                     else { domElements.problemInputArea.style.display = 'flex'; domElements.diagramTitle.style.display = 'none'; domElements.diagramContainer.innerHTML = ''; domElements.svgLayer.innerHTML = ''; }
 
                     domElements.toolButtonsContainer.style.display = 'flex';
+                    // 重新渲染所有 UI 組件
                     renderRcaDiagram(); renderCauseEffectTable(); renderSolutionTable(); renderIdeasLandscapeChart();
                     applyZoom(currentZoom, true);
                     alert('圖表進度已成功載入！'); return true;
@@ -1302,6 +1393,7 @@
                 }
             }
 
+            // 將圖表數據儲存到瀏覽器本地儲存
             function handleSaveToLocalStorage() {
                 if (rcaData || rcaData === null) {
                     try {
@@ -1315,12 +1407,16 @@
                 } else { alert('沒有圖表資料可儲存。'); }
                 updateButtonStates();
             }
+
+            // 從瀏覽器本地儲存載入圖表數據
             function handleLoadFromLocalStorage() {
                 const savedDataString = localStorage.getItem('rcaDiagramData');
                 if (savedDataString) { processLoadedData(savedDataString); }
                 else { alert('瀏覽器中沒有儲存的圖表進度。'); }
                 updateButtonStates();
             }
+
+            // 將圖表數據儲存為 JSON 檔案
             function handleSaveToFile() {
                 if (rcaData || rcaData === null) {
                     const jsonData = JSON.stringify({
@@ -1337,9 +1433,11 @@
                     alert('圖表資料已準備下載。');
                 } else { alert('沒有圖表資料可儲存至檔案。'); }
             }
+
+            // 從 JSON 檔案載入圖表數據
             function handleLoadFromFile(event) {
                 const file = event.target.files[0];
-                const inputElement = event.target;
+                const inputElement = event.target; // 獲取 input 元素以便清空其值
                 if (file) {
                     if (file.type === "application/json" || file.name.endsWith(".json")) {
                         const reader = new FileReader();
@@ -1352,6 +1450,11 @@
             }
 
             // --- RCA 圖核心邏輯 ---
+            /**
+             * 遞迴遍歷 RCA 數據，重新計算最大的節點 ID。
+             * 這在載入數據後確保 nodeIdCounter 從正確的值開始。
+             * @param {object} currentData - 當前的 RCA 數據根節點。
+             */
             function recalculateNodeIdCounter(currentData) {
                 let maxId = 0;
                 function findMaxIdRecursive(node) {
@@ -1366,98 +1469,139 @@
                 nodeIdCounter = maxId;
             }
 
+            // 設定初始問題節點
             function handleSetInitialProblem() {
                 const problemText = domElements.problemInput.value.trim();
                 if (!problemText) { alert('請輸入主要負面效果！'); return; }
-                nodeIdCounter = 0;
-                rcaData = createNode(problemText, 'initial-problem', null);
-                historyStack = []; historyIndex = -1;
-                currentAbcCauseFilter = 'all'; currentAbcSolutionFilter = 'all';
-                pushStateToHistory(rcaData);
-                isFinalizedView = false;
-                domElements.problemInputArea.style.display = 'none';
-                domElements.diagramTitle.style.display = 'block';
+                nodeIdCounter = 0; // 重置計數器
+                rcaData = createNode(problemText, 'initial-problem', null); // 建立初始問題節點
+                historyStack = []; historyIndex = -1; // 重置歷史記錄
+                currentAbcCauseFilter = 'all'; currentAbcSolutionFilter = 'all'; // 重置篩選器
+                pushStateToHistory(rcaData); // 將初始狀態推入歷史記錄
+                isFinalizedView = false; // 確保在編輯模式
+                domElements.problemInputArea.style.display = 'none'; // 隱藏問題輸入區
+                domElements.diagramTitle.style.display = 'block'; // 顯示圖表標題
                 domElements.toolButtonsContainer.style.display = 'flex';
-                applyZoom(1.0, true);
-                renderRcaDiagram(); renderCauseEffectTable(); renderSolutionTable(); renderIdeasLandscapeChart();
-                updateButtonStates();
+                applyZoom(1.0, true); // 重置縮放
+                renderRcaDiagram(); renderCauseEffectTable(); renderSolutionTable(); renderIdeasLandscapeChart(); // 渲染所有 UI
+                updateButtonStates(); // 更新按鈕狀態
             }
 
+            // 切換檢視模式/編輯模式
             function handleToggleFinalizeView() {
                 isFinalizedView = !isFinalizedView;
-                renderRcaDiagram();
+                renderRcaDiagram(); // 重新渲染圖表以應用模式變化
                 const menuItem = domElements.menuItemToggleView;
                 const icon = menuItem.querySelector('i');
                 icon.className = isFinalizedView ? 'fas fa-lock fa-fw mr-3' : 'fas fa-edit fa-fw mr-3';
                 menuItem.innerHTML = `<i class="${icon.className}"></i> ${isFinalizedView ? '檢視模式 (已鎖定)' : '編輯模式'}`;
             }
 
+            /**
+             * 建立一個新的節點數據對象。
+             * @param {string} text - 節點的文字內容。
+             * @param {string} type - 節點類型 ('initial-problem', 'cause', 'positive-effect', 'negative-effect')。
+             * @param {string|null} parentId - 父節點的 ID，如果沒有父節點則為 null。
+             * @param {boolean} isNonChangeable - (僅限原因節點) 是否為不可變更的原因。
+             * @returns {object} 新建立的節點數據對象。
+             */
             function createNode(text, type, parentId, isNonChangeable = false) {
                 nodeIdCounter++;
                 const node = {
                     id: `node-${nodeIdCounter}`, text: text, type: type, parentId: parentId,
                     children: [], andSourceNodeIds: [], effectParameters: [],
                     improvingParameter: null, worseningParameter: null, solutionsGenerated: [],
-                    abcCategory: null, // ABC category is primarily for cause nodes, but initialized for all for consistency
+                    abcCategory: null, // ABC 分類主要用於原因節點，但為了一致性，所有節點都初始化此屬性
                     connectorLabelToParent: ""
                 };
                 if (type === 'cause') node.isNonChangeable = isNonChangeable;
                 return node;
             }
 
+            // 渲染 RCA 圖表 (從根節點開始遞迴渲染)
             function renderRcaDiagram() {
                 domElements.diagramContainer.innerHTML = '';
                 if (rcaData) { domElements.diagramContainer.appendChild(createNodeElement(rcaData)); }
-                requestAnimationFrame(() => drawAllSvgConnectors());
+                requestAnimationFrame(() => drawAllSvgConnectors()); // 在下一幀繪製連接線
                 updateButtonStates();
             }
 
+            /**
+             * 根據節點數據建立其 HTML 元素。
+             * @param {object} nodeData - 要建立的節點數據。
+             * @returns {HTMLElement} 建立的節點 HTML 元素。
+             */
             function createNodeElement(nodeData) {
                 const nodeWrapper = document.createElement('div');
                 nodeWrapper.classList.add('rca-node-wrapper');
+
                 const nodeDiv = document.createElement('div');
                 nodeDiv.classList.add('rca-node', `rca-node-${nodeData.type}`);
-                nodeDiv.id = nodeData.id; nodeDiv.dataset.nodeId = nodeData.id;
+                nodeDiv.id = nodeData.id;
+                nodeDiv.dataset.nodeId = nodeData.id;
 
-                if (nodeData.type === 'cause') { // ABC category is only applied visually to cause nodes
+                // 處理原因節點的 ABC 分類視覺效果
+                if (nodeData.type === 'cause') {
                     const isDimmed = (currentAbcCauseFilter === 'none' && (nodeData.abcCategory !== null && typeof nodeData.abcCategory !== 'undefined')) ||
                                      (currentAbcCauseFilter !== 'all' && currentAbcCauseFilter !== 'none' && nodeData.abcCategory !== currentAbcCauseFilter);
                     if (isDimmed) nodeDiv.classList.add('dimmed');
                 }
 
-                const contentDiv = document.createElement('div'); contentDiv.classList.add('rca-node-content');
-                const headerDiv = document.createElement('div'); headerDiv.classList.add('rca-node-header');
-                const textSpan = document.createElement('span'); textSpan.classList.add('rca-node-text'); textSpan.textContent = nodeData.text;
+                const contentDiv = document.createElement('div');
+                contentDiv.classList.add('rca-node-content');
+
+                const headerDiv = document.createElement('div');
+                headerDiv.classList.add('rca-node-header');
+                const textSpan = document.createElement('span');
+                textSpan.classList.add('rca-node-text');
+                textSpan.textContent = nodeData.text;
                 headerDiv.appendChild(textSpan);
 
+                // 顯示 ABC 標籤 (僅限原因節點)
                 if (nodeData.type === 'cause' && nodeData.abcCategory) {
                     const abcBadge = document.createElement('span');
                     abcBadge.classList.add('abc-badge', `abc-badge-${nodeData.abcCategory}`);
-                    abcBadge.textContent = nodeData.abcCategory; nodeDiv.appendChild(abcBadge);
+                    abcBadge.textContent = nodeData.abcCategory;
+                    nodeDiv.appendChild(abcBadge);
                 }
+                // 顯示 NC 標籤 (僅限原因節點)
                 if (nodeData.type === 'cause' && nodeData.isNonChangeable) {
-                    const ncBadge = document.createElement('span'); ncBadge.classList.add('node-badge');
-                    ncBadge.textContent = 'NC'; headerDiv.appendChild(ncBadge);
+                    const ncBadge = document.createElement('span');
+                    ncBadge.classList.add('node-badge');
+                    ncBadge.textContent = 'NC';
+                    headerDiv.appendChild(ncBadge);
                 }
                 contentDiv.appendChild(headerDiv);
 
-                const iconSpan = document.createElement('span'); iconSpan.classList.add('rca-node-icon');
-                if (nodeData.type === 'initial-problem') iconSpan.textContent = '(-)';
-                else if (nodeData.type === 'cause' || nodeData.type === 'positive-effect' || nodeData.type === 'negative-effect') { // Check for contradictory children for all relevant types
+                // 節點圖示 (根據類型和是否有矛盾子節點)
+                const iconSpan = document.createElement('span');
+                iconSpan.classList.add('rca-node-icon');
+                if (nodeData.type === 'initial-problem') {
+                    iconSpan.textContent = '(-)';
+                } else if (['cause', 'positive-effect', 'negative-effect'].includes(nodeData.type)) {
                     const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(nodeData);
-                    if (hasPositiveChild && hasNegativeChild) { iconSpan.textContent = '+/-'; iconSpan.classList.add('contradictory'); }
-                    else { iconSpan.style.display = 'none'; }
-                } else if (nodeData.type === 'positive-effect') iconSpan.textContent = '(+)';
-                else if (nodeData.type === 'negative-effect') iconSpan.textContent = '(-)';
-                else { iconSpan.style.display = 'none'; }
+                    if (hasPositiveChild && hasNegativeChild) {
+                        iconSpan.textContent = '+/-';
+                        iconSpan.classList.add('contradictory');
+                    } else {
+                        iconSpan.style.display = 'none'; // 如果沒有矛盾則隱藏圖示
+                    }
+                } else if (nodeData.type === 'positive-effect') {
+                    iconSpan.textContent = '(+)';
+                } else if (nodeData.type === 'negative-effect') {
+                    iconSpan.textContent = '(-)';
+                } else {
+                    iconSpan.style.display = 'none';
+                }
 
+                // 節點圖示背景顏色
                 if (nodeData.type === 'initial-problem') iconSpan.style.backgroundColor = '#ef4444';
-                else if ((nodeData.type === 'cause' || nodeData.type === 'positive-effect' || nodeData.type === 'negative-effect') && iconSpan.classList.contains('contradictory')) iconSpan.style.backgroundColor = '#8b5cf6';
+                else if (iconSpan.classList.contains('contradictory')) iconSpan.style.backgroundColor = '#8b5cf6';
                 else if (nodeData.type === 'positive-effect') iconSpan.style.backgroundColor = '#2563eb';
                 else if (nodeData.type === 'negative-effect') iconSpan.style.backgroundColor = '#f97316';
                 nodeDiv.appendChild(iconSpan);
 
-                // Display TRIZ parameters if they exist on the node (now possible for effects too)
+                // 顯示 TRIZ 衝突參數
                 if ((nodeData.improvingParameter || nodeData.worseningParameter)) {
                     let paramsText = '';
                     if (nodeData.improvingParameter && nodeData.improvingParameter !== "未選擇") paramsText += `↑ ${nodeData.improvingParameter}`;
@@ -1470,6 +1614,7 @@
                     }
                 }
 
+                // 顯示效果參數
                 if (nodeData.effectParameters && nodeData.effectParameters.length > 0) {
                     const paramsDiv = document.createElement('div');
                     paramsDiv.classList.add('selected-items-list');
@@ -1477,9 +1622,13 @@
                     contentDiv.appendChild(paramsDiv);
                 }
 
+                // 編輯模式下的動作按鈕
                 if (!isFinalizedView) {
-                    const actionsDiv = document.createElement('div'); actionsDiv.classList.add('rca-node-actions');
+                    const actionsDiv = document.createElement('div');
+                    actionsDiv.classList.add('rca-node-actions');
+
                     actionsDiv.appendChild(createActionButton('修訂此項', 'edit-node', () => promptEditNode(nodeData.id, contentDiv)));
+
                     if (nodeData.type === 'initial-problem') {
                         actionsDiv.appendChild(createActionButton('新增原因', 'add-cause', () => promptAddNode(nodeData.id, contentDiv, 'cause', '輸入原因描述', '與父節點關係描述 (選填)')));
                     } else if (nodeData.type === 'cause') {
@@ -1488,52 +1637,79 @@
                         actionsDiv.appendChild(createActionButton('(-) 負面效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入此原因導致的負面效果', '與父節點關係描述 (選填)')));
                         actionsDiv.appendChild(createActionButton(nodeData.isNonChangeable ? '取消NC標記' : '設為NC', 'toggle-nc', () => toggleNonChangeable(nodeData.id)));
                         actionsDiv.appendChild(createActionButton('設定ABC分類', 'set-abc', () => openAbcCauseCategoryModal(nodeData.id)));
-                        // TRIZ button for cause nodes:
-                        const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(nodeData);
-                        if (hasPositiveChild && hasNegativeChild) {
-                            actionsDiv.appendChild(createActionButton('設定衝突參數/方案', 'set-triz', () => openTrizSolutionModal(nodeData.id)));
-                        }
-                        if (nodeData.parentId) { actionsDiv.appendChild(createActionButton('移除此原因', 'remove-button', () => removeNode(nodeData.id))); }
                     } else if (nodeData.type === 'positive-effect' || nodeData.type === 'negative-effect') {
                         actionsDiv.appendChild(createActionButton('(+) 新增正面子效果', 'add-positive', () => promptAddNode(nodeData.id, contentDiv, 'positive-effect', '輸入正面子效果描述', '與父節點關係描述 (選填)')));
                         actionsDiv.appendChild(createActionButton('(-) 新增負面子效果', 'add-negative', () => promptAddNode(nodeData.id, contentDiv, 'negative-effect', '輸入負面子效果描述', '與父節點關係描述 (選填)')));
                         actionsDiv.appendChild(createActionButton('設定效果參數', 'set-parameters', () => openEffectParameterModal(nodeData.id)));
                         actionsDiv.appendChild(createActionButton('設定AND輸入源', 'set-and-sources', () => openAndSourceModal(nodeData.id)));
-                        // TRIZ button for effect nodes if they have contradictory children:
-                        const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(nodeData);
-                        if (hasPositiveChild && hasNegativeChild) {
-                            actionsDiv.appendChild(createActionButton('設定衝突參數/方案', 'set-triz', () => openTrizSolutionModal(nodeData.id)));
-                        }
-                        actionsDiv.appendChild(createActionButton('移除效果', 'remove-button', () => removeNode(nodeData.id)));
                     }
+
+                    // 任何有矛盾子節點的節點都可以設定衝突參數/方案
+                    const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(nodeData);
+                    if (hasPositiveChild && hasNegativeChild) {
+                        actionsDiv.appendChild(createActionButton('設定衝突參數/方案', 'set-triz', () => openTrizSolutionModal(nodeData.id)));
+                    }
+
+                    // 移除按鈕 (不允許移除初始問題節點)
+                    if (nodeData.id !== rcaData.id) {
+                        actionsDiv.appendChild(createActionButton('移除此項', 'remove-button', () => removeNode(nodeData.id)));
+                    }
+                    
                     contentDiv.appendChild(actionsDiv);
-                    const inputContainer = document.createElement('div'); inputContainer.classList.add('input-group-container');
+                    const inputContainer = document.createElement('div');
+                    inputContainer.classList.add('input-group-container');
                     contentDiv.appendChild(inputContainer);
                 }
-                nodeDiv.appendChild(contentDiv); nodeWrapper.appendChild(nodeDiv);
+
+                nodeDiv.appendChild(contentDiv);
+                nodeWrapper.appendChild(nodeDiv);
+
+                // 遞迴渲染子節點
                 if (nodeData.children && Array.isArray(nodeData.children) && nodeData.children.length > 0) {
-                    const childrenContainer = document.createElement('div'); childrenContainer.classList.add('rca-children-container');
-                    nodeData.children.forEach(childNode => { if (childNode && typeof childNode === 'object') childrenContainer.appendChild(createNodeElement(childNode)); });
+                    const childrenContainer = document.createElement('div');
+                    childrenContainer.classList.add('rca-children-container');
+                    nodeData.children.forEach(childNode => {
+                        if (childNode && typeof childNode === 'object') childrenContainer.appendChild(createNodeElement(childNode));
+                    });
                     nodeWrapper.appendChild(childrenContainer);
                 }
                 return nodeWrapper;
             }
 
+            /**
+             * 彈出模態視窗以編輯節點文字和連接線標籤。
+             * @param {string} nodeId - 要編輯的節點 ID。
+             * @param {HTMLElement} parentNodeContentDiv - 節點內容的 DOM 元素。
+             */
             function promptEditNode(nodeId, parentNodeContentDiv) {
                 if (isFinalizedView) { alert('目前處於檢視模式，請切換到編輯模式以修改節點。'); return; }
-                const nodeToEdit = findNodeById(rcaData, nodeId); if (!nodeToEdit) return;
-                const inputContainer = parentNodeContentDiv.querySelector('.input-group-container'); if (!inputContainer) { console.error("Input container not found for node:", nodeId); return; }
-                document.querySelectorAll('.input-group').forEach(ig => ig.remove()); inputContainer.innerHTML = '';
-                const inputGroup = document.createElement('div'); inputGroup.classList.add('input-group');
+                const nodeToEdit = findNodeById(rcaData, nodeId);
+                if (!nodeToEdit) return;
 
-                const nodeInput = document.createElement('input'); nodeInput.type = 'text'; nodeInput.value = nodeToEdit.text; nodeInput.classList.add('input-field');
+                const inputContainer = parentNodeContentDiv.querySelector('.input-group-container');
+                if (!inputContainer) { console.error("Input container not found for node:", nodeId); return; }
+
+                // 移除所有現有的輸入組件
+                document.querySelectorAll('.input-group').forEach(ig => ig.remove());
+                inputContainer.innerHTML = '';
+
+                const inputGroup = document.createElement('div');
+                inputGroup.classList.add('input-group');
+
+                const nodeInput = document.createElement('input');
+                nodeInput.type = 'text';
+                nodeInput.value = nodeToEdit.text;
+                nodeInput.classList.add('input-field');
                 inputGroup.appendChild(nodeInput);
 
                 let connectorLabelInput;
                 if (nodeToEdit.parentId) {
-                    connectorLabelInput = document.createElement('input'); connectorLabelInput.type = 'text';
-                    connectorLabelInput.value = nodeToEdit.connectorLabelToParent || ""; connectorLabelInput.placeholder = "與父節點關係描述 (選填)";
-                    connectorLabelInput.classList.add('input-field', 'mt-2'); inputGroup.appendChild(connectorLabelInput);
+                    connectorLabelInput = document.createElement('input');
+                    connectorLabelInput.type = 'text';
+                    connectorLabelInput.value = nodeToEdit.connectorLabelToParent || "";
+                    connectorLabelInput.placeholder = "與父節點關係描述 (選填)";
+                    connectorLabelInput.classList.add('input-field', 'mt-2');
+                    inputGroup.appendChild(connectorLabelInput);
                 }
 
                 const saveEditButton = createActionButton('儲存修訂', 'save-edit-button w-full mt-2', () => {
@@ -1541,7 +1717,10 @@
                     if (newText) {
                         nodeToEdit.text = newText;
                         if (nodeToEdit.parentId && connectorLabelInput) { nodeToEdit.connectorLabelToParent = connectorLabelInput.value.trim(); }
-                        pushStateToHistory(rcaData); renderRcaDiagram(); renderCauseEffectTable(); renderSolutionTable();
+                        pushStateToHistory(rcaData);
+                        renderRcaDiagram();
+                        renderCauseEffectTable();
+                        renderSolutionTable();
                         inputContainer.innerHTML = '';
                     } else { alert('描述不能為空！'); }
                 });
@@ -1550,37 +1729,72 @@
 
                 const cancelButton = createActionButton('取消修訂', 'bg-gray-400 hover:bg-gray-500 w-full mt-1', () => { inputContainer.innerHTML = ''; });
 
-                inputGroup.appendChild(saveEditButton); inputGroup.appendChild(cancelButton); inputContainer.appendChild(inputGroup);
-                nodeInput.focus(); nodeInput.select();
+                inputGroup.appendChild(saveEditButton);
+                inputGroup.appendChild(cancelButton);
+                inputContainer.appendChild(inputGroup);
+                nodeInput.focus();
+                nodeInput.select();
             }
 
+            /**
+             * 彈出模態視窗以添加新的子節點。
+             * @param {string} parentId - 父節點的 ID。
+             * @param {HTMLElement} parentNodeContentDiv - 父節點內容的 DOM 元素。
+             * @param {string} nodeTypeToAdd - 要添加的子節點類型。
+             * @param {string} placeholderText - 輸入框的佔位符文本。
+             * @param {string} connectorLabelPlaceholderText - 連接線標籤輸入框的佔位符文本。
+             */
             function promptAddNode(parentId, parentNodeContentDiv, nodeTypeToAdd, placeholderText, connectorLabelPlaceholderText = "") {
                 if (isFinalizedView) return;
-                const inputContainer = parentNodeContentDiv.querySelector('.input-group-container'); if (!inputContainer) return;
-                inputContainer.innerHTML = ''; document.querySelectorAll('.input-group').forEach(ig => ig.remove());
-                const inputGroup = document.createElement('div'); inputGroup.classList.add('input-group');
+                const inputContainer = parentNodeContentDiv.querySelector('.input-group-container');
+                if (!inputContainer) return;
 
-                const nodeInput = document.createElement('input'); nodeInput.type = 'text'; nodeInput.placeholder = placeholderText; nodeInput.classList.add('input-field');
+                // 移除所有現有的輸入組件
+                inputContainer.innerHTML = '';
+                document.querySelectorAll('.input-group').forEach(ig => ig.remove());
+
+                const inputGroup = document.createElement('div');
+                inputGroup.classList.add('input-group');
+
+                const nodeInput = document.createElement('input');
+                nodeInput.type = 'text';
+                nodeInput.placeholder = placeholderText;
+                nodeInput.classList.add('input-field');
                 inputGroup.appendChild(nodeInput);
 
-                const connectorLabelInput = document.createElement('input'); connectorLabelInput.type = 'text';
-                connectorLabelInput.value = connectorLabelPlaceholderText; connectorLabelInput.placeholder = connectorLabelPlaceholderText;
-                connectorLabelInput.classList.add('input-field', 'mt-2'); inputGroup.appendChild(connectorLabelInput);
+                const connectorLabelInput = document.createElement('input');
+                connectorLabelInput.type = 'text';
+                connectorLabelInput.value = connectorLabelPlaceholderText;
+                connectorLabelInput.placeholder = connectorLabelPlaceholderText;
+                connectorLabelInput.classList.add('input-field', 'mt-2');
+                inputGroup.appendChild(connectorLabelInput);
 
                 const saveButton = createActionButton('儲存', 'save-button w-full mt-2', () => {
-                    const newText = nodeInput.value.trim(); const connectorLabel = connectorLabelInput.value.trim();
-                    if (newText) { addNodeToData(parentId, newText, nodeTypeToAdd, connectorLabel); inputContainer.innerHTML = ''; }
-                    else { alert('描述不能為空！'); }
+                    const newText = nodeInput.value.trim();
+                    const connectorLabel = connectorLabelInput.value.trim();
+                    if (newText) {
+                        addNodeToData(parentId, newText, nodeTypeToAdd, connectorLabel);
+                        inputContainer.innerHTML = '';
+                    } else { alert('描述不能為空！'); }
                 });
                 nodeInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') saveButton.click(); });
                 connectorLabelInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') saveButton.click(); });
 
                 const cancelButton = createActionButton('取消', 'bg-gray-400 hover:bg-gray-500 w-full mt-1', () => { inputContainer.innerHTML = ''; });
 
-                inputGroup.appendChild(saveButton); inputGroup.appendChild(cancelButton); inputContainer.appendChild(inputGroup);
+                inputGroup.appendChild(saveButton);
+                inputGroup.appendChild(cancelButton);
+                inputContainer.appendChild(inputGroup);
                 nodeInput.focus();
             }
 
+            /**
+             * 將新節點添加到數據模型中。
+             * @param {string} parentId - 父節點的 ID。
+             * @param {string} nodeText - 新節點的文字內容。
+             * @param {string} nodeType - 新節點的類型。
+             * @param {string} connectorLabel - 連接線的標籤。
+             */
             function addNodeToData(parentId, nodeText, nodeType, connectorLabel = "") {
                 const parentNode = findNodeById(rcaData, parentId);
                 if (parentNode) {
@@ -1588,67 +1802,92 @@
                     newNode.connectorLabelToParent = connectorLabel;
                     parentNode.children.push(newNode);
                     pushStateToHistory(rcaData);
-                    renderRcaDiagram(); renderCauseEffectTable(); renderSolutionTable();
+                    renderRcaDiagram();
+                    renderCauseEffectTable();
+                    renderSolutionTable();
                 }
             }
 
+            /**
+             * 從數據模型中移除節點。
+             * @param {string} nodeIdToRemove - 要移除的節點 ID。
+             */
             function removeNode(nodeIdToRemove) {
                 if (isFinalizedView) return;
                 if (rcaData && rcaData.id === nodeIdToRemove) { alert('不能移除主要問題根源節點！'); return; }
+
                 let nodeRemoved = false;
+
+                // 遞迴過濾函式，用於從樹中移除節點及其子節點
                 function filterRecursive(node, idToRemove) {
                     if (!node) return null;
                     if (node.id === idToRemove) {
                         nodeRemoved = true;
+                        // 如果被移除的節點是某個 AND 輸入源，則從所有相關節點中移除該引用
                         function removeAndSourceFromEntireTree(currentNodeData, removedId) {
                             if (!currentNodeData) return;
                             if (currentNodeData.andSourceNodeIds && currentNodeData.andSourceNodeIds.includes(removedId)) {
                                 currentNodeData.andSourceNodeIds = currentNodeData.andSourceNodeIds.filter(srcId => srcId !== removedId);
-                            }
-                            // Also remove solutions associated with the removed node if it was a contradiction node
-                            if (currentNodeData.solutionsGenerated) {
-                                currentNodeData.solutionsGenerated = currentNodeData.solutionsGenerated.filter(sol => sol.id !== removedId); // This might be wrong, should filter solutions if they belong to the removed node
                             }
                             if (currentNodeData.children && Array.isArray(currentNodeData.children)) {
                                 currentNodeData.children.forEach(child => removeAndSourceFromEntireTree(child, removedId));
                             }
                         }
                         removeAndSourceFromEntireTree(rcaData, idToRemove);
-                        return null;
+                        return null; // 返回 null 表示移除此節點
                     }
                     if (node.children && Array.isArray(node.children)) {
+                        // 遞迴處理子節點，並過濾掉已移除的子節點
                         node.children = node.children.map(child => filterRecursive(child, idToRemove)).filter(child => child !== null);
                     }
                     return node;
                 }
+
                 rcaData = filterRecursive(rcaData, nodeIdToRemove);
+
                 if (nodeRemoved) { pushStateToHistory(rcaData); }
+
+                // 如果所有節點都被移除，重置應用程式狀態
                 if (!rcaData) {
-                    domElements.problemInputArea.style.display = 'flex'; domElements.diagramTitle.style.display = 'none';
+                    domElements.problemInputArea.style.display = 'flex';
+                    domElements.diagramTitle.style.display = 'none';
                     domElements.toolButtonsContainer.style.display = 'flex';
-                    domElements.causeEffectTableSection.style.display = 'none'; domElements.solutionTableSection.style.display = 'none';
+                    domElements.causeEffectTableSection.style.display = 'none';
+                    domElements.solutionTableSection.style.display = 'none';
                     domElements.ideasLandscapeSection.style.display = 'none';
-                    historyStack = []; historyIndex = -1; applyZoom(1.0);
-                    currentAbcCauseFilter = 'all'; currentAbcSolutionFilter = 'all';
+                    historyStack = [];
+                    historyIndex = -1;
+                    applyZoom(1.0);
+                    currentAbcCauseFilter = 'all';
+                    currentAbcSolutionFilter = 'all';
                 }
-                renderRcaDiagram(); renderCauseEffectTable(); renderSolutionTable(); renderIdeasLandscapeChart();
+                // 重新渲染所有相關 UI
+                renderRcaDiagram();
+                renderCauseEffectTable();
+                renderSolutionTable();
+                renderIdeasLandscapeChart();
                 updateButtonStates();
             }
 
             // --- 模態視窗處理 ---
+            /**
+             * 開啟 AND 輸入源設定模態視窗。
+             * @param {string} targetNodeId - 目標效果節點的 ID。
+             */
             function openAndSourceModal(targetNodeId) {
                 if (isFinalizedView) return;
                 currentAndTargetNodeId = targetNodeId;
                 const targetNode = findNodeById(rcaData, targetNodeId);
+                // 僅允許為效果節點設定 AND 輸入源
                 if (!targetNode || (targetNode.type !== 'positive-effect' && targetNode.type !== 'negative-effect')) { alert('只能為「效果」節點設定 AND 輸入源。'); return; }
 
                 domElements.andSourceModalNodeText.textContent = `為效果「${targetNode.text.substring(0,30)}...」設定 AND 輸入源:`;
                 domElements.andSourceOptionsContainer.innerHTML = '';
 
                 const potentialSources = [];
+                // 收集所有原因和初始問題節點作為潛在的 AND 輸入源
                 function collectPotentialSourcesRecursive(node) {
                     if (!node) return;
-                    // Collect all cause and initial-problem nodes as potential AND sources
                     if (node.id !== targetNodeId && (node.type === 'cause' || node.type === 'initial-problem')) {
                         potentialSources.push({ id: node.id, text: node.text });
                     }
@@ -1660,69 +1899,105 @@
                     domElements.andSourceOptionsContainer.innerHTML = '<p class="text-sm text-gray-500">沒有可用的 AND 輸入源節點 (原因或主要問題)。</p>';
                 } else {
                     potentialSources.forEach(source => {
-                        const label = document.createElement('label'); label.className = 'block text-sm text-gray-700 mb-1';
-                        const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.value = source.id;
-                        checkbox.name = 'andSourceOption'; checkbox.className = 'mr-2 rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50';
+                        const label = document.createElement('label');
+                        label.className = 'block text-sm text-gray-700 mb-1';
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.value = source.id;
+                        checkbox.name = 'andSourceOption';
+                        checkbox.className = 'mr-2 rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50';
                         if (targetNode.andSourceNodeIds && targetNode.andSourceNodeIds.includes(source.id)) { checkbox.checked = true; }
-                        label.appendChild(checkbox); label.appendChild(document.createTextNode(`${source.text.substring(0,40)}... (ID: ${source.id})`));
+                        label.appendChild(checkbox);
+                        label.appendChild(document.createTextNode(`${source.text.substring(0,40)}... (ID: ${source.id})`));
                         domElements.andSourceOptionsContainer.appendChild(label);
                     });
                 }
                 domElements.andSourceModal.style.display = 'flex';
             }
 
+            // 處理保存 AND 輸入源設定
             function handleSaveAndSources() {
                 if (!currentAndTargetNodeId) return;
-                const targetNode = findNodeById(rcaData, currentAndTargetNodeId); if (!targetNode) return;
+                const targetNode = findNodeById(rcaData, currentAndTargetNodeId);
+                if (!targetNode) return;
+
                 const selectedSources = [];
                 domElements.andSourceOptionsContainer.querySelectorAll('input[name="andSourceOption"]:checked').forEach(checkbox => { selectedSources.push(checkbox.value); });
                 targetNode.andSourceNodeIds = selectedSources;
-                pushStateToHistory(rcaData); renderRcaDiagram();
-                domElements.andSourceModal.style.display = 'none'; currentAndTargetNodeId = null;
+
+                pushStateToHistory(rcaData);
+                renderRcaDiagram(); // 重新渲染圖表以更新連接線
+                domElements.andSourceModal.style.display = 'none';
+                currentAndTargetNodeId = null;
             }
 
+            /**
+             * 開啟效果參數設定模態視窗。
+             * @param {string} targetNodeId - 目標效果節點的 ID。
+             */
             function openEffectParameterModal(targetNodeId) {
                 if (isFinalizedView) return;
                 currentParameterTargetNodeId = targetNodeId;
                 const targetNode = findNodeById(rcaData, targetNodeId);
+                // 僅允許為正面或負面效果節點設定效果參數
                 if (!targetNode || (targetNode.type !== 'positive-effect' && targetNode.type !== 'negative-effect')) { alert('只能為正面或負面效果節點設定效果參數。'); return; }
 
                 domElements.effectParameterModalNodeText.textContent = `為效果「${targetNode.text.substring(0,30)}...」設定參數:`;
                 domElements.effectParameterOptionsContainer.innerHTML = '';
 
+                // 遍歷所有效果參數類別並創建複選框
                 Object.entries(EFFECT_PARAMETERS).forEach(([category, params]) => {
-                    const categoryTitle = document.createElement('h4'); categoryTitle.textContent = category;
+                    const categoryTitle = document.createElement('h4');
+                    categoryTitle.textContent = category;
                     domElements.effectParameterOptionsContainer.appendChild(categoryTitle);
                     params.forEach(param => {
-                        const label = document.createElement('label'); label.className = 'block text-sm text-gray-700 mb-1 items-center';
-                        const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.value = param;
-                        checkbox.name = 'effectParamOption'; checkbox.className = 'mr-2 rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 align-middle';
+                        const label = document.createElement('label');
+                        label.className = 'block text-sm text-gray-700 mb-1 items-center';
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.value = param;
+                        checkbox.name = 'effectParamOption';
+                        checkbox.className = 'mr-2 rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 align-middle';
                         if (targetNode.effectParameters && targetNode.effectParameters.includes(param)) { checkbox.checked = true; }
-                        label.appendChild(checkbox); label.appendChild(document.createTextNode(param));
+                        label.appendChild(checkbox);
+                        label.appendChild(document.createTextNode(param));
                         domElements.effectParameterOptionsContainer.appendChild(label);
                     });
                 });
                 domElements.effectParameterModal.style.display = 'flex';
             }
 
+            // 處理保存效果參數設定
             function handleSaveEffectParameters() {
                 if (!currentParameterTargetNodeId) return;
-                const targetNode = findNodeById(rcaData, currentParameterTargetNodeId); if (!targetNode) return;
+                const targetNode = findNodeById(rcaData, currentParameterTargetNodeId);
+                if (!targetNode) return;
+
                 const selectedParams = [];
                 domElements.effectParameterOptionsContainer.querySelectorAll('input[name="effectParamOption"]:checked').forEach(checkbox => { selectedParams.push(checkbox.value); });
                 targetNode.effectParameters = selectedParams;
-                pushStateToHistory(rcaData); renderRcaDiagram(); renderCauseEffectTable();
-                domElements.effectParameterModal.style.display = 'none'; currentParameterTargetNodeId = null;
+
+                pushStateToHistory(rcaData);
+                renderRcaDiagram(); // 重新渲染圖表以更新節點顯示
+                renderCauseEffectTable(); // 重新渲染表格
+                domElements.effectParameterModal.style.display = 'none';
+                currentParameterTargetNodeId = null;
             }
 
             // --- ABC 分類管理 ---
+            /**
+             * 開啟原因節點的 ABC 分類模態視窗。
+             * @param {string} nodeId - 要設定 ABC 分類的節點 ID。
+             */
             function openAbcCauseCategoryModal(nodeId) {
                 if (isFinalizedView) return;
                 currentAbcCauseTargetNodeId = nodeId;
                 const node = findNodeById(rcaData, nodeId);
-                // ABC category is only for cause nodes
+                // 僅允許為原因節點設定 ABC 分類
                 if (!node || node.type !== 'cause') { alert('只能為原因節點設定ABC分類。'); return; }
+
                 const modal = domElements.abcCategoryModal;
+                // 如果模態視窗內容尚未生成，則生成它
                 if (!modal.innerHTML.trim()) {
                     modal.innerHTML = `
                         <div class="modal-content mx-auto p-5 border w-11/12 md:w-1/2 lg:w-1/3 shadow-lg rounded-md bg-white">
@@ -1740,15 +2015,18 @@
                                 </div>
                             </div>
                         </div>`;
+                    // 為新生成的按鈕添加事件監聽器
                     modal.querySelectorAll('button[data-abc-cause]').forEach(button => {
                         button.addEventListener('click', (event) => {
-                            const category = event.target.dataset.abcCause === 'null' ? null : event.target.dataset.abc-cause;
+                            const category = event.target.dataset.abcCause === 'null' ? null : event.target.dataset.abcCause;
                             handleSaveAbcCauseCategory(category);
                             modal.style.display = 'none';
                         });
                     });
                 }
+                // 更新模態視窗中的節點文字
                 modal.querySelector('#abc-modal-node-text').textContent = `節點：${node.text.substring(0,30)}${node.text.length > 30 ? '...' : ''}`;
+                // 標記當前選中的分類
                 modal.querySelectorAll('button[data-abc-cause]').forEach(btn => {
                     btn.classList.remove('ring-2', 'ring-offset-2', 'ring-blue-500');
                     if (btn.dataset.abcCause === (node.abcCategory || 'null')) { btn.classList.add('ring-2', 'ring-offset-2', 'ring-blue-500'); }
@@ -1756,64 +2034,98 @@
                 modal.style.display = 'flex';
             }
 
+            /**
+             * 保存原因節點的 ABC 分類。
+             * @param {string|null} category - 要保存的 ABC 分類 ('A', 'B', 'C' 或 null)。
+             */
             function handleSaveAbcCauseCategory(category) {
                 if (!currentAbcCauseTargetNodeId) return;
                 const node = findNodeById(rcaData, currentAbcCauseTargetNodeId);
-                if (node && node.type === 'cause') { // Only save ABC category for cause nodes
+                if (node && node.type === 'cause') { // 僅保存原因節點的 ABC 分類
                     node.abcCategory = category;
-                    pushStateToHistory(rcaData); renderRcaDiagram(); renderCauseEffectTable();
+                    pushStateToHistory(rcaData);
+                    renderRcaDiagram(); // 重新渲染圖表以更新節點上的 ABC 標籤
+                    renderCauseEffectTable(); // 重新渲染表格
                     currentAbcCauseTargetNodeId = null;
                 }
             }
 
-            function applyAbcCauseFilter(filterType) { currentAbcCauseFilter = filterType; pushStateToHistory(rcaData); renderRcaDiagram(); updateButtonStates(); }
+            /**
+             * 應用原因 ABC 篩選器。
+             * @param {string} filterType - 篩選類型 ('all', 'A', 'B', 'C', 'none')。
+             */
+            function applyAbcCauseFilter(filterType) {
+                currentAbcCauseFilter = filterType;
+                pushStateToHistory(rcaData); // 儲存篩選狀態到歷史記錄
+                renderRcaDiagram(); // 重新渲染圖表以應用篩選
+                updateButtonStates(); // 更新篩選按鈕的 active 狀態
+            }
+
+            /**
+             * 應用解決方案 ABC 篩選器。
+             * @param {string} filterType - 篩選類型 ('all', 'A', 'B', 'C', 'none')。
+             */
             function applyAbcSolutionFilter(filterType) {
-                currentAbcSolutionFilter = filterType; renderSolutionTable();
+                currentAbcSolutionFilter = filterType;
+                renderSolutionTable(); // 重新渲染解決方案表格以應用篩選
                 domElements.abcSolutionFilterControls.querySelectorAll('button[data-filter-type="solution"]').forEach(button => {
                     button.classList.toggle('active', button.dataset.filter === currentAbcSolutionFilter);
                 });
             }
 
             // --- TRIZ 解決方案管理 ---
-            function openTrizSolutionModal(contradictionNodeId) { // Renamed causeNodeId to contradictionNodeId
+            /**
+             * 開啟 TRIZ 解決方案模態視窗。
+             * @param {string} contradictionNodeId - 具有矛盾子節點的節點 ID。
+             */
+            function openTrizSolutionModal(contradictionNodeId) {
                 if (isFinalizedView) return;
                 currentTrizContradictionNodeId = contradictionNodeId;
                 const contradictionNode = findNodeById(rcaData, currentTrizContradictionNodeId);
-                // Allow initial-problem, cause, positive-effect, negative-effect nodes to be contradiction nodes
-                if (!contradictionNode || (contradictionNode.type !== 'initial-problem' && contradictionNode.type !== 'cause' && contradictionNode.type !== 'positive-effect' && contradictionNode.type !== 'negative-effect')) {
-                    alert('此節點類型不支援設定衝突參數/方案。'); // Should not happen if button logic is correct
+                // 允許初始問題、原因、正面效果、負面效果節點作為衝突節點
+                if (!contradictionNode || !['initial-problem', 'cause', 'positive-effect', 'negative-effect'].includes(contradictionNode.type)) {
+                    alert('此節點類型不支援設定衝突參數/方案。');
                     return;
                 }
 
-                domElements.trizModalContradictionNodeText.textContent = `衝突節點: ${contradictionNode.text.substring(0,50)}${contradictionNode.text.length > 50 ? '...' : ''}`; // Updated text
+                domElements.trizModalContradictionNodeText.textContent = `衝突節點: ${contradictionNode.text.substring(0,50)}${contradictionNode.text.length > 50 ? '...' : ''}`;
                 domElements.improvingParameterSelect.value = contradictionNode.improvingParameter || "";
                 domElements.worseningParameterSelect.value = contradictionNode.worseningParameter || "";
 
-                updateSuggestedPrinciples(); renderSolutionsListForContradictionNode(contradictionNodeId); // Renamed function
-                domElements.editSolutionEntryContainer.style.display = 'none';
+                updateSuggestedPrinciples(); // 更新建議發明原理
+                renderSolutionsListForContradictionNode(contradictionNodeId); // 渲染該衝突節點的解決方案列表
+                domElements.editSolutionEntryContainer.style.display = 'none'; // 隱藏編輯解決方案表單
                 domElements.trizSolutionModal.style.display = 'flex';
             }
 
+            // 根據選定的改善和惡化參數更新建議的發明原理列表
             function updateSuggestedPrinciples() {
                 const improvingParam = domElements.improvingParameterSelect.value;
                 const worseningParam = domElements.worseningParameterSelect.value;
-                domElements.suggestedPrinciplesList.innerHTML = '';
+                domElements.suggestedPrinciplesList.innerHTML = ''; // 清空現有列表
 
                 if (improvingParam && worseningParam && improvingParam !== "未選擇" && worseningParam !== "未選擇") {
                     const principlesNames = trizMatrix.getRecommendedPrinciplesByName(improvingParam, worseningParam);
                     if (principlesNames && principlesNames.length > 0) {
                         domElements.suggestedPrinciplesContainer.style.display = 'block';
-                        principlesNames.forEach((principleName) => { const li = document.createElement('li'); li.textContent = principleName; domElements.suggestedPrinciplesList.appendChild(li); });
+                        principlesNames.forEach((principleName) => {
+                            const li = document.createElement('li');
+                            li.textContent = principleName;
+                            domElements.suggestedPrinciplesList.appendChild(li);
+                        });
                     } else { domElements.suggestedPrinciplesContainer.style.display = 'none'; }
                 } else { domElements.suggestedPrinciplesContainer.style.display = 'none'; }
             }
 
+            // 關閉 TRIZ 解決方案模態視窗
             function closeTrizSolutionModal() {
                 domElements.trizSolutionModal.style.display = 'none';
                 currentTrizContradictionNodeId = null;
-                renderRcaDiagram(); renderSolutionTable();
+                renderRcaDiagram(); // 重新渲染圖表以更新節點圖示（如果衝突參數已設定）
+                renderSolutionTable(); // 重新渲染解決方案表格
             }
 
+            // 處理保存 TRIZ 參數 (改善/惡化參數)
             function handleSaveTrizParameters() {
                 if (!currentTrizContradictionNodeId) return;
                 const contradictionNode = findNodeById(rcaData, currentTrizContradictionNodeId);
@@ -1822,14 +2134,20 @@
                     const oldWorsening = contradictionNode.worseningParameter;
                     contradictionNode.improvingParameter = domElements.improvingParameterSelect.value === "未選擇" ? null : domElements.improvingParameterSelect.value;
                     contradictionNode.worseningParameter = domElements.worseningParameterSelect.value === "未選擇" ? null : domElements.worseningParameterSelect.value;
-                    updateSuggestedPrinciples();
+                    updateSuggestedPrinciples(); // 更新建議原理
+                    // 如果參數有變化，則儲存歷史記錄並重新渲染解決方案表格
                     if (oldImproving !== contradictionNode.improvingParameter || oldWorsening !== contradictionNode.worseningParameter) {
-                        pushStateToHistory(rcaData); renderSolutionTable();
+                        pushStateToHistory(rcaData);
+                        renderSolutionTable();
                     }
                 }
             }
 
-            function renderSolutionsListForContradictionNode(contradictionNodeId) { // Renamed from renderSolutionsListForCause
+            /**
+             * 渲染指定衝突節點的解決方案列表。
+             * @param {string} contradictionNodeId - 衝突節點的 ID。
+             */
+            function renderSolutionsListForContradictionNode(contradictionNodeId) {
                 domElements.solutionsListContainer.innerHTML = '';
                 const contradictionNode = findNodeById(rcaData, contradictionNodeId);
                 if (!contradictionNode || !contradictionNode.solutionsGenerated || contradictionNode.solutionsGenerated.length === 0) {
@@ -1837,8 +2155,10 @@
                 }
 
                 contradictionNode.solutionsGenerated.forEach(sol => {
-                    const solDiv = document.createElement('div'); solDiv.className = 'solution-entry flex justify-between items-center text-sm';
+                    const solDiv = document.createElement('div');
+                    solDiv.className = 'solution-entry flex justify-between items-center text-sm';
                     let solText = `<span class="font-semibold">${sol.principleName || '未指定原理'}:</span><span class="ml-2">${sol.description ? sol.description.substring(0, 40) + (sol.description.length > 40 ? '...' : '') : '無描述'}</span>`;
+                    // 顯示理想性總分、時間和成本
                     if (sol.idealityAssessment && sol.idealityAssessment.weightedScore !== null && sol.idealityAssessment.weightedScore !== undefined) {
                         solText += `<br><span class="text-xs text-gray-500">理想性總分: ${sol.idealityAssessment.weightedScore.toFixed(2)} | 時:${sol.timeRequired ?? '-'} | 成本:${sol.cost ?? '-'}</span>`;
                     } else if (sol.timeRequired !== null || sol.cost !== null) {
@@ -1855,9 +2175,14 @@
                 });
             }
 
+            /**
+             * 顯示或隱藏編輯解決方案的表單。
+             * @param {string|null} solutionId - 要編輯的解決方案 ID，如果為 null 則為新增。
+             */
             function showEditSolutionEntry(solutionId) {
-                const contradictionNode = findNodeById(rcaData, currentTrizContradictionNodeId); // Renamed causeNode to contradictionNode
+                const contradictionNode = findNodeById(rcaData, currentTrizContradictionNodeId);
                 if (!contradictionNode) return;
+
                 const { editingSolutionIdInput, editSolutionTitle, solutionPrincipleSelect, solutionDescriptionInput, solutionTimeRequiredInput, solutionMcdmScoreInput, solutionCostInput, editSolutionEntryContainer } = domElements;
 
                 editingSolutionIdInput.value = solutionId || '';
@@ -1873,17 +2198,21 @@
                     } else { return; }
                 } else {
                     editSolutionTitle.textContent = "新增解決方案";
-                    solutionPrincipleSelect.value = trizMatrix.getInventivePrinciplesNames()[0];
-                    solutionDescriptionInput.value = ''; solutionTimeRequiredInput.value = '';
-                    solutionMcdmScoreInput.value = ''; solutionCostInput.value = '';
+                    solutionPrincipleSelect.value = trizMatrix.getInventivePrinciplesNames()[0]; // 預設選擇第一個原理
+                    solutionDescriptionInput.value = '';
+                    solutionTimeRequiredInput.value = '';
+                    solutionMcdmScoreInput.value = '';
+                    solutionCostInput.value = '';
                 }
                 editSolutionEntryContainer.style.display = 'block';
                 solutionDescriptionInput.focus();
             }
 
+            // 處理保存解決方案條目
             function handleSaveSolutionEntry() {
-                const contradictionNode = findNodeById(rcaData, currentTrizContradictionNodeId); // Renamed causeNode to contradictionNode
+                const contradictionNode = findNodeById(rcaData, currentTrizContradictionNodeId);
                 if (!contradictionNode) return;
+
                 const { editingSolutionIdInput, solutionPrincipleSelect, solutionDescriptionInput, solutionTimeRequiredInput, solutionCostInput, editSolutionEntryContainer } = domElements;
 
                 const solutionId = editingSolutionIdInput.value;
@@ -1898,94 +2227,141 @@
                 if (!contradictionNode.solutionsGenerated) contradictionNode.solutionsGenerated = [];
 
                 if (solutionId) {
+                    // 更新現有解決方案
                     const solIndex = contradictionNode.solutionsGenerated.findIndex(s => s.id === solutionId);
                     if (solIndex > -1) {
                         const sol = contradictionNode.solutionsGenerated[solIndex];
-                        sol.principleName = principle; sol.description = description;
-                        sol.timeRequired = timeRequired; sol.cost = cost;
+                        sol.principleName = principle;
+                        sol.description = description;
+                        sol.timeRequired = timeRequired;
+                        sol.cost = cost;
+                        // 如果理想性評估不存在或格式不正確，則重新生成預設值
                         if (!sol.idealityAssessment || !Array.isArray(sol.idealityAssessment.criteria)) {
                              sol.idealityAssessment = getDefaultIdealityAssessment();
                              sol.mcdmScore = calculateWeightedScore(sol.idealityAssessment.criteria);
                         }
                     }
                 } else {
+                    // 新增解決方案
                     contradictionNode.solutionsGenerated.push({
                         id: `sol-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-                        principleName: principle, description: description, abcCategory: null, // ABC category for solutions is still relevant
+                        principleName: principle, description: description, abcCategory: null,
                         timeRequired: timeRequired, mcdmScore: null, cost: cost,
                         idealityAssessment: getDefaultIdealityAssessment()
                     });
                 }
                 pushStateToHistory(rcaData);
-                renderSolutionsListForContradictionNode(currentTrizContradictionNodeId); // Renamed function
-                editSolutionEntryContainer.style.display = 'none';
+                renderSolutionsListForContradictionNode(currentTrizContradictionNodeId); // 重新渲染解決方案列表
+                editSolutionEntryContainer.style.display = 'none'; // 隱藏編輯表單
                 editingSolutionIdInput.value = '';
-                renderSolutionTable(); renderIdeasLandscapeChart();
+                renderSolutionTable(); // 更新解決方案表格
+                renderIdeasLandscapeChart(); // 更新創意景觀圖
             }
 
+            /**
+             * 處理移除解決方案條目。
+             * @param {string} solutionId - 要移除的解決方案 ID。
+             */
             function handleRemoveSolutionEntry(solutionId) {
                 if (!currentTrizContradictionNodeId || !solutionId) return;
-                const contradictionNode = findNodeById(rcaData, currentTrizContradictionNodeId); // Renamed causeNode to contradictionNode
+                const contradictionNode = findNodeById(rcaData, currentTrizContradictionNodeId);
                 if (contradictionNode && contradictionNode.solutionsGenerated) {
                     contradictionNode.solutionsGenerated = contradictionNode.solutionsGenerated.filter(s => s.id !== solutionId);
                     pushStateToHistory(rcaData);
-                    renderSolutionsListForContradictionNode(currentTrizContradictionNodeId); // Renamed function
-                    renderSolutionTable(); renderIdeasLandscapeChart();
+                    renderSolutionsListForContradictionNode(currentTrizContradictionNodeId); // 重新渲染解決方案列表
+                    renderSolutionTable(); // 更新解決方案表格
+                    renderIdeasLandscapeChart(); // 更新創意景觀圖
                 }
             }
 
             // --- SVG 連接線繪製 ---
+            /**
+             * 繪製所有節點之間的 SVG 連接線。
+             * @param {SVGElement} targetSvgLayer - SVG 層的 DOM 元素。
+             * @param {HTMLElement} targetDiagramContainer - 圖表容器的 DOM 元素。
+             * @param {HTMLElement} targetScalableWrapper - 可縮放內容包裝器的 DOM 元素。
+             * @param {number} zoom - 當前的縮放級別。
+             */
             function drawAllSvgConnectors(targetSvgLayer = domElements.svgLayer, targetDiagramContainer = domElements.diagramContainer, targetScalableWrapper = domElements.scalableContentWrapper, zoom = currentZoom) {
                 if (!targetSvgLayer || !targetDiagramContainer || !targetScalableWrapper) return;
-                targetSvgLayer.innerHTML = '';
+                targetSvgLayer.innerHTML = ''; // 清空現有連接線
+
+                // 如果沒有數據或圖表容器中沒有根節點，則不繪製
                 if (!rcaData || !targetDiagramContainer.querySelector(`#${rcaData.id}`)) {
-                    targetSvgLayer.setAttribute('width', 0); targetSvgLayer.setAttribute('height', 0); return;
+                    targetSvgLayer.setAttribute('width', 0);
+                    targetSvgLayer.setAttribute('height', 0);
+                    return;
                 }
 
+                // 獲取可縮放包裝器的 padding
                 const wrapperStyle = getComputedStyle(targetScalableWrapper);
                 const wrapperPaddingLeft = parseFloat(wrapperStyle.paddingLeft) || 0;
                 const wrapperPaddingTop = parseFloat(wrapperStyle.paddingTop) || 0;
 
+                // 設置 SVG 視圖框以匹配圖表內容的未縮放尺寸
                 const unscaledDiagramWidth = targetDiagramContainer.scrollWidth;
                 const unscaledDiagramHeight = targetDiagramContainer.scrollHeight;
                 targetSvgLayer.setAttribute('width', unscaledDiagramWidth);
                 targetSvgLayer.setAttribute('height', unscaledDiagramHeight);
                 targetSvgLayer.setAttribute('viewBox', `0 0 ${unscaledDiagramWidth} ${unscaledDiagramHeight}`);
 
-                const lineVerticalOffset = 25;
+                const lineVerticalOffset = 25; // 連接線的垂直偏移量
                 const scalableWrapperRect = targetScalableWrapper.getBoundingClientRect();
 
+                /**
+                 * 遞迴繪製節點及其子節點的連接線。
+                 * @param {object} parentNodeData - 父節點的數據。
+                 * @param {HTMLElement} currentContainer - 當前包含節點的 DOM 容器。
+                 */
                 function drawRecursive(parentNodeData, currentContainer) {
-                    const parentElement = currentContainer.querySelector(`#${parentNodeData.id}`); if (!parentElement) return;
+                    const parentElement = currentContainer.querySelector(`#${parentNodeData.id}`);
+                    if (!parentElement) return;
 
                     const parentRect = parentElement.getBoundingClientRect();
+                    // 計算父節點在 SVG 坐標系中的中心底部坐標
                     const parentBottomCenterX_svg = (parentRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + parentRect.width / 2) / zoom;
                     const parentBottomY_svg = (parentRect.top - (scalableWrapperRect.top + wrapperPaddingTop) + parentRect.height) / zoom;
                     const parentTopY_svg = (parentRect.top - (scalableWrapperRect.top + wrapperPaddingTop)) / zoom;
                     const parentCenterX_svg = parentBottomCenterX_svg;
 
+                    // 繪製 AND 輸入源連接線
                     if (parentNodeData.andSourceNodeIds && parentNodeData.andSourceNodeIds.length > 0) {
                         const mergePointYOffset = 40;
                         const mergePoint_svg = { x: parentCenterX_svg, y: parentTopY_svg - mergePointYOffset };
-                        if(mergePoint_svg.y < 0) mergePoint_svg.y = 10;
-                        _drawSvgCircle(targetSvgLayer, mergePoint_svg.x, mergePoint_svg.y, 6, '#6d28d9', zoom);
+                        if(mergePoint_svg.y < 0) mergePoint_svg.y = 10; // 防止合併點超出可見範圍
+                        _drawSvgCircle(targetSvgLayer, mergePoint_svg.x, mergePoint_svg.y, 6, '#6d28d9', zoom); // 繪製合併點圓圈
+
                         parentNodeData.andSourceNodeIds.forEach(sourceId => {
                             const sourceElement = domElements.diagramContainer.querySelector(`#${sourceId}`);
                             if (sourceElement) {
                                 const sourceRect = sourceElement.getBoundingClientRect();
                                 const sourceConnX_svg = (sourceRect.left - (scalableWrapperRect.left + wrapperPaddingLeft) + sourceRect.width / 2) / zoom;
                                 const sourceConnY_svg = (sourceRect.top - (scalableWrapperRect.top + wrapperPaddingTop) + sourceRect.height) / zoom;
-                                if (sourceConnY_svg < mergePoint_svg.y) { _drawSvgLine(targetSvgLayer, sourceConnX_svg, sourceConnY_svg, mergePoint_svg.x, mergePoint_svg.y, '#6b7280', 2, zoom); }
-                                else { const sourceTopY_svg = (sourceRect.top - (scalableWrapperRect.top + wrapperPaddingTop)) / zoom; _drawSvgLine(targetSvgLayer, sourceConnX_svg, sourceTopY_svg, mergePoint_svg.x, mergePoint_svg.y, '#6b7280', 2, zoom); }
+                                // 根據源節點位置繪製連接線
+                                if (sourceConnY_svg < mergePoint_svg.y) {
+                                    _drawSvgLine(targetSvgLayer, sourceConnX_svg, sourceConnY_svg, mergePoint_svg.x, mergePoint_svg.y, '#6b7280', 2, zoom);
+                                } else {
+                                    const sourceTopY_svg = (sourceRect.top - (scalableWrapperRect.top + wrapperPaddingTop)) / zoom;
+                                    _drawSvgLine(targetSvgLayer, sourceConnX_svg, sourceTopY_svg, mergePoint_svg.x, mergePoint_svg.y, '#6b7280', 2, zoom);
+                                }
                             }
                         });
-                        if (parentTopY_svg > mergePoint_svg.y) { _drawSvgLine(targetSvgLayer, mergePoint_svg.x, mergePoint_svg.y, parentCenterX_svg, parentTopY_svg, '#6b7280', 2, zoom); }
+                        // 從合併點到父節點頂部的連接線
+                        if (parentTopY_svg > mergePoint_svg.y) {
+                            _drawSvgLine(targetSvgLayer, mergePoint_svg.x, mergePoint_svg.y, parentCenterX_svg, parentTopY_svg, '#6b7280', 2, zoom);
+                        }
                     }
+
+                    // 過濾掉作為 AND 輸入源的子節點，只處理標準父子連接
                     const standardChildren = parentNodeData.children ? parentNodeData.children.filter(c => c && !(c.andSourceNodeIds && c.andSourceNodeIds.length > 0 && c.andSourceNodeIds.includes(parentNodeData.id))) : [];
+
                     if (standardChildren.length > 0) {
                         const horizontalLineY_svg = parentBottomY_svg + lineVerticalOffset;
+                        // 繪製從父節點底部到水平線的垂直線
                         _drawSvgLine(targetSvgLayer, parentBottomCenterX_svg, parentBottomY_svg, parentBottomCenterX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom);
+
                         if (standardChildren.length > 1) {
+                            // 如果有多個子節點，繪製連接所有子節點的水平線
                             const firstChildElement = currentContainer.querySelector(`#${standardChildren[0].id}`);
                             const lastChildElement = currentContainer.querySelector(`#${standardChildren[standardChildren.length - 1].id}`);
                             if (firstChildElement && lastChildElement) {
@@ -1996,6 +2372,7 @@
                                 if (Math.abs(hLineStartX_svg - hLineEndX_svg) > 1) { _drawSvgLine(targetSvgLayer, hLineStartX_svg, horizontalLineY_svg, hLineEndX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); }
                             }
                         } else if (standardChildren.length === 1) {
+                            // 如果只有一個子節點，繪製從父節點中心到子節點中心的水平線
                             const childElement = currentContainer.querySelector(`#${standardChildren[0].id}`);
                             if (childElement) {
                                 const childRect = childElement.getBoundingClientRect();
@@ -2003,6 +2380,8 @@
                                 if (Math.abs(parentBottomCenterX_svg - childCenterX_svg) > 1) { _drawSvgLine(targetSvgLayer, parentBottomCenterX_svg, horizontalLineY_svg, childCenterX_svg, horizontalLineY_svg, '#9ca3af', 2, zoom); }
                             }
                         }
+
+                        // 繪製從水平線到每個子節點頂部的垂直線
                         standardChildren.forEach(childNode => {
                             if (!childNode) return;
                             const childElement = currentContainer.querySelector(`#${childNode.id}`);
@@ -2012,6 +2391,7 @@
                                 const childTopY_svg = (childRect.top - (scalableWrapperRect.top + wrapperPaddingTop)) / zoom;
                                 if (childTopY_svg > horizontalLineY_svg) {
                                     _drawSvgLine(targetSvgLayer, childCenterX_svg, horizontalLineY_svg, childCenterX_svg, childTopY_svg, '#9ca3af', 2, zoom);
+                                    // 繪製連接線標籤
                                     if (childNode.connectorLabelToParent && childNode.connectorLabelToParent.trim() !== "") {
                                         const labelX = childCenterX_svg;
                                         const labelY = (horizontalLineY_svg + childTopY_svg) / 2;
@@ -2021,55 +2401,116 @@
                             }
                         });
                     }
+                    // 遞迴呼叫繪製子節點的連接線
                     if (parentNodeData.children && Array.isArray(parentNodeData.children)) { parentNodeData.children.forEach(childNode => { if (childNode && typeof childNode === 'object') drawRecursive(childNode, currentContainer); }); }
                 }
+                // 從根節點開始繪製
                 if(rcaData && typeof rcaData === 'object') drawRecursive(rcaData, domElements.diagramContainer);
             }
 
+            /**
+             * 在 SVG 中繪製一條線。
+             * @param {SVGElement} svg - SVG 元素。
+             * @param {number} x1 - 起點 X 坐標。
+             * @param {number} y1 - 起點 Y 坐標。
+             * @param {number} x2 - 終點 X 坐標。
+             * @param {number} y2 - 終點 Y 坐標。
+             * @param {string} color - 線條顏色。
+             * @param {number} strokeWidth - 線條寬度。
+             * @param {number} zoomFactor - 縮放因子。
+             */
             function _drawSvgLine(svg, x1, y1, x2, y2, color = 'black', strokeWidth = 2, zoomFactor = 1) {
                 if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) { return; }
                 const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                line.setAttribute('x1', x1); line.setAttribute('y1', y1); line.setAttribute('x2', x2); line.setAttribute('y2', y2);
-                line.setAttribute('stroke', color); line.setAttribute('stroke-width', strokeWidth / zoomFactor); svg.appendChild(line);
+                line.setAttribute('x1', x1);
+                line.setAttribute('y1', y1);
+                line.setAttribute('x2', x2);
+                line.setAttribute('y2', y2);
+                line.setAttribute('stroke', color);
+                line.setAttribute('stroke-width', strokeWidth / zoomFactor);
+                svg.appendChild(line);
             }
+
+            /**
+             * 在 SVG 中繪製一個圓。
+             * @param {SVGElement} svg - SVG 元素。
+             * @param {number} cx - 圓心 X 坐標。
+             * @param {number} cy - 圓心 Y 坐標。
+             * @param {number} r - 半徑。
+             * @param {string} fillColor - 填充顏色。
+             * @param {number} zoomFactor - 縮放因子。
+             */
             function _drawSvgCircle(svg, cx, cy, r, fillColor = 'black', zoomFactor = 1) {
                 if (isNaN(cx) || isNaN(cy) || isNaN(r)) { return; }
                 const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                circle.setAttribute('cx', cx); circle.setAttribute('cy', cy); circle.setAttribute('r', r / zoomFactor);
-                circle.setAttribute('fill', fillColor); svg.appendChild(circle);
+                circle.setAttribute('cx', cx);
+                circle.setAttribute('cy', cy);
+                circle.setAttribute('r', r / zoomFactor);
+                circle.setAttribute('fill', fillColor);
+                svg.appendChild(circle);
             }
+
+            /**
+             * 在 SVG 中繪製帶背景的文本。
+             * @param {SVGElement} svg - SVG 元素。
+             * @param {string} textContent - 文本內容。
+             * @param {number} x - 文本 X 坐標。
+             * @param {number} y - 文本 Y 坐標。
+             * @param {number} fontSize - 字體大小。
+             * @param {string} fillColor - 文本顏色。
+             * @param {number} zoomFactor - 縮放因子。
+             */
             function _drawSvgTextWithBackground(svg, textContent, x, y, fontSize, fillColor, zoomFactor = 1) {
                 if (isNaN(x) || isNaN(y)) return;
+
                 const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                textElement.setAttribute('x', x); textElement.setAttribute('y', y); textElement.setAttribute('font-size', fontSize);
-                textElement.setAttribute('fill', fillColor); textElement.setAttribute('text-anchor', 'middle');
-                textElement.setAttribute('dominant-baseline', 'middle'); textElement.classList.add('connector-label-text');
+                textElement.setAttribute('x', x);
+                textElement.setAttribute('y', y);
+                textElement.setAttribute('font-size', fontSize);
+                textElement.setAttribute('fill', fillColor);
+                textElement.setAttribute('text-anchor', 'middle');
+                textElement.setAttribute('dominant-baseline', 'middle');
+                textElement.classList.add('connector-label-text');
                 textElement.textContent = textContent;
                 svg.appendChild(textElement);
+
+                // 獲取文本的邊界框以繪製背景
                 const bbox = textElement.getBBox();
-                svg.removeChild(textElement);
+                svg.removeChild(textElement); // 暫時移除文本以繪製背景
 
                 const padding = 2 / zoomFactor;
                 const rectElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-                rectElement.setAttribute('x', bbox.x - padding); rectElement.setAttribute('y', bbox.y - padding);
-                rectElement.setAttribute('width', bbox.width + (2 * padding)); rectElement.setAttribute('height', bbox.height + (2 * padding));
-                rectElement.setAttribute('rx', 2 / zoomFactor); rectElement.setAttribute('ry', 2 / zoomFactor);
+                rectElement.setAttribute('x', bbox.x - padding);
+                rectElement.setAttribute('y', bbox.y - padding);
+                rectElement.setAttribute('width', bbox.width + (2 * padding));
+                rectElement.setAttribute('height', bbox.height + (2 * padding));
+                rectElement.setAttribute('rx', 2 / zoomFactor); // 圓角
+                rectElement.setAttribute('ry', 2 / zoomFactor); // 圓角
                 rectElement.classList.add('connector-label-bg');
-                svg.appendChild(rectElement); svg.appendChild(textElement);
+                svg.appendChild(rectElement);
+                svg.appendChild(textElement); // 重新添加文本
             }
 
             // --- 表格渲染 ---
+            /**
+             * 切換原因效果表的顯示狀態。
+             * @param {boolean} forceShow - 如果為 true，則強制顯示表格。
+             */
             function handleToggleCauseEffectTable(forceShow = false) {
                 const isHidden = domElements.causeEffectTableSection.style.display === 'none';
                 if (forceShow || isHidden) { domElements.causeEffectTableSection.style.display = 'block'; renderCauseEffectTable(); }
                 else if (!forceShow) { domElements.causeEffectTableSection.style.display = 'none'; }
             }
 
+            /**
+             * 收集原因效果表的數據。
+             * @returns {Array<object>} 包含表格行數據的陣列。
+             */
             function getCauseEffectTableData() {
                 const tableRowsData = [];
                 function collectDataRecursive(node) {
                     if (!node) return;
-                    if (node.type === 'cause') { // Only cause nodes are listed in this table
+                    if (node.type === 'cause') { // 僅原因節點會列在此表中
                         const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(node);
                         let causeType = '';
                         if (node.isNonChangeable) causeType = 'NC';
@@ -2078,7 +2519,7 @@
                         else if (hasPositiveChild) causeType = 'P (純正面)';
                         else causeType = '未定義效果';
 
-                        // Only include causes that are not purely positive or have effects
+                        // 僅包含非純粹正面或帶有效果的原因
                         if (causeType !== 'P (純正面)' || (hasPositiveChild || hasNegativeChild)) {
                             const positiveEffects = (node.children && Array.isArray(node.children) ? node.children.filter(c => c && c.type === 'positive-effect').map(c => c.text).join('; ') : '') || '無';
                             const negativeEffects = (node.children && Array.isArray(node.children) ? node.children.filter(c => c && c.type === 'negative-effect').map(c => c.text).join('; ') : '') || '無';
@@ -2091,6 +2532,7 @@
                 return tableRowsData;
             }
 
+            // 渲染原因效果表
             function renderCauseEffectTable() {
                 if (!domElements.causeEffectTableBody) return;
                 if (!rcaData) { domElements.causeEffectTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500">請先設定主要負面效果並建立分析圖。</td></tr>'; return; }
@@ -2107,18 +2549,24 @@
                 });
             }
 
+            /**
+             * 切換解決方案表的顯示狀態。
+             * @param {boolean} forceShow - 如果為 true，則強制顯示表格。
+             */
             function handleToggleSolutionTable(forceShow = false) {
                 const isHidden = domElements.solutionTableSection.style.display === 'none';
                 if (forceShow || isHidden) { domElements.solutionTableSection.style.display = 'block'; renderSolutionTable(); }
                 else if (!forceShow) { domElements.solutionTableSection.style.display = 'none'; }
             }
 
+            // 渲染解決方案表
             function renderSolutionTable() {
                 if (!domElements.solutionTableBody) return;
                 if (!rcaData) { domElements.solutionTableBody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500">請先設定主要負面效果並建立分析圖。</td></tr>'; return; }
                 const allSolutions = getAllSolutionsWithDetails();
                 domElements.solutionTableBody.innerHTML = '';
 
+                // 根據篩選器過濾解決方案
                 const filteredSolutions = allSolutions.filter(sol => {
                     if (currentAbcSolutionFilter === 'all') return true;
                     if (currentAbcSolutionFilter === 'none') return !sol.abcCategory;
@@ -2127,51 +2575,59 @@
 
                 if (filteredSolutions.length === 0) {
                     let message = '目前沒有符合篩選條件的潛在解決方案。';
-                    if (allSolutions.length === 0) { message = '提示：請先找出衝突節點 (同時有`+`和`-`效果)，然後為其「設定衝突參數/方案」。'; } // Updated message
+                    if (allSolutions.length === 0) { message = '提示：請先找出衝突節點 (同時有`+`和`-`效果)，然後為其「設定衝突參數/方案」。'; }
                     domElements.solutionTableBody.innerHTML = `<tr><td colspan="8" class="text-center text-gray-500">${message}</td></tr>`; return;
                 }
 
                 filteredSolutions.forEach(solDetail => {
                     const row = domElements.solutionTableBody.insertRow();
-                    row.insertCell().textContent = solDetail.contradictionNodeText; // Updated from causeText
+                    row.insertCell().textContent = solDetail.contradictionNodeText;
                     row.insertCell().textContent = solDetail.improvingParameter || '-';
                     row.insertCell().textContent = solDetail.worseningParameter || '-';
                     row.insertCell().textContent = solDetail.principleName;
                     row.insertCell().textContent = solDetail.description;
 
                     const abcCell = row.insertCell();
-                    const abcSelect = document.createElement('select'); abcSelect.classList.add('abc-select');
+                    const abcSelect = document.createElement('select');
+                    abcSelect.classList.add('abc-select');
                     ['-', 'A', 'B', 'C'].forEach(cat => {
-                        const option = document.createElement('option'); option.value = cat === '-' ? '' : cat; option.textContent = cat;
+                        const option = document.createElement('option');
+                        option.value = cat === '-' ? '' : cat;
+                        option.textContent = cat;
                         if ((solDetail.abcCategory || '') === option.value) { option.selected = true; }
                         abcSelect.appendChild(option);
                     });
-                    abcSelect.onchange = (e) => { updateSolutionAbcCategory(solDetail.contradictionNodeId, solDetail.solutionId, e.target.value || null); }; // Updated contradictionNodeId
+                    abcSelect.onchange = (e) => { updateSolutionAbcCategory(solDetail.contradictionNodeId, solDetail.solutionId, e.target.value || null); };
                     abcCell.appendChild(abcSelect);
 
                     const assessCell = row.insertCell();
                     const assessButton = createActionButton('評估理想性', 'ideality-assess-button bg-blue-500 hover:bg-blue-600', () => {
-                        openIdealityAssessmentModal(solDetail.contradictionNodeId, solDetail.solutionId); // Updated contradictionNodeId
+                        openIdealityAssessmentModal(solDetail.contradictionNodeId, solDetail.solutionId);
                     });
                     assessCell.appendChild(assessButton);
 
-                    const scoreCell = row.insertCell(); scoreCell.classList.add('ideality-score-display');
+                    const scoreCell = row.insertCell();
+                    scoreCell.classList.add('ideality-score-display');
                     scoreCell.textContent = solDetail.mcdmScore !== null && solDetail.mcdmScore !== undefined ? solDetail.mcdmScore.toFixed(2) : '-';
                 });
             }
 
+            /**
+             * 收集所有節點下的解決方案及其詳細信息。
+             * @returns {Array<object>} 包含所有解決方案詳細信息的陣列。
+             */
             function getAllSolutionsWithDetails() {
                 const solutionsList = [];
                 function findSolutionsRecursive(node) {
                     if (!node) return;
-                    // Check if this node is a contradiction node (has both positive and negative children)
+                    // 檢查此節點是否為衝突節點（同時具有正面和負面子節點）
                     const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(node);
                     if (hasPositiveChild && hasNegativeChild) {
                         if (node.solutionsGenerated && node.solutionsGenerated.length > 0) {
                             node.solutionsGenerated.forEach(sol => {
                                 solutionsList.push({
-                                    contradictionNodeId: node.id, // Renamed from causeId
-                                    contradictionNodeText: node.text, // Renamed from causeText
+                                    contradictionNodeId: node.id,
+                                    contradictionNodeText: node.text,
                                     improvingParameter: node.improvingParameter,
                                     worseningParameter: node.worseningParameter,
                                     solutionId: sol.id,
@@ -2192,36 +2648,65 @@
                 return solutionsList;
             }
 
-            function updateSolutionAbcCategory(contradictionNodeId, solutionId, newAbcCategory) { // Renamed causeId
-                const contradictionNode = findNodeById(rcaData, contradictionNodeId); // Renamed causeNode
+            /**
+             * 更新解決方案的 ABC 分類。
+             * @param {string} contradictionNodeId - 解決方案所屬的衝突節點 ID。
+             * @param {string} solutionId - 要更新的解決方案 ID。
+             * @param {string|null} newAbcCategory - 新的 ABC 分類。
+             */
+            function updateSolutionAbcCategory(contradictionNodeId, solutionId, newAbcCategory) {
+                const contradictionNode = findNodeById(rcaData, contradictionNodeId);
                 if (contradictionNode && contradictionNode.solutionsGenerated) {
                     const solution = contradictionNode.solutionsGenerated.find(s => s.id === solutionId);
                     if (solution) {
                         solution.abcCategory = newAbcCategory;
-                        pushStateToHistory(rcaData); renderSolutionTable(); renderIdeasLandscapeChart();
+                        pushStateToHistory(rcaData);
+                        renderSolutionTable(); // 重新渲染表格
+                        renderIdeasLandscapeChart(); // 重新渲染創意景觀圖
                     }
                 }
             }
 
             // --- 創意景觀圖功能 ---
+            /**
+             * 切換創意景觀圖的顯示狀態。
+             * @param {boolean} forceShow - 如果為 true，則強制顯示圖表。
+             */
             function handleToggleIdeasLandscape(forceShow = false) {
                 const isHidden = domElements.ideasLandscapeSection.style.display === 'none';
                 if (forceShow || isHidden) { domElements.ideasLandscapeSection.style.display = 'block'; renderIdeasLandscapeChart(); }
                 else if (!forceShow) { domElements.ideasLandscapeSection.style.display = 'none'; }
             }
 
+            /**
+             * 獲取用於創意景觀圖的數據點。
+             * @returns {Array<object>} 包含圖表數據點的陣列。
+             */
             function getChartDataPoints() {
+                // 過濾掉時間或 MCDM 分數為空的解決方案
                 const solutions = getAllSolutionsWithDetails().filter(s => s.timeRequired !== null && s.mcdmScore !== null && s.mcdmScore !== undefined);
                 return solutions.map(sol => ({
-                    x: sol.timeRequired, y: sol.mcdmScore, label: sol.description,
+                    x: sol.timeRequired,
+                    y: sol.mcdmScore,
+                    label: sol.description,
                     shortLabel: sol.description.substring(0, 20) + (sol.description.length > 20 ? "..." : ""),
-                    cost: sol.cost, abc: sol.abcCategory || 'none', ideality: sol.mcdmScore, id: sol.solutionId
+                    cost: sol.cost,
+                    abc: sol.abcCategory || 'none',
+                    ideality: sol.mcdmScore,
+                    id: sol.solutionId
                 }));
             }
 
+            /**
+             * 獲取 Chart.js 圖表的選項。
+             * @param {number} timeThreshold - 時間閾值（X 軸中線）。
+             * @param {number} scoreThreshold - 分數閾值（Y 軸中線）。
+             * @returns {object} Chart.js 選項對象。
+             */
             function getChartOptions(timeThreshold, scoreThreshold) {
                 return {
-                    responsive: true, maintainAspectRatio: false,
+                    responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         x: { title: { display: true, text: '導入所需時間 (單位自訂)', font: { weight: 'bold' } }, grid: { color: '#e5e7eb' } },
                         y: { title: { display: true, text: '理想性加權總分 (MCDM)', font: { weight: 'bold' } }, grid: { color: '#e5e7eb' } }
@@ -2239,8 +2724,11 @@
                                     return label.split('\n');
                                 }
                             },
-                            backgroundColor: 'rgba(0,0,0,0.8)', titleFont: { weight: 'bold' },
-                            bodyFont: { size: 11 }, padding: 10, displayColors: false,
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleFont: { weight: 'bold' },
+                            bodyFont: { size: 11 },
+                            padding: 10,
+                            displayColors: false,
                         },
                         legend: { display: false },
                         quadrantDrawer: { timeThreshold: timeThreshold, scoreThreshold: scoreThreshold }
@@ -2248,30 +2736,40 @@
                 };
             }
 
+            // Chart.js 象限繪製插件
             const quadrantPlugin = {
                 id: 'quadrantDrawer',
                 afterDraw: (chart, args, options) => {
                     const {ctx, chartArea: {left, right, top, bottom}, scales: {x, y}} = chart;
                     const { timeThreshold, scoreThreshold } = options;
-                    ctx.save(); ctx.globalCompositeOperation = 'destination-over';
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'destination-over'; // 確保象限在數據點下方
+
                     const xThresholdPixel = x.getPixelForValue(timeThreshold);
                     const yThresholdPixel = y.getPixelForValue(scoreThreshold);
 
+                    // 定義四個象限的繪製區域
                     const q2 = { x: left, y: top, width: xThresholdPixel - left, height: yThresholdPixel - top };
                     const q1 = { x: xThresholdPixel, y: top, width: right - xThresholdPixel, height: yThresholdPixel - top };
                     const q3 = { x: left, y: yThresholdPixel, width: xThresholdPixel - left, height: bottom - yThresholdPixel };
                     const q4 = { x: xThresholdPixel, y: yThresholdPixel, width: right - xThresholdPixel, height: bottom - yThresholdPixel };
 
+                    // 繪製象限背景色
                     ctx.fillStyle = QUADRANT_COLORS.Q2; if (q2.width > 0 && q2.height > 0) ctx.fillRect(q2.x, q2.y, q2.width, q2.height);
                     ctx.fillStyle = QUADRANT_COLORS.Q1; if (q1.width > 0 && q1.height > 0) ctx.fillRect(q1.x, q1.y, q1.width, q1.height);
                     ctx.fillStyle = QUADRANT_COLORS.Q3; if (q3.width > 0 && q3.height > 0) ctx.fillRect(q3.x, q3.y, q3.width, q3.height);
                     ctx.fillStyle = QUADRANT_COLORS.Q4; if (q4.width > 0 && q4.height > 0) ctx.fillRect(q4.x, q4.y, q4.width, q4.height);
-                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.globalCompositeOperation = 'source-over'; // 恢復繪圖模式
 
+                    // 繪製閾值線
                     if (xThresholdPixel >= left && xThresholdPixel <= right) { ctx.beginPath(); ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)'; ctx.lineWidth = 1.5; ctx.setLineDash([6, 3]); ctx.moveTo(xThresholdPixel, top); ctx.lineTo(xThresholdPixel, bottom); ctx.stroke(); ctx.setLineDash([]); }
                     if (yThresholdPixel >= top && yThresholdPixel <= bottom) { ctx.beginPath(); ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)'; ctx.lineWidth = 1.5; ctx.setLineDash([6, 3]); ctx.moveTo(left, yThresholdPixel); ctx.lineTo(right, yThresholdPixel); ctx.stroke(); ctx.setLineDash([]); }
 
-                    ctx.fillStyle = '#374151'; ctx.font = 'bold 11px Inter'; ctx.textAlign = 'center'; const padding = 8;
+                    // 繪製象限標籤
+                    ctx.fillStyle = '#374151';
+                    ctx.font = 'bold 11px Inter';
+                    ctx.textAlign = 'center';
+                    const padding = 8;
                     if (q2.width > 20 && q2.height > 20) ctx.fillText(QUADRANT_LABELS.Q2, q2.x + q2.width / 2, q2.y + padding + 5);
                     if (q3.width > 20 && q3.height > 20) ctx.fillText(QUADRANT_LABELS.Q3, q3.x + q3.width / 2, q3.y + q3.height - padding);
                     if (q1.width > 20 && q1.height > 20) ctx.fillText(QUADRANT_LABELS.Q1, q1.x + q1.width / 2, q1.y + padding + 5);
@@ -2279,8 +2777,10 @@
                     ctx.restore();
                 }
             };
+            // 註冊 Chart.js 插件
             if (typeof Chart !== 'undefined') { Chart.register(quadrantPlugin); }
 
+            // 渲染創意景觀圖
             function renderIdeasLandscapeChart() {
                 if (!domElements.ideasLandscapeChartCanvas || typeof Chart === 'undefined') {
                     if (ideasLandscapeChartInstance) { ideasLandscapeChartInstance.destroy(); ideasLandscapeChartInstance = null; }
@@ -2304,10 +2804,12 @@
                     type: 'scatter',
                     data: {
                         datasets: [{
-                            label: '解決方案創意', data: dataPoints,
+                            label: '解決方案創意',
+                            data: dataPoints,
                             backgroundColor: dataPoints.map(p => ABC_COLORS[p.abc] || ABC_COLORS['none']),
                             borderColor: dataPoints.map(p => ABC_BORDER_COLORS[p.abc] || ABC_BORDER_COLORS['none']),
                             borderWidth: 1.5,
+                            // 點的大小根據成本和理想性調整
                             pointRadius: dataPoints.map(p => Math.min(Math.max(5 + (p.cost !== null && p.cost !== undefined && p.cost > 0 ? Math.log10(p.cost / 100 + 1) * 2 : p.ideality / 2), 4), 15)),
                             pointStyle: dataPoints.map(p => ABC_POINT_STYLES[p.abc] || ABC_POINT_STYLES['none']),
                             hoverRadius: dataPoints.map(p => Math.min(Math.max(7 + (p.cost !== null && p.cost !== undefined && p.cost > 0 ? Math.log10(p.cost / 100 + 1) * 2.5 : p.ideality / 1.5), 6), 18)),
@@ -2318,34 +2820,43 @@
             }
 
             // --- TRIZ 理想性評估功能 ---
-            function openIdealityAssessmentModal(contradictionNodeId, solutionId) { // Renamed causeId
-                const contradictionNode = findNodeById(rcaData, contradictionNodeId); // Renamed causeNode
+            /**
+             * 開啟理想性評估模態視窗。
+             * @param {string} contradictionNodeId - 解決方案所屬的衝突節點 ID。
+             * @param {string} solutionId - 要評估的解決方案 ID。
+             */
+            function openIdealityAssessmentModal(contradictionNodeId, solutionId) {
+                const contradictionNode = findNodeById(rcaData, contradictionNodeId);
                 if (!contradictionNode || !contradictionNode.solutionsGenerated) { console.error("openIdealityAssessmentModal: 未找到衝突節點或解決方案。", { contradictionNodeId, solutionId, contradictionNode }); return; }
                 const solution = contradictionNode.solutionsGenerated.find(s => s.id === solutionId);
                 if (!solution) { console.error("openIdealityAssessmentModal: 未找到對應的解決方案。", { contradictionNodeId, solutionId, solution }); return; }
                 if (!domElements.idealityAssessmentModal || !domElements.idealityCriteriaContainer) { console.error("openIdealityAssessmentModal: 模態視窗或準則容器 DOM 元素未在 domElements 中找到。", domElements); alert("理想性評估視窗初始化失敗，請檢查控制台錯誤訊息。"); return; }
 
                 currentAssessingSolution = { contradictionNodeId, solutionId };
-                domElements.assessingSolutionContradictionNodeIdInput.value = contradictionNodeId; // Renamed
+                domElements.assessingSolutionContradictionNodeIdInput.value = contradictionNodeId;
                 domElements.assessingSolutionEntryIdInput.value = solutionId;
                 domElements.idealityModalSolutionText.textContent = `評估方案: ${solution.description.substring(0,60)}${solution.description.length > 60 ? '...' : ''}`;
 
+                // 如果解決方案沒有理想性評估數據，則初始化為預設值
                 if (!solution.idealityAssessment || !Array.isArray(solution.idealityAssessment.criteria)) {
                     solution.idealityAssessment = getDefaultIdealityAssessment();
                 } else {
-                    // Update existing criteria with latest default criteria (e.g., new names, descriptions)
+                    // 更新現有準則與最新預設準則的同步
                     const newCriteriaState = [];
                     customIdealityCriteria.forEach(defaultCrit => {
                         const existingCrit = solution.idealityAssessment.criteria.find(c => c.id === defaultCrit.id);
+                        // 如果存在，則更新名稱和描述；否則，添加預設準則
                         newCriteriaState.push(existingCrit ? { ...existingCrit, name: defaultCrit.name, description: defaultCrit.description } : { ...defaultCrit });
                     });
-                    // Filter out criteria that are no longer in customIdealityCriteria (if any were removed)
+                    // 過濾掉不再在 customIdealityCriteria 中的準則（如果被移除）
                     solution.idealityAssessment.criteria = newCriteriaState.filter(crit => customIdealityCriteria.some(c => c.id === crit.id));
                 }
 
                 domElements.idealityCriteriaContainer.innerHTML = '';
+                // 為每個評估準則創建 UI 元素
                 solution.idealityAssessment.criteria.forEach((crit, index) => {
-                    const criterionDiv = document.createElement('div'); criterionDiv.className = 'ideality-criterion';
+                    const criterionDiv = document.createElement('div');
+                    criterionDiv.className = 'ideality-criterion';
                     criterionDiv.innerHTML = `
                         <label for="ideality-crit-${crit.id}-range">
                             ${index + 1}. ${crit.name} (0-10)
@@ -2376,24 +2887,37 @@
                     const valueDisplay = criterionDiv.querySelector(`#ideality-crit-${crit.id}-value`);
                     const weightInput = criterionDiv.querySelector(`#ideality-crit-${crit.id}-weight`);
 
+                    // 監聽分數和權重變化以實時更新總分
                     if (rangeInput && valueDisplay) { rangeInput.addEventListener('input', (e) => { valueDisplay.textContent = e.target.value; updateIdealityTotalScoreDisplay(); }); }
                     if (weightInput) { weightInput.addEventListener('input', updateIdealityTotalScoreDisplay); }
                 });
 
-                updateIdealityTotalScoreDisplay(); domElements.idealityAssessmentModal.style.display = 'flex';
+                updateIdealityTotalScoreDisplay();
+                domElements.idealityAssessmentModal.style.display = 'flex';
             }
 
+            // 關閉理想性評估模態視窗
             function closeIdealityAssessmentModal() {
                 domElements.idealityAssessmentModal.style.display = 'none';
-                currentAssessingSolution = { contradictionNodeId: null, solutionId: null }; // Renamed causeId
+                currentAssessingSolution = { contradictionNodeId: null, solutionId: null };
             }
 
+            /**
+             * 計算加權總分。
+             * @param {Array<object>} criteriaArray - 包含評估準則（分數和權重）的陣列。
+             * @returns {number} 計算出的加權總分。
+             */
             function calculateWeightedScore(criteriaArray) {
-                let totalWeightedScore = 0; let totalWeightSum = 0;
-                criteriaArray.forEach(crit => { totalWeightedScore += crit.score * crit.weight; totalWeightSum += crit.weight; });
+                let totalWeightedScore = 0;
+                let totalWeightSum = 0; // 用於檢查權重總和
+                criteriaArray.forEach(crit => {
+                    totalWeightedScore += crit.score * crit.weight;
+                    totalWeightSum += crit.weight;
+                });
                 return totalWeightedScore;
             }
 
+            // 更新理想性總分顯示和權重總和警告
             function updateIdealityTotalScoreDisplay() {
                 let currentCriteriaScoresAndWeights = [];
                 domElements.idealityCriteriaContainer.querySelectorAll('.ideality-criterion').forEach(criterionDiv => {
@@ -2403,44 +2927,53 @@
                     currentCriteriaScoresAndWeights.push({ id: criterionId, score: score, weight: weight });
                 });
 
-                let totalWeightedScore = 0; let totalWeightSum = 0;
-                currentCriteriaScoresAndWeights.forEach(crit => { totalWeightedScore += crit.score * crit.weight; totalWeightSum += crit.weight; });
+                let totalWeightedScore = 0;
+                let totalWeightSum = 0;
+                currentCriteriaScoresAndWeights.forEach(crit => {
+                    totalWeightedScore += crit.score * crit.weight;
+                    totalWeightSum += crit.weight;
+                });
 
                 domElements.idealityTotalScoreDisplay.textContent = totalWeightedScore.toFixed(2);
 
+                // 檢查權重總和是否接近 1
                 if (Math.abs(totalWeightSum - 1.0) > 0.001) {
-                    domElements.idealityWeightsSumWarning.textContent = `注意：目前權重總和為 ${totalWeightSum.toFixed(2)}，建議調整至 1.00。`; // More specific message
+                    domElements.idealityWeightsSumWarning.textContent = `注意：目前權重總和為 ${totalWeightSum.toFixed(2)}，建議調整至 1.00。`;
                     domElements.idealityWeightsSumWarning.style.display = 'block';
                 } else { domElements.idealityWeightsSumWarning.style.display = 'none'; }
             }
 
+            // 重設理想性評估權重為預設值
             function resetIdealityWeights() {
-                const contradictionNodeId = domElements.assessingSolutionContradictionNodeIdInput.value; // Renamed causeId
+                const contradictionNodeId = domElements.assessingSolutionContradictionNodeIdInput.value;
                 const solutionId = domElements.assessingSolutionEntryIdInput.value;
-                const contradictionNode = findNodeById(rcaData, contradictionNodeId); // Renamed causeNode
+                const contradictionNode = findNodeById(rcaData, contradictionNodeId);
                 const solution = contradictionNode ? contradictionNode.solutionsGenerated.find(s => s.id === solutionId) : null;
                 if (!solution || !solution.idealityAssessment) return;
 
+                // 將解決方案的評估準則分數和權重重設為自訂準則中的預設值
                 solution.idealityAssessment.criteria.forEach(crit => {
                     const defaultCrit = customIdealityCriteria.find(c => c.id === crit.id);
                     if (defaultCrit) { crit.score = defaultCrit.defaultScore; crit.weight = defaultCrit.defaultWeight; }
                 });
-                openIdealityAssessmentModal(contradictionNodeId, solutionId); // Renamed causeId
+                openIdealityAssessmentModal(contradictionNodeId, solutionId); // 重新開啟模態視窗以更新 UI
                 updateIdealityTotalScoreDisplay();
             }
 
+            // 處理保存理想性評估結果
             function handleSaveIdealityAssessment() {
-                const contradictionNodeId = domElements.assessingSolutionContradictionNodeIdInput.value; // Renamed causeId
+                const contradictionNodeId = domElements.assessingSolutionContradictionNodeIdInput.value;
                 const solutionId = domElements.assessingSolutionEntryIdInput.value;
                 if (!contradictionNodeId || !solutionId) return;
 
-                const contradictionNode = findNodeById(rcaData, contradictionNodeId); // Renamed causeNode
+                const contradictionNode = findNodeById(rcaData, contradictionNodeId);
                 if (!contradictionNode || !contradictionNode.solutionsGenerated) return;
                 const solution = contradictionNode.solutionsGenerated.find(s => s.id === solutionId);
                 if (!solution) return;
 
                 if (!solution.idealityAssessment) solution.idealityAssessment = getDefaultIdealityAssessment();
 
+                // 從 UI 中獲取最新的分數和權重並更新到數據模型
                 solution.idealityAssessment.criteria.forEach(crit => {
                     const rangeInput = domElements.idealityCriteriaContainer.querySelector(`#ideality-crit-${crit.id}-range`);
                     const weightInput = domElements.idealityCriteriaContainer.querySelector(`#ideality-crit-${crit.id}-weight`);
@@ -2449,28 +2982,33 @@
                 });
 
                 solution.idealityAssessment.weightedScore = calculateWeightedScore(solution.idealityAssessment.criteria);
-                solution.mcdmScore = solution.idealityAssessment.weightedScore;
+                solution.mcdmScore = solution.idealityAssessment.weightedScore; // 更新解決方案的 MCDM 分數
 
-                pushStateToHistory(rcaData); renderSolutionTable(); renderIdeasLandscapeChart();
+                pushStateToHistory(rcaData);
+                renderSolutionTable(); // 更新解決方案表格
+                renderIdeasLandscapeChart(); // 更新創意景觀圖
                 closeIdealityAssessmentModal();
             }
 
             // --- 設定模態視窗與自訂準則管理 ---
+            // 開啟設定模態視窗
             function openSettingsModal() {
                 if (domElements.settingsModal) {
-                    renderCustomCriteriaList();
-                    hideEditCriterionForm();
+                    renderCustomCriteriaList(); // 渲染自訂準則列表
+                    hideEditCriterionForm(); // 隱藏編輯表單
                     domElements.settingsModal.style.display = 'flex';
                 }
             }
 
+            // 關閉設定模態視窗
             function closeSettingsModal() { if (domElements.settingsModal) { domElements.settingsModal.style.display = 'none'; } }
 
+            // 載入或初始化自訂理想性評估準則
             function loadCustomIdealityCriteria() {
-                // Initialize with default criteria
+                // 始終使用預設準則進行初始化
                 customIdealityCriteria = deepCopy(DEFAULT_IDEALITY_CRITERIA);
                 
-                // Set initial criterionIdCounter based on default criteria
+                // 根據預設準則設定初始 criterionIdCounter
                 criterionIdCounter = 0;
                 customIdealityCriteria.forEach(crit => {
                     const idNum = parseInt(crit.id.replace('crit-', ''));
@@ -2478,8 +3016,10 @@
                 });
             }
 
+            // 儲存自訂理想性評估準則 (目前僅為控制台輸出)
             function saveCustomIdealityCriteria() { console.log("Custom ideality criteria saved:", customIdealityCriteria); }
 
+            // 渲染自訂評估準則列表
             function renderCustomCriteriaList() {
                 domElements.customCriteriaList.innerHTML = '';
                 if (customIdealityCriteria.length === 0) {
@@ -2487,7 +3027,8 @@
                 }
 
                 customIdealityCriteria.forEach(crit => {
-                    const entryDiv = document.createElement('div'); entryDiv.className = 'criterion-entry';
+                    const entryDiv = document.createElement('div');
+                    entryDiv.className = 'criterion-entry';
                     entryDiv.innerHTML = `
                         <span>
                             <strong>${crit.name}</strong>
@@ -2502,6 +3043,10 @@
                 });
             }
 
+            /**
+             * 顯示或隱藏編輯自訂準則的表單。
+             * @param {string|null} criterionId - 要編輯的準則 ID，如果為 null 則為新增。
+             */
             function showEditCriterionForm(criterionId) {
                 const { editCriterionForm, criterionFormTitle, editingCriterionIdInput, criterionNameInput, criterionDefaultScoreInput, criterionDefaultWeightInput, criterionDescriptionInput } = domElements;
 
@@ -2517,13 +3062,16 @@
                     } else { return; }
                 } else {
                     criterionFormTitle.textContent = "新增評估準則";
-                    criterionNameInput.value = ''; criterionDefaultScoreInput.value = 5;
-                    criterionDefaultWeightInput.value = 0.25; criterionDescriptionInput.value = '';
+                    criterionNameInput.value = '';
+                    criterionDefaultScoreInput.value = 5;
+                    criterionDefaultWeightInput.value = 0.25;
+                    criterionDescriptionInput.value = '';
                 }
                 editCriterionForm.style.display = 'block';
                 criterionNameInput.focus();
             }
 
+            // 隱藏編輯自訂準則的表單
             function hideEditCriterionForm() {
                 if (domElements.editCriterionForm) {
                     domElements.editCriterionForm.style.display = 'none';
@@ -2531,6 +3079,7 @@
                 }
             }
 
+            // 處理保存自訂準則
             function handleSaveCriterion() {
                 const { editingCriterionIdInput, criterionNameInput, criterionDefaultScoreInput, criterionDefaultWeightInput, criterionDescriptionInput } = domElements;
 
@@ -2545,61 +3094,80 @@
                 if (isNaN(defaultWeight) || defaultWeight < 0 || defaultWeight > 1) { alert('預設權重必須是 0 到 1 之間的數字！'); return; }
 
                 if (criterionId) {
+                    // 更新現有準則
                     const index = customIdealityCriteria.findIndex(c => c.id === criterionId);
                     if (index > -1) { customIdealityCriteria[index] = { id: criterionId, name, defaultScore, defaultWeight, description }; }
                 } else {
+                    // 新增準則
                     criterionIdCounter++;
                     customIdealityCriteria.push({ id: `crit-${criterionIdCounter}`, name, defaultScore, defaultWeight, description });
                 }
 
                 saveCustomIdealityCriteria();
-                renderCustomCriteriaList(); hideEditCriterionForm();
-                renderSolutionTable(); renderIdeasLandscapeChart();
+                renderCustomCriteriaList(); // 重新渲染列表
+                hideEditCriterionForm(); // 隱藏表單
+                renderSolutionTable(); // 更新解決方案表格（因為評估準則可能已更改）
+                renderIdeasLandscapeChart(); // 更新創意景觀圖
                 pushStateToHistory(rcaData);
             }
 
+            /**
+             * 處理移除自訂準則。
+             * @param {string} criterionId - 要移除的準則 ID。
+             */
             function handleRemoveCriterion(criterionId) {
-                if (customIdealityCriteria.length <= 1) { alert('至少需要一個評估準則！'); return; }
+                if (customIdealityCriteria.length <= 1) { alert('至少需要一個評估準則！'); return; } // 至少保留一個準則
                 if (confirm('確定要移除此評估準則嗎？這將影響所有解決方案的理想性評估。')) {
                     customIdealityCriteria = customIdealityCriteria.filter(c => c.id !== criterionId);
                     saveCustomIdealityCriteria();
-                    renderCustomCriteriaList();
-                    renderSolutionTable(); renderIdeasLandscapeChart();
+                    renderCustomCriteriaList(); // 重新渲染列表
+                    renderSolutionTable(); // 更新解決方案表格
+                    renderIdeasLandscapeChart(); // 更新創意景觀圖
                     pushStateToHistory(rcaData);
                 }
             }
 
             // --- 匯出圖表功能 ---
+            // 將圖表匯出為 PNG 圖片
             async function exportDiagramAsPNG() {
                 if (!rcaData || !domElements.scalableContentWrapper || !domElements.diagramContainer || domElements.diagramContainer.children.length === 0) {
                     alert('圖表為空或找不到圖表元素！'); return;
                 }
+                // 隱藏活動中的輸入組件和文件下拉菜單
                 const activeInputGroups = domElements.diagramContainer.querySelectorAll('.input-group');
                 activeInputGroups.forEach(group => group.style.display = 'none');
                 if (domElements.fileDropdownContent && domElements.fileDropdownContent.style.display === 'block') domElements.fileDropdownContent.style.display = 'none';
 
+                // 儲存原始滾動位置和縮放級別
                 const originalRenderAreaScrollX = domElements.diagramRenderArea ? domElements.diagramRenderArea.scrollLeft : 0;
                 const originalRenderAreaScrollY = domElements.diagramRenderArea ? domElements.diagramRenderArea.scrollTop : 0;
                 const originalZoom = currentZoom;
                 const originalAbcCauseFilter = currentAbcCauseFilter;
 
+                // 重置滾動位置，縮放為 1.0，並顯示所有原因節點以進行匯出
                 if(domElements.diagramRenderArea) { domElements.diagramRenderArea.scrollLeft = 0; domElements.diagramRenderArea.scrollTop = 0; }
-                applyZoom(1.0, true); currentAbcCauseFilter = 'all'; renderRcaDiagram();
+                applyZoom(1.0, true);
+                currentAbcCauseFilter = 'all';
+                renderRcaDiagram();
 
+                // 確保 SVG 連接線在截圖前重新繪製
                 await new Promise(resolve => requestAnimationFrame(() => {
                     drawAllSvgConnectors(domElements.svgLayer, domElements.diagramContainer, domElements.scalableContentWrapper, 1.0);
                     resolve();
                 }));
 
+                // 創建一個臨時容器用於匯出
                 const exportContainer = document.createElement('div');
                 exportContainer.id = 'export-temp-container';
                 exportContainer.style.cssText = 'position:absolute;left:-99999px;top:-99999px;background-color:#ffffff;padding:0;margin:0;overflow:hidden;';
 
+                // 設置臨時容器的尺寸以匹配內容
                 const contentWidth = domElements.scalableContentWrapper.scrollWidth;
                 const contentHeight = domElements.scalableContentWrapper.scrollHeight;
                 exportContainer.style.width = contentWidth + 'px';
                 exportContainer.style.height = contentHeight + 'px';
 
+                // 克隆可縮放內容，並移除編輯模式的視覺元素
                 const clonedScalableContent = domElements.scalableContentWrapper.cloneNode(true);
                 clonedScalableContent.style.cssText = 'transform:scale(1.0);margin:0;padding:' + getComputedStyle(domElements.scalableContentWrapper).padding + ';background-color:#ffffff;cursor:default;';
 
@@ -2614,25 +3182,33 @@
                 const clonedDiagramContainer = clonedScalableContent.querySelector('#rca-diagram-container');
                 const clonedSvgLayer = clonedScalableContent.querySelector('#svg-connector-layer');
 
+                // 確保克隆的 SVG 連接線也重新繪製
                 if (clonedDiagramContainer && clonedSvgLayer) {
                      await new Promise(resolve => requestAnimationFrame(() => {
                         drawAllSvgConnectors(clonedSvgLayer, clonedDiagramContainer, clonedScalableContent, 1.0);
                         resolve();
                     }));
                 }
-                await new Promise(resolve => setTimeout(resolve, 300));
+                await new Promise(resolve => setTimeout(resolve, 300)); // 給予渲染時間
 
                 try {
+                    // 使用 html2canvas 截圖
                     const canvas = await html2canvas(exportContainer, {
-                        scale: 1.5, useCORS: true, backgroundColor: '#ffffff', logging: false
+                        scale: 1.5, // 提高解析度
+                        useCORS: true,
+                        backgroundColor: '#ffffff',
+                        logging: false
                     });
                     const image = canvas.toDataURL('image/png');
                     const link = document.createElement('a');
-                    link.download = '創新問題解決工具-圖表.png'; link.href = image; link.click();
+                    link.download = '創新問題解決工具-圖表.png';
+                    link.href = image;
+                    link.click();
                 } catch (err) {
                     console.error('匯出圖表失敗:', err);
                     alert('匯出圖表失敗，請檢查控制台錯誤訊息。');
                 } finally {
+                    // 清理臨時容器並恢復原始狀態
                     document.body.removeChild(exportContainer);
                     activeInputGroups.forEach(group => group.style.display = 'flex');
                     currentAbcCauseFilter = originalAbcCauseFilter;
