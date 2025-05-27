@@ -318,6 +318,52 @@
         .ideality-criterion input[type="range"] { width: calc(100% - 3.5rem); margin-right: 0.5rem; vertical-align: middle;}
         .ideality-criterion .range-value { font-size: 0.8rem; display: inline-block; width: 2.5rem; text-align: right;}
 
+        /* Tooltip Styles */
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            margin-left: 0.25rem;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px 12px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the label */
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            min-width: 250px; /* Adjust as needed */
+            font-size: 0.75rem;
+            line-height: 1.4;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            white-space: normal; /* Allow text to wrap */
+        }
+
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
+
         /* Suggested Principles in TRIZ Modal */
         #suggested-principles-container {
             margin-top: 1rem;
@@ -378,6 +424,50 @@
             stroke: rgba(200, 200, 200, 0.5);
             stroke-width: 0.5px;
             pointer-events: none;
+        }
+
+        /* Custom Criteria Management Styles */
+        .criterion-entry {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            background-color: #f0f4f8;
+            border-radius: 0.25rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            border: 1px solid #e2e8f0;
+        }
+        .criterion-entry span {
+            flex-grow: 1;
+            color: #334155;
+        }
+        .criterion-entry button {
+            margin-left: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        .criterion-form {
+            padding: 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.375rem;
+            background-color: #f8fafc;
+            margin-top: 1rem;
+        }
+        .criterion-form input[type="text"],
+        .criterion-form input[type="number"],
+        .criterion-form textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            margin-top: 0.25rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.875rem;
+        }
+        .criterion-form label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #475569;
         }
     </style>
 </head>
@@ -557,9 +647,14 @@
                 </div>
                 <div id="ideas-landscape-chart-container" class="w-full h-[500px] bg-white p-2 rounded shadow">
                     <canvas id="ideas-landscape-chart"></canvas>
-                    <div id="ideas-landscape-no-data-message" style="display: none;">
-                        <p>沒有資料可顯示於創意景觀圖。</p>
-                        <p class="text-xs mt-1">請先產生解決方案並於「設定衝突參數/方案」中填寫「導入所需時間」與「MCDM總分」。</p>
+                    <div id="ideas-landscape-no-data-message" class="absolute inset-0 flex flex-col items-center justify-center bg-white bg-opacity-90 rounded-lg" style="display: none;">
+                        <p class="text-lg font-semibold text-gray-700 mb-2">沒有資料可顯示於創意景觀圖。</p>
+                        <p class="text-sm text-gray-600 text-center">請確保您已完成以下步驟：</p>
+                        <ul class="list-disc list-inside text-sm text-gray-600 mt-2">
+                            <li>為矛盾原因新增解決方案。</li>
+                            <li>為每個解決方案填寫「導入所需時間」。</li>
+                            <li>為每個解決方案進行「理想性評估」，以計算「理想性加權總分」。</li>
+                        </ul>
                     </div>
                 </div>
             </section>
@@ -614,8 +709,8 @@
                                     <input type="number" id="solution-time-required-input" class="input-field mt-1 text-sm" placeholder="例如: 5">
                                 </div>
                                 <div>
-                                    <label for="solution-mcdm-score-input" class="block text-xs font-medium text-gray-700">MCDM總分 (0-100):</label>
-                                    <input type="number" id="solution-mcdm-score-input" class="input-field mt-1 text-sm" placeholder="例如: 75">
+                                    <label for="solution-mcdm-score-input" class="block text-xs font-medium text-gray-700">理想性加權總分 (MCDM):</label>
+                                    <input type="text" id="solution-mcdm-score-input" class="input-field mt-1 text-sm" placeholder="請進行理想性評估" readonly>
                                 </div>
                                  <div>
                                     <label for="solution-cost-input" class="block text-xs font-medium text-gray-700">預估成本 (可選, 單位自訂):</label>
@@ -644,49 +739,18 @@
                         <input type="hidden" id="assessing-solution-cause-id">
                         <input type="hidden" id="assessing-solution-entry-id">
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-4">
-                            <div class="ideality-criterion">
-                                <label for="ideality-problem-solved-range">1. 問題是否完全解決？ (0-10)</label>
-                                <div class="flex items-center">
-                                    <input type="range" id="ideality-problem-solved-range" min="0" max="10" value="5" class="input-field flex-grow">
-                                    <span id="ideality-problem-solved-value" class="range-value">5</span>
-                                </div>
-                                <label for="ideality-problem-solved-weight" class="text-xs mt-1">權重 (0-1): <input type="number" id="ideality-problem-solved-weight" value="0.25" step="0.01" min="0" max="1" class="input-field text-xs p-1 w-20 inline-block ml-1"></label>
+                        <div id="ideality-criteria-container" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 mb-4">
                             </div>
-                            <div class="ideality-criterion">
-                                <label for="ideality-win-win-range">2. 是否為雙贏局面？ (0-10)</label>
-                                 <div class="flex items-center">
-                                    <input type="range" id="ideality-win-win-range" min="0" max="10" value="5" class="input-field flex-grow">
-                                    <span id="ideality-win-win-value" class="range-value">5</span>
-                                </div>
-                                <label for="ideality-win-win-weight" class="text-xs mt-1">權重 (0-1): <input type="number" id="ideality-win-win-weight" value="0.25" step="0.01" min="0" max="1" class="input-field text-xs p-1 w-20 inline-block ml-1"></label>
-                            </div>
-                            <div class="ideality-criterion">
-                                <label for="ideality-no-negative-effects-range">3. 有無產生負面效應？ (0=很多, 10=沒有)</label>
-                                <div class="flex items-center">
-                                    <input type="range" id="ideality-no-negative-effects-range" min="0" max="10" value="5" class="input-field flex-grow">
-                                    <span id="ideality-no-negative-effects-value" class="range-value">5</span>
-                                </div>
-                                <label for="ideality-no-negative-effects-weight" class="text-xs mt-1">權重 (0-1): <input type="number" id="ideality-no-negative-effects-weight" value="0.25" step="0.01" min="0" max="1" class="input-field text-xs p-1 w-20 inline-block ml-1"></label>
-                            </div>
-                            <div class="ideality-criterion">
-                                <label for="ideality-low-cost-resource-range">4. 多符合理想性 (低成本/資源)？ (0-10)</label>
-                               <div class="flex items-center">
-                                    <input type="range" id="ideality-low-cost-resource-range" min="0" max="10" value="5" class="input-field flex-grow">
-                                    <span id="ideality-low-cost-resource-value" class="range-value">5</span>
-                                </div>
-                                <label for="ideality-low-cost-resource-weight" class="text-xs mt-1">權重 (0-1): <input type="number" id="ideality-low-cost-resource-weight" value="0.25" step="0.01" min="0" max="1" class="input-field text-xs p-1 w-20 inline-block ml-1"></label>
-                            </div>
-                        </div>
                         
                         <div class="text-center my-3">
                             <span class="text-md font-semibold">理想性加權總分: </span>
                             <span id="ideality-total-score-display" class="text-lg font-bold text-blue-600">0.00</span>
                              <p class="text-xs text-gray-500 mt-1">(權重總和建議為1，分數範圍0-10)</p>
-                             <p id="ideality-weights-sum-warning" class="text-xs text-red-500 mt-1" style="display:none;">注意：目前權重總和不為 1。</p>
+                             <p id="ideality-weights-sum-warning" class="text-xs text-red-500 mt-1" style="display:none;">注意：目前權重總和不為 1。請調整權重以確保總和為 1。</p>
                         </div>
 
                         <div class="items-center px-4 py-3 mt-4 text-right border-t">
+                            <button id="reset-ideality-weights-button" class="action-button mr-2 px-4 py-2 bg-gray-400 text-gray-800 rounded-md hover:bg-gray-500">重設權重</button>
                             <button id="cancel-ideality-assessment-button" class="action-button mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">取消</button>
                             <button id="save-ideality-assessment-button" class="action-button px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">儲存評估</button>
                         </div>
@@ -721,6 +785,48 @@
                         <div class="items-center px-4 py-3 mt-4 text-right border-t">
                             <button id="cancel-effect-parameters-button" class="action-button mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">取消</button>
                             <button id="save-effect-parameters-button" class="action-button px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">儲存設定</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settings-modal" class="modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center" style="display: none;">
+                <div class="modal-content mx-auto p-5 border w-11/12 md:w-3/4 lg:w-2/3 shadow-lg rounded-md bg-white">
+                    <button class="modal-close-button" onclick="closeSettingsModal()">&times;</button>
+                    <div class="mt-3">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900 text-center">工具設定</h3>
+                        
+                        <div class="mt-4">
+                            <h4 class="text-md font-semibold text-gray-800 mb-2">自訂理想性評估準則</h4>
+                            <p class="text-sm text-gray-600 mb-3">在這裡管理您的自訂理想性評估準則。這些準則將用於所有解決方案的理想性評估。</p>
+                            
+                            <div id="custom-criteria-list" class="max-h-60 overflow-y-auto border rounded-md p-2 bg-gray-50">
+                                </div>
+
+                            <button id="add-new-criterion-button" class="action-button bg-green-500 hover:bg-green-600 text-sm py-1 px-2 mt-3">
+                                <i class="fas fa-plus mr-1"></i> 新增評估準則
+                            </button>
+
+                            <div id="edit-criterion-form" class="criterion-form" style="display:none;">
+                                <h5 id="criterion-form-title" class="text-sm font-semibold text-gray-700 mb-2"></h5>
+                                <input type="hidden" id="editing-criterion-id">
+                                <label for="criterion-name-input">準則名稱:</label>
+                                <input type="text" id="criterion-name-input" placeholder="例如: 顧客滿意度">
+                                <label for="criterion-default-score-input">預設分數 (0-10):</label>
+                                <input type="number" id="criterion-default-score-input" min="0" max="10" value="5">
+                                <label for="criterion-default-weight-input">預設權重 (0-1):</label>
+                                <input type="number" id="criterion-default-weight-input" step="0.01" min="0" max="1" value="0.25">
+                                <label for="criterion-description-input">準則說明 (用於提示):</label>
+                                <textarea id="criterion-description-input" rows="3" placeholder="詳細說明此準則的意義和評分標準"></textarea>
+                                <div class="text-right">
+                                    <button id="cancel-criterion-edit-button" class="action-button bg-gray-400 hover:bg-gray-500 text-xs py-1 px-2 mr-1">取消</button>
+                                    <button id="save-criterion-button" class="action-button bg-blue-500 hover:bg-blue-600 text-xs py-1 px-2">儲存準則</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="items-center px-4 py-3 mt-4 text-right border-t">
+                            <button id="close-settings-modal-button" class="action-button mr-2 px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">關閉</button>
                         </div>
                     </div>
                 </div>
@@ -762,7 +868,7 @@
                 "快速行動 (Skipping/Rushing through)", "轉有害為有利 (Blessing in disguise/Convert harm into benefit)", "回饋 (Feedback)", "中介物/媒介 (Intermediary/Mediator)", "自助/自我服務 (Self-service)",
                 "使用複製品或模型 (Copying/Use copies or models)", "廉價與短期[拋棄式] (Cheap short-living objects/Dispose)", "替換系統運作原理/使用其他原理 (Replacing mechanical system/Use another principle)", "流動性和靈活性 (Pneumatics and hydraulics/Fluidity and flexibility)", "改變邊界條件 (Flexible shells and thin films/Change boundary conditions)",
                 "孔洞和網路 (Porous materials/Holes and networks)", "改變外觀/可見度 (Color changes/Change appearance or visibility)", "同質性 (Homogeneity)", "丟棄與恢復 (Discarding and recovering/Rejecting and regenerating parts)", "改變特性 (Parameter changes/Change properties)",
-                "模範轉移 (Phase transitions/Paradigm shift)", "相對變化 (Thermal expansion/Relative change)", "增強的環境 (Enriched atmosphere/Enhanced environment)", "鈍性(惰性)環境 (Inert atmosphere/Inert environment)", "組合(複合)結構 (Composite materials/Composite structures)"
+                "模範轉移 (Phase transitions/Paradigm Shift)", "相對變化 (Thermal Expansion/Relative Change)", "增強的環境 (Enriched Atmosphere/Enhanced Environment)", "鈍性(惰性)環境 (Inert Atmosphere/Inert Environment)", "組合(複合)結構 (Composite Materials/Composite Structures)"
             ];
 
             /**
@@ -914,7 +1020,17 @@
         let currentTrizCauseNodeId = null; 
         let ideasLandscapeChartInstance = null;
         let currentAssessingSolution = { causeId: null, solutionId: null };
-        // Removed currentCustomizingNodeId (as per previous request)
+
+        // Custom Ideality Criteria
+        let customIdealityCriteria = [];
+        const DEFAULT_IDEALITY_CRITERIA = [
+            { id: 'crit-1', name: '問題是否完全解決？', defaultScore: 5, defaultWeight: 0.25, description: '此方案解決問題的程度。\n0 分：完全沒有解決問題。\n5 分：部分解決問題，但仍有明顯缺陷或遺留問題。\n10 分：完美解決所有問題，無任何遺留或副作用。' },
+            { id: 'crit-2', name: '是否為雙贏局面？', defaultScore: 5, defaultWeight: 0.25, description: '此方案是否能為所有相關方（如顧客、員工、公司、環境）帶來正面效益，避免零和遊戲。\n0 分：對某些方有害，或只有一方受益。\n5 分：各方利益平衡，但無顯著增益。\n10 分：所有相關方皆能顯著受益，達到共贏。' },
+            { id: 'crit-3', name: '有無產生負面效應？', defaultScore: 5, defaultWeight: 0.25, description: '此方案是否會產生新的負面效果或惡化現有問題。\n0 分：產生許多新的負面效果，或使現有問題更糟。\n5 分：產生輕微負面效果，或對現有問題無影響。\n10 分：完全沒有產生任何負面效果。' },
+            { id: 'crit-4', name: '多符合理想性 (低成本/資源)？', defaultScore: 5, defaultWeight: 0.25, description: '此方案是否能以最低的成本、時間、人力、資源等達成目標。\n0 分：需要極高的成本和資源投入。\n5 分：成本和資源投入適中。\n10 分：幾乎不需額外成本或資源，利用現有條件達成。' }
+        ];
+        let criterionIdCounter = 0;
+
 
         // 實例化 TRIZMatrix
         const trizMatrix = new TRIZMatrix();
@@ -953,8 +1069,6 @@
             'C': 'rgba(217, 119, 6, 1)',
             'none': 'rgba(75, 85, 99, 1)'
         };
-
-        // domElements 變數已在上方宣告為 var
 
         const EFFECT_PARAMETERS = {
             "活動": ["活動效用性", "活動可變性", "活動費用", "活動時間", "活動複雜性", "活動方便性", "活動安全性", "活動可靠性"],
@@ -1033,22 +1147,12 @@
                 idealityModalSolutionText: document.getElementById('ideality-modal-solution-text'),
                 assessingSolutionCauseIdInput: document.getElementById('assessing-solution-cause-id'),
                 assessingSolutionEntryIdInput: document.getElementById('assessing-solution-entry-id'),
-                idealityProblemSolvedRange: document.getElementById('ideality-problem-solved-range'),
-                idealityProblemSolvedValue: document.getElementById('ideality-problem-solved-value'),
-                idealityProblemSolvedWeight: document.getElementById('ideality-problem-solved-weight'),
-                idealityWinWinRange: document.getElementById('ideality-win-win-range'),
-                idealityWinWinValue: document.getElementById('ideality-win-win-value'),
-                idealityWinWinWeight: document.getElementById('ideality-win-win-weight'),
-                idealityNoNegativeEffectsRange: document.getElementById('ideality-no-negative-effects-range'),
-                idealityNoNegativeEffectsValue: document.getElementById('ideality-no-negative-effects-value'),
-                idealityNoNegativeEffectsWeight: document.getElementById('ideality-no-negative-effects-weight'),
-                idealityLowCostResourceRange: document.getElementById('ideality-low-cost-resource-range'),
-                idealityLowCostResourceValue: document.getElementById('ideality-low-cost-resource-value'),
-                idealityLowCostResourceWeight: document.getElementById('ideality-low-cost-resource-weight'),
+                idealityCriteriaContainer: document.getElementById('ideality-criteria-container'), // New
                 idealityTotalScoreDisplay: document.getElementById('ideality-total-score-display'),
                 idealityWeightsSumWarning: document.getElementById('ideality-weights-sum-warning'),
                 saveIdealityAssessmentButton: document.getElementById('save-ideality-assessment-button'),
                 cancelIdealityAssessmentButton: document.getElementById('cancel-ideality-assessment-button'),
+                resetIdealityWeightsButton: document.getElementById('reset-ideality-weights-button'), 
                 effectParameterModalNodeText: document.getElementById('effect-parameter-modal-node-text'),
                 effectParameterOptionsContainer: document.getElementById('effect-parameter-options-container'),
                 cancelEffectParametersButton: document.getElementById('cancel-effect-parameters-button'),
@@ -1061,12 +1165,27 @@
                 menuItemExportPng: document.getElementById('menu-item-export-png'),
                 menuItemCauseEffectTable: document.getElementById('menu-item-cause-effect-table'),
                 menuItemSolutionTable: document.getElementById('menu-item-solution-table'),
-                menuItemIdeasLandscape: document.getElementById('menu-item-ideas-landscape')
+                menuItemIdeasLandscape: document.getElementById('menu-item-ideas-landscape'),
+                menuItemSettings: document.getElementById('menu-item-settings'), // New
+                settingsModal: document.getElementById('settings-modal'), // New
+                closeSettingsModalButton: document.getElementById('close-settings-modal-button'), // New
+                customCriteriaList: document.getElementById('custom-criteria-list'), // New
+                addNewCriterionButton: document.getElementById('add-new-criterion-button'), // New
+                editCriterionForm: document.getElementById('edit-criterion-form'), // New
+                criterionFormTitle: document.getElementById('criterion-form-title'), // New
+                editingCriterionIdInput: document.getElementById('editing-criterion-id'), // New
+                criterionNameInput: document.getElementById('criterion-name-input'), // New
+                criterionDefaultScoreInput: document.getElementById('criterion-default-score-input'), // New
+                criterionDefaultWeightInput: document.getElementById('criterion-default-weight-input'), // New
+                criterionDescriptionInput: document.getElementById('criterion-description-input'), // New
+                cancelCriterionEditButton: document.getElementById('cancel-criterion-edit-button'), // New
+                saveCriterionButton: document.getElementById('save-criterion-button') // New
             };
         }
 
         function initialize() {
             initializeDomElements(); 
+            loadCustomIdealityCriteria(); // Load custom criteria first
             populateSelects();
             setupEventListeners();
             if (domElements.scalableContentWrapper) { 
@@ -1149,9 +1268,11 @@
                 if(domElements.editingSolutionIdInput) domElements.editingSolutionIdInput.value = '';
             });
 
-            initializeIdealityAssessmentRangeListeners();
+            // Ideality Assessment Modal Listeners
+            // These listeners are now added dynamically in openIdealityAssessmentModal
             if (domElements.saveIdealityAssessmentButton) domElements.saveIdealityAssessmentButton.addEventListener('click', handleSaveIdealityAssessment);
             if (domElements.cancelIdealityAssessmentButton) domElements.cancelIdealityAssessmentButton.addEventListener('click', closeIdealityAssessmentModal);
+            if (domElements.resetIdealityWeightsButton) domElements.resetIdealityWeightsButton.addEventListener('click', resetIdealityWeights); 
             
             window.addEventListener('click', (event) => { 
                 if (domElements.fileDropdownContent && domElements.sidebarFileMenuTrigger && 
@@ -1161,34 +1282,17 @@
                 }
             });
 
-            // Removed saveNodeCustomizationButton event listener
+            // Settings Modal Listeners
+            if (domElements.menuItemSettings) domElements.menuItemSettings.addEventListener('click', (e) => { e.preventDefault(); openSettingsModal(); });
+            if (domElements.closeSettingsModalButton) domElements.closeSettingsModalButton.addEventListener('click', closeSettingsModal);
+            if (domElements.addNewCriterionButton) domElements.addNewCriterionButton.addEventListener('click', () => showEditCriterionForm(null));
+            if (domElements.saveCriterionButton) domElements.saveCriterionButton.addEventListener('click', handleSaveCriterion);
+            if (domElements.cancelCriterionEditButton) domElements.cancelCriterionEditButton.addEventListener('click', hideEditCriterionForm);
         }
 
-        function initializeIdealityAssessmentRangeListeners() {
-            const rangesAndValues = [
-                { range: domElements.idealityProblemSolvedRange, valueDisplay: domElements.idealityProblemSolvedValue },
-                { range: domElements.idealityWinWinRange, valueDisplay: domElements.idealityWinWinValue },
-                { range: domElements.idealityNoNegativeEffectsRange, valueDisplay: domElements.idealityNoNegativeEffectsValue },
-                { range: domElements.idealityLowCostResourceRange, valueDisplay: domElements.idealityLowCostResourceValue }
-            ];
-            rangesAndValues.forEach(item => {
-                if (item.range) { 
-                    item.range.addEventListener('input', (e) => { 
-                        if (item.valueDisplay) item.valueDisplay.textContent = e.target.value;
-                        updateIdealityTotalScoreDisplay(); 
-                    });
-                }
-            });
-
-            const weights = [
-                domElements.idealityProblemSolvedWeight, domElements.idealityWinWinWeight,
-                domElements.idealityNoNegativeEffectsWeight, domElements.idealityLowCostResourceWeight
-            ];
-            weights.forEach(weightInput => {
-                if (weightInput) { 
-                    weightInput.addEventListener('input', updateIdealityTotalScoreDisplay);
-                }
-            });
+        function initializeIdealityAssessmentRangeListeners(criterionId) {
+            // These listeners are now set up dynamically for each criterion in openIdealityAssessmentModal
+            // This function is no longer needed as a standalone initializer.
         }
 
 
@@ -1331,7 +1435,7 @@
             if(domElements.abcSolutionFilterControls) {
                 domElements.abcSolutionFilterControls.querySelectorAll('button[data-filter-type="solution"]').forEach(button => {
                     button.classList.toggle('active', button.dataset.filter === currentAbcSolutionFilter);
-                    button.disabled = noData;
+                    button.disabled = noData; // Also disable if no data
                 });
             }
         }
@@ -1360,7 +1464,8 @@
                 counter: nodeIdCounter, 
                 zoom: currentZoom, 
                 abcCauseFilter: currentAbcCauseFilter, 
-                abcSolutionFilter: currentAbcSolutionFilter 
+                abcSolutionFilter: currentAbcSolutionFilter,
+                customIdealityCriteria: deepCopy(customIdealityCriteria) // Save custom criteria with history
             }); 
             historyIndex = historyStack.length - 1; 
             if (historyStack.length > MAX_HISTORY_STATES) { 
@@ -1376,6 +1481,7 @@
                 recalculateNodeIdCounter(rcaData); 
                 currentAbcCauseFilter = historyEntry.abcCauseFilter || 'all'; 
                 currentAbcSolutionFilter = historyEntry.abcSolutionFilter || 'all'; 
+                customIdealityCriteria = historyEntry.customIdealityCriteria ? deepCopy(historyEntry.customIdealityCriteria) : deepCopy(DEFAULT_IDEALITY_CRITERIA); // Restore custom criteria
 
                 // Ensure problem input area visibility is correct after loading
                 if (rcaData) {
@@ -1420,14 +1526,21 @@
         
         // --- Data Loading and Saving ---
         function getDefaultIdealityAssessment() {
-            return {
-                problemSolved: null, 
-                winWin: null, 
-                noNegativeEffects: null, 
-                lowCostResource: null,
-                weights: { problemSolved: 0.25, winWin: 0.25, noNegativeEffects: 0.25, lowCostResource: 0.25 },
-                weightedScore: null
+            // Returns a new assessment object based on current customIdealityCriteria
+            const assessment = {
+                criteria: [],
+                weightedScore: null // Will be calculated upon assessment
             };
+            customIdealityCriteria.forEach(crit => {
+                assessment.criteria.push({
+                    id: crit.id,
+                    name: crit.name,
+                    score: crit.defaultScore,
+                    weight: crit.defaultWeight,
+                    description: crit.description
+                });
+            });
+            return assessment;
         }
 
         function processLoadedData(dataString) {
@@ -1450,12 +1563,22 @@
                     return false;
                 }
 
+                // Load custom ideality criteria from saved data, or use defaults
+                customIdealityCriteria = parsedJson.customIdealityCriteria ? deepCopy(parsedJson.customIdealityCriteria) : deepCopy(DEFAULT_IDEALITY_CRITERIA);
+                criterionIdCounter = 0; // Reset counter for custom criteria
+                customIdealityCriteria.forEach(crit => {
+                    const idNum = parseInt(crit.id.replace('crit-', ''));
+                    if (!isNaN(idNum) && idNum > criterionIdCounter) {
+                        criterionIdCounter = idNum;
+                    }
+                });
+
+
                 if (rcaData) {
                     function migrateNodeDataRecursive(node) {
                         if (!node) return;
                         if (typeof node.andSourceNodeIds === 'undefined') node.andSourceNodeIds = [];
                         if (typeof node.effectParameters === 'undefined') node.effectParameters = [];
-                        // Removed node.customization migration logic
                         if (typeof node.connectorLabelToParent === 'undefined') { 
                             node.connectorLabelToParent = "";
                         }
@@ -1466,6 +1589,7 @@
                             if (typeof node.abcCategory === 'undefined') node.abcCategory = null;
                             if (typeof node.solutionsGenerated === 'undefined') node.solutionsGenerated = [];
 
+                            // Migration for old inventivePrinciples structure to new solutionsGenerated
                             if (node.inventivePrinciples && Array.isArray(node.inventivePrinciples)) {
                                 node.inventivePrinciples.forEach(oldIp => {
                                     if (!node.solutionsGenerated.some(s => s.principleName === oldIp.name && s.description === oldIp.solution)) {
@@ -1487,28 +1611,41 @@
                             if(node.solutionsGenerated) {
                                 node.solutionsGenerated.forEach(sol => {
                                     if (typeof sol.timeRequired === 'undefined') sol.timeRequired = null;
-                                    if (typeof sol.mcdmScore === 'undefined') sol.mcdmScore = null;
+                                    if (typeof sol.mcdmScore === 'undefined') sol.mcdmScore = null; 
                                     if (typeof sol.cost === 'undefined') sol.cost = null;
                                     
-                                    if (typeof sol.idealityAssessment === 'undefined' || sol.idealityAssessment === null) {
+                                    // Ensure idealityAssessment is fully initialized with custom criteria
+                                    if (typeof sol.idealityAssessment === 'undefined' || sol.idealityAssessment === null || !Array.isArray(sol.idealityAssessment.criteria)) {
                                         sol.idealityAssessment = getDefaultIdealityAssessment();
                                     } else {
-                                        const defaultWeights = getDefaultIdealityAssessment().weights;
-                                        if (typeof sol.idealityAssessment.weights === 'undefined' || sol.idealityAssessment.weights === null) {
-                                            sol.idealityAssessment.weights = defaultWeights;
-                                        } else {
-                                            for (const key in defaultWeights) {
-                                                if (typeof sol.idealityAssessment.weights[key] === 'undefined' || sol.idealityAssessment.weights[key] === null) {
-                                                    sol.idealityAssessment.weights[key] = defaultWeights[key];
-                                                }
+                                        // Migrate/update existing criteria to match current customIdealityCriteria
+                                        const newCriteriaState = [];
+                                        customIdealityCriteria.forEach(defaultCrit => {
+                                            const existingCrit = sol.idealityAssessment.criteria.find(c => c.id === defaultCrit.id);
+                                            if (existingCrit) {
+                                                // Keep existing score/weight, but update name/description if changed in defaults
+                                                newCriteriaState.push({
+                                                    id: existingCrit.id,
+                                                    name: defaultCrit.name, // Use current default name
+                                                    score: existingCrit.score,
+                                                    weight: existingCrit.weight,
+                                                    description: defaultCrit.description // Use current default description
+                                                });
+                                            } else {
+                                                // Add new default criteria if not present in old data
+                                                newCriteriaState.push({
+                                                    id: defaultCrit.id,
+                                                    name: defaultCrit.name,
+                                                    score: defaultCrit.defaultScore,
+                                                    weight: defaultCrit.defaultWeight,
+                                                    description: defaultCrit.description
+                                                });
                                             }
-                                        }
-                                        const defaultScores = getDefaultIdealityAssessment();
-                                         if (typeof sol.idealityAssessment.problemSolved === 'undefined') sol.idealityAssessment.problemSolved = defaultScores.problemSolved;
-                                         if (typeof sol.idealityAssessment.winWin === 'undefined') sol.idealityAssessment.winWin = defaultScores.winWin;
-                                         if (typeof sol.idealityAssessment.noNegativeEffects === 'undefined') sol.idealityAssessment.noNegativeEffects = defaultScores.noNegativeEffects;
-                                         if (typeof sol.idealityAssessment.lowCostResource === 'undefined') sol.idealityAssessment.lowCostResource = defaultScores.lowCostResource;
-                                         if (typeof sol.idealityAssessment.weightedScore === 'undefined') sol.idealityAssessment.weightedScore = defaultScores.weightedScore;
+                                        });
+                                        sol.idealityAssessment.criteria = newCriteriaState;
+                                        // Recalculate weightedScore after migration
+                                        sol.idealityAssessment.weightedScore = calculateWeightedScore(sol.idealityAssessment.criteria);
+                                        sol.mcdmScore = sol.idealityAssessment.weightedScore;
                                     }
                                 });
                             }
@@ -1529,7 +1666,7 @@
                 
                 historyStack = []; 
                 historyIndex = -1; 
-                pushStateToHistory(rcaData); // Use pushStateToHistory which handles initial state correctly
+                pushStateToHistory(rcaData); 
 
                 if (rcaData) {
                     if(domElements.problemInputArea) domElements.problemInputArea.style.display = 'none';
@@ -1545,7 +1682,7 @@
                 renderRcaDiagram(); 
                 renderCauseEffectTable(); 
                 renderSolutionTable(); 
-                renderIdeasLandscapeChart();
+                renderIdeasLandscapeChart(); 
                 applyZoom(currentZoom, true); 
                 alert('圖表進度已成功載入！'); 
                 return true; 
@@ -1564,9 +1701,16 @@
         }
 
         function handleSaveToLocalStorage() { 
-            if (rcaData || rcaData === null) { // Allow saving null data if diagram is empty
+            if (rcaData || rcaData === null) { 
                 try { 
-                    const dataToSave = { diagramData: rcaData, counter: nodeIdCounter, zoomLevel: currentZoom, abcCauseFilter: currentAbcCauseFilter, abcSolutionFilter: currentAbcSolutionFilter }; 
+                    const dataToSave = { 
+                        diagramData: rcaData, 
+                        counter: nodeIdCounter, 
+                        zoomLevel: currentZoom, 
+                        abcCauseFilter: currentAbcCauseFilter, 
+                        abcSolutionFilter: currentAbcSolutionFilter,
+                        customIdealityCriteria: customIdealityCriteria // Save custom criteria
+                    }; 
                     localStorage.setItem('rcaDiagramData', JSON.stringify(dataToSave)); 
                     alert('圖表進度已儲存至瀏覽器！'); 
                 } catch (e) { 
@@ -1588,8 +1732,15 @@
             updateButtonStates(); 
         }
         function handleSaveToFile() { 
-            if (rcaData || rcaData === null) { // Allow saving null data if diagram is empty
-                const dataToSave = { diagramData: rcaData, counter: nodeIdCounter, zoomLevel: currentZoom, abcCauseFilter: currentAbcCauseFilter, abcSolutionFilter: currentAbcSolutionFilter }; 
+            if (rcaData || rcaData === null) { 
+                const dataToSave = { 
+                    diagramData: rcaData, 
+                    counter: nodeIdCounter, 
+                    zoomLevel: currentZoom, 
+                    abcCauseFilter: currentAbcCauseFilter, 
+                    abcSolutionFilter: currentAbcSolutionFilter,
+                    customIdealityCriteria: customIdealityCriteria // Save custom criteria
+                }; 
                 const jsonData = JSON.stringify(dataToSave, null, 2); 
                 const blob = new Blob([jsonData], { type: 'application/json' }); 
                 const url = URL.createObjectURL(blob); 
@@ -1706,7 +1857,6 @@
                 worseningParameter: null,
                 solutionsGenerated: [], 
                 abcCategory: null,
-                // Removed customization property
                 connectorLabelToParent: "" 
             }; 
             if (type === 'cause') node.isNonChangeable = isNonChangeable; 
@@ -1730,9 +1880,6 @@
             nodeDiv.classList.add('rca-node', `rca-node-${nodeData.type}`); 
             nodeDiv.id = nodeData.id; 
             nodeDiv.dataset.nodeId = nodeData.id; 
-
-            // Removed customization application logic (backgroundColor, borderColor)
-            // Default styles will apply based on rca-node-type classes
 
             if (nodeData.type === 'cause') {
                 let isDimmed = false;
@@ -1774,7 +1921,6 @@
             
             const iconSpan = document.createElement('span'); 
             iconSpan.classList.add('rca-node-icon');
-            // Simplified icon logic, removed customization checks
             if (nodeData.type === 'initial-problem') iconSpan.textContent = '(-)'; 
             else if (nodeData.type === 'cause') { 
                 const { hasPositiveChild, hasNegativeChild } = checkChildrenEffects(nodeData); 
@@ -1814,24 +1960,10 @@
                 contentDiv.appendChild(paramsDiv); 
             } 
             
-            if (nodeData.type === 'cause' && nodeData.solutionsGenerated && nodeData.solutionsGenerated.length > 0) {
-                const solutionsSummaryDiv = document.createElement('div');
-                solutionsSummaryDiv.classList.add('selected-items-list');
-                let summaryText = `<strong>潛在解決方案:</strong> ${nodeData.solutionsGenerated.length} 個`;
-                const assessedSolutions = nodeData.solutionsGenerated.filter(s => s.idealityAssessment && s.idealityAssessment.weightedScore !== null && s.idealityAssessment.weightedScore !== undefined);
-                if (assessedSolutions.length > 0) {
-                    const avgIdeality = assessedSolutions.reduce((sum, s) => sum + s.idealityAssessment.weightedScore, 0) / assessedSolutions.length;
-                    summaryText += ` (平均理想性: ${avgIdeality.toFixed(2)})`;
-                }
-                solutionsSummaryDiv.innerHTML = summaryText;
-                contentDiv.appendChild(solutionsSummaryDiv);
-            }
-            
             if (!isFinalizedView) { 
                 const actionsDiv = document.createElement('div'); 
                 actionsDiv.classList.add('rca-node-actions'); 
-                actionsDiv.appendChild(createActionButton('修訂此項', 'edit-node', () => promptEditNode(nodeData.id, contentDiv))); // Re-added edit button
-                // Removed '自訂樣式' button
+                actionsDiv.appendChild(createActionButton('修訂此項', 'edit-node', () => promptEditNode(nodeData.id, contentDiv))); 
                 if (nodeData.type === 'initial-problem') { 
                     actionsDiv.appendChild(createActionButton('新增原因', 'add-cause', () => promptAddNode(nodeData.id, contentDiv, 'cause', '輸入原因描述', '與父節點關係描述 (選填)'))); 
                 } else if (nodeData.type === 'cause') { 
@@ -1876,7 +2008,6 @@
         }
         
         function promptEditNode(nodeId, parentNodeContentDiv) { 
-            console.log(`Attempting to edit node: ${nodeId}. Current view finalized: ${isFinalizedView}`); // Added console log
             if (isFinalizedView) {
                 alert('目前處於檢視模式，請切換到編輯模式以修改節點。');
                 return;
@@ -1896,8 +2027,7 @@
             nodeInput.classList.add('input-field');
             inputGroup.appendChild(nodeInput);
 
-            // Moved connectorLabelInput declaration inside the if block to prevent ReferenceError
-            var connectorLabelInput; // Changed to var for broader compatibility
+            let connectorLabelInput; 
             if (nodeToEdit.parentId) {
                 connectorLabelInput = document.createElement('input');
                 connectorLabelInput.type = 'text';
@@ -1914,7 +2044,7 @@
                 const newText = nodeInput.value.trim(); 
                 if (newText) { 
                     nodeToEdit.text = newText; 
-                    if (nodeToEdit.parentId && connectorLabelInput) { // Added check for connectorLabelInput
+                    if (nodeToEdit.parentId && connectorLabelInput) { 
                          nodeToEdit.connectorLabelToParent = connectorLabelInput.value.trim();
                     }
                     pushStateToHistory(rcaData); 
@@ -1927,7 +2057,6 @@
                 } 
             }; 
             nodeInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') saveEditButton.click(); }); 
-            // Only add event listener if connectorLabelInput exists
             if (connectorLabelInput) {
                 connectorLabelInput.addEventListener('keypress', (event) => { if (event.key === 'Enter') saveEditButton.click(); }); 
             }
@@ -2108,7 +2237,7 @@
             if (modalNodeText) modalNodeText.textContent = `節點：${node.text.substring(0,30)}${node.text.length > 30 ? '...' : ''}`;
             modal.querySelectorAll('button[data-abc-cause]').forEach(btn => {
                 btn.classList.remove('ring-2', 'ring-offset-2', 'ring-blue-500');
-                if (btn.dataset.abc-cause === (node.abcCategory || 'null')) {
+                if (btn.dataset.abcCause === (node.abcCategory || 'null')) {
                     btn.classList.add('ring-2', 'ring-offset-2', 'ring-blue-500');
                 }
             });
@@ -2173,10 +2302,9 @@
                 
                 if (principlesNames && principlesNames.length > 0) {
                     if(domElements.suggestedPrinciplesContainer) domElements.suggestedPrinciplesContainer.style.display = 'block';
-                    // Corrected numbering for suggested principles
-                    principlesNames.forEach((principleName) => { // Removed index from here
+                    principlesNames.forEach((principleName) => { 
                         const li = document.createElement('li');
-                        li.textContent = principleName; // Only set the principle name
+                        li.textContent = principleName; 
                         domElements.suggestedPrinciplesList.appendChild(li);
                     });
                 } else {
@@ -2227,9 +2355,12 @@
                 solDiv.className = 'solution-entry flex justify-between items-center text-sm';
                 let solText = `<span class="font-semibold">${sol.principleName || '未指定原理'}:</span>
                                <span class="ml-2">${sol.description ? sol.description.substring(0, 40) + (sol.description.length > 40 ? '...' : '') : '無描述'}</span>`;
-                if (sol.timeRequired !== null || sol.mcdmScore !== null) {
-                    solText += `<br><span class="text-xs text-gray-500">時:${sol.timeRequired ?? '-'} | 分:${sol.mcdmScore ?? '-'} | 成本:${sol.cost ?? '-'}</span>`;
+                if (sol.idealityAssessment && sol.idealityAssessment.weightedScore !== null && sol.idealityAssessment.weightedScore !== undefined) {
+                    solText += `<br><span class="text-xs text-gray-500">理想性總分: ${sol.idealityAssessment.weightedScore.toFixed(2)} | 時:${sol.timeRequired ?? '-'} | 成本:${sol.cost ?? '-'}</span>`;
+                } else if (sol.timeRequired !== null || sol.cost !== null) {
+                    solText += `<br><span class="text-xs text-gray-500">時:${sol.timeRequired ?? '-'} | 成本:${sol.cost ?? '-'}</span>`;
                 }
+
 
                 solDiv.innerHTML = `
                     <div>${solText}</div>
@@ -2254,15 +2385,15 @@
                     domElements.solutionPrincipleSelect.value = solution.principleName;
                     domElements.solutionDescriptionInput.value = solution.description;
                     domElements.solutionTimeRequiredInput.value = solution.timeRequired || '';
-                    domElements.solutionMcdmScoreInput.value = solution.mcdmScore || '';
+                    domElements.solutionMcdmScoreInput.value = solution.mcdmScore !== null && solution.mcdmScore !== undefined ? solution.mcdmScore.toFixed(2) : '';
                     domElements.solutionCostInput.value = solution.cost || '';
                 } else { return; } 
             } else {
                 domElements.editSolutionTitle.textContent = "新增解決方案";
-                domElements.solutionPrincipleSelect.value = trizMatrix.getInventivePrinciplesNames()[0]; // 預設選取第一個原理
+                domElements.solutionPrincipleSelect.value = trizMatrix.getInventivePrinciplesNames()[0]; 
                 domElements.solutionDescriptionInput.value = '';
                 domElements.solutionTimeRequiredInput.value = '';
-                domElements.solutionMcdmScoreInput.value = '';
+                domElements.solutionMcdmScoreInput.value = ''; 
                 domElements.solutionCostInput.value = '';
             }
             domElements.editSolutionEntryContainer.style.display = 'block';
@@ -2270,7 +2401,7 @@
         }
 
         function handleSaveSolutionEntry() {
-            if (!currentTrizCauseNodeId || !domElements.editingSolutionIdInput || !domElements.solutionPrincipleSelect || !domElements.solutionDescriptionInput || !domElements.solutionTimeRequiredInput || !domElements.solutionMcdmScoreInput || !domElements.solutionCostInput || !domElements.editSolutionEntryContainer) return;
+            if (!currentTrizCauseNodeId || !domElements.editingSolutionIdInput || !domElements.solutionPrincipleSelect || !domElements.solutionDescriptionInput || !domElements.solutionTimeRequiredInput || !domElements.solutionCostInput || !domElements.editSolutionEntryContainer) return; 
             const causeNode = findNodeById(rcaData, currentTrizCauseNodeId);
             if (!causeNode) return;
 
@@ -2278,7 +2409,6 @@
             const principle = domElements.solutionPrincipleSelect.value;
             const description = domElements.solutionDescriptionInput.value.trim();
             const timeRequired = domElements.solutionTimeRequiredInput.value ? parseFloat(domElements.solutionTimeRequiredInput.value) : null;
-            const mcdmScore = domElements.solutionMcdmScoreInput.value ? parseFloat(domElements.solutionMcdmScoreInput.value) : null;
             const cost = domElements.solutionCostInput.value ? parseFloat(domElements.solutionCostInput.value) : null;
 
 
@@ -2293,10 +2423,12 @@
                     causeNode.solutionsGenerated[solIndex].principleName = principle;
                     causeNode.solutionsGenerated[solIndex].description = description;
                     causeNode.solutionsGenerated[solIndex].timeRequired = timeRequired;
-                    causeNode.solutionsGenerated[solIndex].mcdmScore = mcdmScore;
                     causeNode.solutionsGenerated[solIndex].cost = cost;
-                    if (!causeNode.solutionsGenerated[solIndex].idealityAssessment) {
+                    // Ensure idealityAssessment is initialized if it's an old solution or somehow missing
+                    if (!causeNode.solutionsGenerated[solIndex].idealityAssessment || !Array.isArray(causeNode.solutionsGenerated[solIndex].idealityAssessment.criteria)) {
                          causeNode.solutionsGenerated[solIndex].idealityAssessment = getDefaultIdealityAssessment();
+                         // Recalculate MCDM score for newly initialized ideality assessment
+                         causeNode.solutionsGenerated[solIndex].mcdmScore = calculateWeightedScore(causeNode.solutionsGenerated[solIndex].idealityAssessment.criteria);
                     }
                 }
             } else { 
@@ -2306,9 +2438,9 @@
                     description: description,
                     abcCategory: null,
                     timeRequired: timeRequired,
-                    mcdmScore: mcdmScore,
+                    mcdmScore: null, 
                     cost: cost,
-                    idealityAssessment: getDefaultIdealityAssessment()
+                    idealityAssessment: getDefaultIdealityAssessment() // New solutions get default assessment
                 });
             }
             pushStateToHistory(rcaData);
@@ -2494,6 +2626,7 @@
 
             const connectorLabelInput = document.createElement('input');
             connectorLabelInput.type = 'text';
+            connectorLabelInput.value = connectorLabelPlaceholderText; 
             connectorLabelInput.placeholder = connectorLabelPlaceholderText;
             connectorLabelInput.classList.add('input-field', 'mt-2');
             inputGroup.appendChild(connectorLabelInput);
@@ -2502,10 +2635,10 @@
             saveButton.textContent = '儲存'; 
             saveButton.classList.add('action-button', 'save-button', 'w-full', 'mt-2'); 
             saveButton.onclick = () => { 
-                const nodeText = nodeInput.value.trim(); 
+                const newText = nodeInput.value.trim(); 
                 const connectorLabel = connectorLabelInput.value.trim(); 
-                if (nodeText) { 
-                    addNodeToData(parentId, nodeText, nodeTypeToAdd, connectorLabel); 
+                if (newText) { 
+                    addNodeToData(parentId, newText, nodeTypeToAdd, connectorLabel); 
                     inputContainer.innerHTML = ''; 
                 } else { 
                     alert('描述不能為空！'); 
@@ -2613,7 +2746,6 @@
                     else if (hasPositiveChild) causeType = 'P (純正面)'; 
                     else causeType = '未定義效果'; 
                     
-                    // Only include causes that are not purely positive or have effects
                     if (causeType !== 'P (純正面)' || (hasPositiveChild || hasNegativeChild)) { 
                         const positiveEffects = (node.children && Array.isArray(node.children) ? node.children.filter(c => c && c.type === 'positive-effect').map(c => c.text).join('; ') : '') || '無'; 
                         const negativeEffects = (node.children && Array.isArray(node.children) ? node.children.filter(c => c && c.type === 'negative-effect').map(c => c.text).join('; ') : '') || '無'; 
@@ -2695,8 +2827,8 @@
                 
                 const scoreCell = row.insertCell();
                 scoreCell.classList.add('ideality-score-display');
-                scoreCell.textContent = solDetail.idealityAssessment && solDetail.idealityAssessment.weightedScore !== null && solDetail.idealityAssessment.weightedScore !== undefined
-                    ? solDetail.idealityAssessment.weightedScore.toFixed(2) 
+                scoreCell.textContent = solDetail.mcdmScore !== null && solDetail.mcdmScore !== undefined
+                    ? solDetail.mcdmScore.toFixed(2) 
                     : '-';
             });
         }
@@ -2719,7 +2851,7 @@
                                 description: sol.description,
                                 abcCategory: sol.abcCategory,
                                 timeRequired: sol.timeRequired,
-                                mcdmScore: sol.mcdmScore,
+                                mcdmScore: sol.mcdmScore, 
                                 cost: sol.cost,
                                 idealityAssessment: sol.idealityAssessment || getDefaultIdealityAssessment() 
                             });
@@ -2760,15 +2892,15 @@
         }
         
         function getChartDataPoints() {
-            const solutions = getAllSolutionsWithDetails().filter(s => s.timeRequired !== null && s.mcdmScore !== null);
+            const solutions = getAllSolutionsWithDetails().filter(s => s.timeRequired !== null && s.mcdmScore !== null && s.mcdmScore !== undefined);
             return solutions.map(sol => ({
                 x: sol.timeRequired,
-                y: sol.mcdmScore,
+                y: sol.mcdmScore, 
                 label: sol.description, 
                 shortLabel: sol.description.substring(0, 20) + (sol.description.length > 20 ? "..." : ""), 
                 cost: sol.cost,
                 abc: sol.abcCategory || 'none',
-                ideality: sol.idealityAssessment?.weightedScore,
+                ideality: sol.mcdmScore, // Use mcdmScore for ideality
                 id: sol.solutionId
             }));
         }
@@ -2783,7 +2915,7 @@
                         grid: { color: '#e5e7eb' }
                     },
                     y: {
-                        title: { display: true, text: 'MCDM總分 (0-100)', font: { weight: 'bold' } },
+                        title: { display: true, text: '理想性加權總分 (MCDM)', font: { weight: 'bold' } }, 
                         grid: { color: '#e5e7eb' }
                     }
                 },
@@ -2795,9 +2927,8 @@
                                 if (label) { label = `方案: ${label.substring(0,50)}${label.length > 50 ? '...' : ''}\n`; }
                                 else { label = `方案ID: ${context.raw.id}\n`;}
                                 
-                                label += `時間: ${context.raw.x}, 分數: ${context.raw.y}`;
+                                label += `時間: ${context.raw.x}, 理想性總分: ${context.raw.y.toFixed(2)}`; 
                                 if (context.raw.cost !== null && context.raw.cost !== undefined) label += `\n成本: ${context.raw.cost}`;
-                                if (context.raw.ideality !== null && context.raw.ideality !== undefined) label += `\n理想性: ${context.raw.ideality.toFixed(2)}`;
                                 if (context.raw.abc && context.raw.abc !== 'none') label += `\nABC分類: ${context.raw.abc}`;
                                 return label.split('\n');
                             }
@@ -2875,20 +3006,10 @@
                     ideasLandscapeChartInstance.destroy();
                     ideasLandscapeChartInstance = null;
                 }
-                if (domElements.ideasLandscapeNoDataMessage) domElements.ideasLandscapeNoDataMessage.style.display = 'block';
+                if (domElements.ideasLandscapeNoDataMessage) domElements.ideasLandscapeNoDataMessage.style.display = 'flex'; // Use flex to center content
                 return;
             }
-            if (domElements.ideasLandscapeNoDataMessage) domElements.ideasLandscapeNoDataMessage.style.display = 'none'; 
             
-            if (!rcaData) {
-                if (ideasLandscapeChartInstance) {
-                    ideasLandscapeChartInstance.destroy();
-                    ideasLandscapeChartInstance = null;
-                }
-                if (domElements.ideasLandscapeNoDataMessage) domElements.ideasLandscapeNoDataMessage.style.display = 'block';
-                return;
-            }
-
             const dataPoints = getChartDataPoints();
 
             if (dataPoints.length === 0) {
@@ -2896,9 +3017,10 @@
                     ideasLandscapeChartInstance.destroy();
                     ideasLandscapeChartInstance = null;
                 }
-                if (domElements.ideasLandscapeNoDataMessage) domElements.ideasLandscapeNoDataMessage.style.display = 'block';
+                if (domElements.ideasLandscapeNoDataMessage) domElements.ideasLandscapeNoDataMessage.style.display = 'flex'; // Use flex to center content
                 return;
             }
+            if (domElements.ideasLandscapeNoDataMessage) domElements.ideasLandscapeNoDataMessage.style.display = 'none'; 
 
             const timeThreshold = parseFloat(domElements.landscapeTimeThresholdInput.value) || 0;
             const scoreThreshold = parseFloat(domElements.landscapeScoreThresholdInput.value) || 0;
@@ -2919,13 +3041,12 @@
                         borderWidth: 1.5,
                         pointRadius: dataPoints.map(p => {
                             let radius = 5;
-                            // Prioritize cost for size, then ideality if cost is not available or zero
                             if (p.cost !== null && p.cost !== undefined && p.cost > 0) {
                                 radius += Math.log10(p.cost / 100 + 1) * 2; 
                             } else if (p.ideality !== null && p.ideality !== undefined) {
                                 radius += p.ideality / 2; 
                             }
-                            return Math.min(Math.max(radius, 4), 15); // Ensure radius is within reasonable bounds
+                            return Math.min(Math.max(radius, 4), 15); 
                         }),
                         pointStyle: dataPoints.map(p => ABC_POINT_STYLES[p.abc] || ABC_POINT_STYLES['none']),
                         hoverRadius: dataPoints.map(p => {
@@ -2947,38 +3068,111 @@
         // --- TRIZ Ideality Assessment Functions ---
         function openIdealityAssessmentModal(causeId, solutionId) {
             const causeNode = findNodeById(rcaData, causeId);
-            if (!causeNode || !causeNode.solutionsGenerated) return;
+            if (!causeNode || !causeNode.solutionsGenerated) {
+                console.error("openIdealityAssessmentModal: 未找到原因節點或解決方案。", { causeId, solutionId, causeNode });
+                return;
+            }
             const solution = causeNode.solutionsGenerated.find(s => s.id === solutionId);
-            if (!solution || !domElements.idealityAssessmentModal || !domElements.assessingSolutionCauseIdInput || !domElements.assessingSolutionEntryIdInput || !domElements.idealityModalSolutionText || !domElements.idealityProblemSolvedRange || !domElements.idealityProblemSolvedValue || !domElements.idealityProblemSolvedWeight || !domElements.idealityWinWinRange || !domElements.idealityWinWinValue || !domElements.idealityWinWinWeight || !domElements.idealityNoNegativeEffectsRange || !domElements.idealityNoNegativeEffectsValue || !domElements.idealityNoNegativeEffectsWeight || !domElements.idealityLowCostResourceRange || !domElements.idealityLowCostResourceValue || !domElements.idealityLowCostResourceWeight) return;
+            if (!solution) {
+                console.error("openIdealityAssessmentModal: 未找到對應的解決方案。", { causeId, solutionId, solution });
+                return;
+            }
 
+            if (!domElements.idealityAssessmentModal || !domElements.idealityCriteriaContainer) {
+                console.error("openIdealityAssessmentModal: 模態視窗或準則容器 DOM 元素未在 domElements 中找到。", domElements);
+                alert("理想性評估視窗初始化失敗，請檢查控制台錯誤訊息。");
+                return;
+            }
 
-            currentAssessingSolution = { causeId, solutionId };
-            domElements.assessingSolutionCauseIdInput.value = causeId;
-            domElements.assessingSolutionEntryIdInput.value = solutionId;
+            try {
+                currentAssessingSolution = { causeId, solutionId };
+                domElements.assessingSolutionCauseIdInput.value = causeId;
+                domElements.assessingSolutionEntryIdInput.value = solutionId;
 
-            domElements.idealityModalSolutionText.textContent = `評估方案: ${solution.description.substring(0,60)}${solution.description.length > 60 ? '...' : ''}`;
+                domElements.idealityModalSolutionText.textContent = `評估方案: ${solution.description.substring(0,60)}${solution.description.length > 60 ? '...' : ''}`;
 
-            const assessment = solution.idealityAssessment || getDefaultIdealityAssessment(); 
-            const weights = assessment.weights || getDefaultIdealityAssessment().weights; 
+                // Ensure idealityAssessment and its criteria are initialized
+                if (!solution.idealityAssessment || !Array.isArray(solution.idealityAssessment.criteria)) {
+                    solution.idealityAssessment = getDefaultIdealityAssessment();
+                } else {
+                    // Update existing criteria to match current customIdealityCriteria
+                    const newCriteriaState = [];
+                    customIdealityCriteria.forEach(defaultCrit => {
+                        const existingCrit = solution.idealityAssessment.criteria.find(c => c.id === defaultCrit.id);
+                        if (existingCrit) {
+                            newCriteriaState.push({
+                                id: existingCrit.id,
+                                name: defaultCrit.name, 
+                                score: existingCrit.score,
+                                weight: existingCrit.weight,
+                                description: defaultCrit.description 
+                            });
+                        } else {
+                            newCriteriaState.push({
+                                id: defaultCrit.id,
+                                name: defaultCrit.name,
+                                score: defaultCrit.defaultScore,
+                                weight: defaultCrit.defaultWeight,
+                                description: defaultCrit.description
+                            });
+                        }
+                    });
+                    solution.idealityAssessment.criteria = newCriteriaState;
+                }
+                
+                // Render dynamic criteria inputs
+                domElements.idealityCriteriaContainer.innerHTML = '';
+                solution.idealityAssessment.criteria.forEach((crit, index) => {
+                    const criterionDiv = document.createElement('div');
+                    criterionDiv.className = 'ideality-criterion';
+                    criterionDiv.innerHTML = `
+                        <label for="ideality-crit-${crit.id}-range">
+                            ${index + 1}. ${crit.name} (0-10)
+                            <span class="tooltip-container">
+                                <i class="fas fa-info-circle text-gray-400 hover:text-gray-600"></i>
+                                <span class="tooltip-text">${crit.description}</span>
+                            </span>
+                        </label>
+                        <div class="flex items-center">
+                            <input type="range" id="ideality-crit-${crit.id}-range" min="0" max="10" value="${crit.score}" class="input-field flex-grow" data-criterion-id="${crit.id}">
+                            <span id="ideality-crit-${crit.id}-value" class="range-value">${crit.score}</span>
+                        </div>
+                        <label for="ideality-crit-${crit.id}-weight" class="text-xs mt-1">
+                            權重 (0-1): 
+                            <input type="number" id="ideality-crit-${crit.id}-weight" value="${crit.weight}" step="0.01" min="0" max="1" class="input-field text-xs p-1 w-20 inline-block ml-1" data-criterion-id="${crit.id}">
+                            <span class="tooltip-container">
+                                <i class="fas fa-info-circle text-gray-400 hover:text-gray-600"></i>
+                                <span class="tooltip-text">
+                                    此準則在總分計算中的重要性。所有權重總和建議為 1。
+                                    <br>例如：0.25 代表佔 25% 的重要性。
+                                </span>
+                            </span>
+                        </label>
+                    `;
+                    domElements.idealityCriteriaContainer.appendChild(criterionDiv);
 
-            domElements.idealityProblemSolvedRange.value = assessment.problemSolved !== null ? assessment.problemSolved : 5;
-            domElements.idealityProblemSolvedValue.textContent = domElements.idealityProblemSolvedRange.value;
-            domElements.idealityProblemSolvedWeight.value = weights.problemSolved !== null ? weights.problemSolved : 0.25;
+                    // Add event listeners for newly created elements
+                    const rangeInput = criterionDiv.querySelector(`#ideality-crit-${crit.id}-range`);
+                    const valueDisplay = criterionDiv.querySelector(`#ideality-crit-${crit.id}-value`);
+                    const weightInput = criterionDiv.querySelector(`#ideality-crit-${crit.id}-weight`);
 
-            domElements.idealityWinWinRange.value = assessment.winWin !== null ? assessment.winWin : 5;
-            domElements.idealityWinWinValue.textContent = domElements.idealityWinWinRange.value;
-            domElements.idealityWinWinWeight.value = weights.winWin !== null ? weights.winWin : 0.25;
-            
-            domElements.idealityNoNegativeEffectsRange.value = assessment.noNegativeEffects !== null ? assessment.noNegativeEffects : 5;
-            domElements.idealityNoNegativeEffectsValue.textContent = domElements.idealityNoNegativeEffectsRange.value;
-            domElements.idealityNoNegativeEffectsWeight.value = weights.noNegativeEffects !== null ? weights.noNegativeEffects : 0.25;
-
-            domElements.idealityLowCostResourceRange.value = assessment.lowCostResource !== null ? assessment.lowCostResource : 5;
-            domElements.idealityLowCostResourceValue.textContent = domElements.idealityLowCostResourceRange.value;
-            domElements.idealityLowCostResourceWeight.value = weights.lowCostResource !== null ? weights.lowCostResource : 0.25;
-            
-            updateIdealityTotalScoreDisplay();
-            domElements.idealityAssessmentModal.style.display = 'flex';
+                    if (rangeInput && valueDisplay) {
+                        rangeInput.addEventListener('input', (e) => {
+                            valueDisplay.textContent = e.target.value;
+                            updateIdealityTotalScoreDisplay();
+                        });
+                    }
+                    if (weightInput) {
+                        weightInput.addEventListener('input', updateIdealityTotalScoreDisplay);
+                    }
+                });
+                
+                updateIdealityTotalScoreDisplay();
+                domElements.idealityAssessmentModal.style.display = 'flex'; 
+            } catch (e) {
+                console.error("openIdealityAssessmentModal 內部錯誤:", e);
+                alert("理想性評估視窗設定失敗，請檢查控制台錯誤訊息。");
+            }
         }
 
         function closeIdealityAssessmentModal() {
@@ -2986,28 +3180,35 @@
             currentAssessingSolution = { causeId: null, solutionId: null };
         }
         
-        function updateIdealityTotalScoreDisplay() {
-            if(!domElements.idealityProblemSolvedRange || !domElements.idealityWinWinRange || !domElements.idealityNoNegativeEffectsRange || !domElements.idealityLowCostResourceRange || !domElements.idealityProblemSolvedWeight || !domElements.idealityWinWinWeight || !domElements.idealityNoNegativeEffectsWeight || !domElements.idealityLowCostResourceWeight || !domElements.idealityTotalScoreDisplay || !domElements.idealityWeightsSumWarning) return;
+        function calculateWeightedScore(criteriaArray) {
+            let totalWeightedScore = 0;
+            let totalWeightSum = 0;
+            criteriaArray.forEach(crit => {
+                totalWeightedScore += crit.score * crit.weight;
+                totalWeightSum += crit.weight;
+            });
+            // Normalize if totalWeightSum is not 1, or just return raw sum if that's the design
+            // For now, we'll return the raw sum, as the UI warns if sum != 1
+            return totalWeightedScore;
+        }
 
-            const scores = {
-                problemSolved: parseFloat(domElements.idealityProblemSolvedRange.value),
-                winWin: parseFloat(domElements.idealityWinWinRange.value),
-                noNegativeEffects: parseFloat(domElements.idealityNoNegativeEffectsRange.value),
-                lowCostResource: parseFloat(domElements.idealityLowCostResourceRange.value)
-            };
-            const weights = {
-                problemSolved: parseFloat(domElements.idealityProblemSolvedWeight.value) || 0,
-                winWin: parseFloat(domElements.idealityWinWinWeight.value) || 0,
-                noNegativeEffects: parseFloat(domElements.idealityNoNegativeEffectsWeight.value) || 0,
-                lowCostResource: parseFloat(domElements.idealityLowCostResourceWeight.value) || 0
-            };
+        function updateIdealityTotalScoreDisplay() {
+            if(!domElements.idealityCriteriaContainer || !domElements.idealityTotalScoreDisplay || !domElements.idealityWeightsSumWarning) return;
+
+            let currentCriteriaScoresAndWeights = [];
+            domElements.idealityCriteriaContainer.querySelectorAll('.ideality-criterion').forEach(criterionDiv => {
+                const criterionId = criterionDiv.querySelector('input[type="range"]').dataset.criterionId;
+                const score = parseFloat(criterionDiv.querySelector('input[type="range"]').value);
+                const weight = parseFloat(criterionDiv.querySelector('input[type="number"]').value) || 0;
+                currentCriteriaScoresAndWeights.push({ id: criterionId, score: score, weight: weight });
+            });
 
             let totalWeightedScore = 0;
             let totalWeightSum = 0;
-            for (const key in scores) {
-                totalWeightedScore += scores[key] * weights[key];
-                totalWeightSum += weights[key];
-            }
+            currentCriteriaScoresAndWeights.forEach(crit => {
+                totalWeightedScore += crit.score * crit.weight;
+                totalWeightSum += crit.weight;
+            });
             
             domElements.idealityTotalScoreDisplay.textContent = totalWeightedScore.toFixed(2);
 
@@ -3017,6 +3218,31 @@
             } else {
                 domElements.idealityWeightsSumWarning.style.display = 'none';
             }
+        }
+
+        function resetIdealityWeights() {
+            if (!domElements.idealityCriteriaContainer) return;
+
+            // Find the current solution being assessed
+            const causeId = domElements.assessingSolutionCauseIdInput.value;
+            const solutionId = domElements.assessingSolutionEntryIdInput.value;
+            const causeNode = findNodeById(rcaData, causeId);
+            const solution = causeNode ? causeNode.solutionsGenerated.find(s => s.id === solutionId) : null;
+
+            if (!solution || !solution.idealityAssessment) return;
+
+            // Reset scores and weights to their default values
+            solution.idealityAssessment.criteria.forEach(crit => {
+                const defaultCrit = customIdealityCriteria.find(c => c.id === crit.id);
+                if (defaultCrit) {
+                    crit.score = defaultCrit.defaultScore;
+                    crit.weight = defaultCrit.defaultWeight;
+                }
+            });
+
+            // Re-render the modal content with reset values
+            openIdealityAssessmentModal(causeId, solutionId);
+            updateIdealityTotalScoreDisplay(); 
         }
 
 
@@ -3030,33 +3256,174 @@
             const causeNode = findNodeById(rcaData, causeId);
             if (!causeNode || !causeNode.solutionsGenerated) return;
             const solution = causeNode.solutionsGenerated.find(s => s.id === solutionId);
-            if (!solution || !domElements.idealityProblemSolvedRange || !domElements.idealityWinWinRange || !domElements.idealityNoNegativeEffectsRange || !domElements.idealityLowCostResourceRange || !domElements.idealityProblemSolvedWeight || !domElements.idealityWinWinWeight || !domElements.idealityNoNegativeEffectsWeight || !domElements.idealityLowCostResourceWeight) return;
-
+            if (!solution || !domElements.idealityCriteriaContainer) return;
 
             if (!solution.idealityAssessment) solution.idealityAssessment = getDefaultIdealityAssessment();
-            if (!solution.idealityAssessment.weights) solution.idealityAssessment.weights = getDefaultIdealityAssessment().weights;
-
-            solution.idealityAssessment.problemSolved = parseFloat(domElements.idealityProblemSolvedRange.value);
-            solution.idealityAssessment.winWin = parseFloat(domElements.idealityWinWinRange.value);
-            solution.idealityAssessment.noNegativeEffects = parseFloat(domElements.idealityNoNegativeEffectsRange.value);
-            solution.idealityAssessment.lowCostResource = parseFloat(domElements.idealityLowCostResourceRange.value);
-
-            solution.idealityAssessment.weights.problemSolved = parseFloat(domElements.idealityProblemSolvedWeight.value);
-            solution.idealityAssessment.weights.winWin = parseFloat(domElements.idealityWinWinWeight.value);
-            solution.idealityAssessment.weights.noNegativeEffects = parseFloat(domElements.idealityNoNegativeEffectsWeight.value);
-            solution.idealityAssessment.weights.lowCostResource = parseFloat(domElements.idealityLowCostResourceWeight.value);
             
-            let totalWeightedScore = (solution.idealityAssessment.problemSolved * solution.idealityAssessment.weights.problemSolved) +
-                                     (solution.idealityAssessment.winWin * solution.idealityAssessment.weights.winWin) +
-                                     (solution.idealityAssessment.noNegativeEffects * solution.idealityAssessment.weights.noNegativeEffects) +
-                                     (solution.idealityAssessment.lowCostResource * solution.idealityAssessment.weights.lowCostResource);
+            // Update scores and weights from current UI
+            solution.idealityAssessment.criteria.forEach(crit => {
+                const rangeInput = domElements.idealityCriteriaContainer.querySelector(`#ideality-crit-${crit.id}-range`);
+                const weightInput = domElements.idealityCriteriaContainer.querySelector(`#ideality-crit-${crit.id}-weight`);
+                if (rangeInput) crit.score = parseFloat(rangeInput.value);
+                if (weightInput) crit.weight = parseFloat(weightInput.value);
+            });
             
-            solution.idealityAssessment.weightedScore = totalWeightedScore;
+            solution.idealityAssessment.weightedScore = calculateWeightedScore(solution.idealityAssessment.criteria);
+            solution.mcdmScore = solution.idealityAssessment.weightedScore; 
 
             pushStateToHistory(rcaData);
             renderSolutionTable(); 
             renderIdeasLandscapeChart(); 
             closeIdealityAssessmentModal();
+        }
+
+        // --- Settings Modal and Custom Criteria Management ---
+        function openSettingsModal() {
+            if (domElements.settingsModal) {
+                renderCustomCriteriaList();
+                hideEditCriterionForm();
+                domElements.settingsModal.style.display = 'flex';
+            }
+        }
+
+        function closeSettingsModal() {
+            if (domElements.settingsModal) {
+                domElements.settingsModal.style.display = 'none';
+            }
+        }
+
+        function loadCustomIdealityCriteria() {
+            // This function is now mainly for initial load, migration handled in processLoadedData
+            // If no data loaded, use default criteria
+            if (customIdealityCriteria.length === 0) {
+                customIdealityCriteria = deepCopy(DEFAULT_IDEALITY_CRITERIA);
+                criterionIdCounter = DEFAULT_IDEALITY_CRITERIA.length;
+            } else {
+                 // Recalculate max ID for new sessions if criteria were loaded from history/file
+                let maxId = 0;
+                customIdealityCriteria.forEach(crit => {
+                    const idNum = parseInt(crit.id.replace('crit-', ''));
+                    if (!isNaN(idNum) && idNum > maxId) {
+                        maxId = idNum;
+                    }
+                });
+                criterionIdCounter = maxId;
+            }
+        }
+
+        function saveCustomIdealityCriteria() {
+            // This is implicitly saved when `pushStateToHistory` is called with diagram data
+            // and `customIdealityCriteria` is part of the state.
+            // For direct saving (e.g., if settings are saved independently), you'd use localStorage.setItem.
+            // For now, it's part of the main diagram save.
+            console.log("Custom ideality criteria saved:", customIdealityCriteria);
+        }
+
+        function renderCustomCriteriaList() {
+            if (!domElements.customCriteriaList) return;
+            domElements.customCriteriaList.innerHTML = '';
+
+            if (customIdealityCriteria.length === 0) {
+                domElements.customCriteriaList.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">目前沒有自訂評估準則。請新增一個。</p>';
+                return;
+            }
+
+            customIdealityCriteria.forEach(crit => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'criterion-entry';
+                entryDiv.innerHTML = `
+                    <span>
+                        <strong>${crit.name}</strong> 
+                        <span class="text-gray-500 text-xs ml-2"> (預設分數: ${crit.defaultScore}, 預設權重: ${crit.defaultWeight})</span>
+                    </span>
+                    <div>
+                        <button class="action-button bg-yellow-500 hover:bg-yellow-600 text-xs py-1 px-1.5" onclick="showEditCriterionForm('${crit.id}')" title="編輯準則"><i class="fas fa-edit"></i></button>
+                        <button class="action-button bg-red-500 hover:bg-red-600 text-xs py-1 px-1.5 ml-1" onclick="handleRemoveCriterion('${crit.id}')" title="移除準則"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                domElements.customCriteriaList.appendChild(entryDiv);
+            });
+        }
+
+        function showEditCriterionForm(criterionId) {
+            if (!domElements.editCriterionForm || !domElements.criterionFormTitle || !domElements.editingCriterionIdInput || !domElements.criterionNameInput || !domElements.criterionDefaultScoreInput || !domElements.criterionDefaultWeightInput || !domElements.criterionDescriptionInput) return;
+
+            domElements.editingCriterionIdInput.value = criterionId || '';
+            if (criterionId) {
+                const criterion = customIdealityCriteria.find(c => c.id === criterionId);
+                if (criterion) {
+                    domElements.criterionFormTitle.textContent = "編輯評估準則";
+                    domElements.criterionNameInput.value = criterion.name;
+                    domElements.criterionDefaultScoreInput.value = criterion.defaultScore;
+                    domElements.criterionDefaultWeightInput.value = criterion.defaultWeight;
+                    domElements.criterionDescriptionInput.value = criterion.description;
+                } else { return; } 
+            } else {
+                domElements.criterionFormTitle.textContent = "新增評估準則";
+                domElements.criterionNameInput.value = '';
+                domElements.criterionDefaultScoreInput.value = 5;
+                domElements.criterionDefaultWeightInput.value = 0.25;
+                domElements.criterionDescriptionInput.value = '';
+            }
+            domElements.editCriterionForm.style.display = 'block';
+            domElements.criterionNameInput.focus();
+        }
+
+        function hideEditCriterionForm() {
+            if (domElements.editCriterionForm) {
+                domElements.editCriterionForm.style.display = 'none';
+                domElements.editingCriterionIdInput.value = '';
+            }
+        }
+
+        function handleSaveCriterion() {
+            if (!domElements.editingCriterionIdInput || !domElements.criterionNameInput || !domElements.criterionDefaultScoreInput || !domElements.criterionDefaultWeightInput || !domElements.criterionDescriptionInput) return;
+
+            const criterionId = domElements.editingCriterionIdInput.value;
+            const name = domElements.criterionNameInput.value.trim();
+            const defaultScore = parseFloat(domElements.criterionDefaultScoreInput.value);
+            const defaultWeight = parseFloat(domElements.criterionDefaultWeightInput.value);
+            const description = domElements.criterionDescriptionInput.value.trim();
+
+            if (!name) { alert('準則名稱不能為空！'); return; }
+            if (isNaN(defaultScore) || defaultScore < 0 || defaultScore > 10) { alert('預設分數必須是 0 到 10 之間的數字！'); return; }
+            if (isNaN(defaultWeight) || defaultWeight < 0 || defaultWeight > 1) { alert('預設權重必須是 0 到 1 之間的數字！'); return; }
+
+            if (criterionId) {
+                const index = customIdealityCriteria.findIndex(c => c.id === criterionId);
+                if (index > -1) {
+                    customIdealityCriteria[index] = { id: criterionId, name, defaultScore, defaultWeight, description };
+                }
+            } else {
+                criterionIdCounter++;
+                customIdealityCriteria.push({ id: `crit-${criterionIdCounter}`, name, defaultScore, defaultWeight, description });
+            }
+            
+            saveCustomIdealityCriteria(); // Implicitly handled by pushStateToHistory
+            renderCustomCriteriaList();
+            hideEditCriterionForm();
+            // Re-render relevant parts of the main diagram/tables as criteria might affect calculations
+            renderSolutionTable();
+            renderIdeasLandscapeChart();
+            // Push state to history after changing global criteria
+            pushStateToHistory(rcaData); // Push current state to history after criterion changes
+        }
+
+        function handleRemoveCriterion(criterionId) {
+            if (customIdealityCriteria.length <= 1) {
+                alert('至少需要一個評估準則！');
+                return;
+            }
+            if (confirm('確定要移除此評估準則嗎？這將影響所有解決方案的理想性評估。')) {
+                customIdealityCriteria = customIdealityCriteria.filter(c => c.id !== criterionId);
+                saveCustomIdealityCriteria(); // Implicitly handled by pushStateToHistory
+                renderCustomCriteriaList();
+                // Re-render relevant parts of the main diagram/tables as criteria might affect calculations
+                renderSolutionTable();
+                renderIdeasLandscapeChart();
+                // Push state to history after changing global criteria
+                pushStateToHistory(rcaData); // Push current state to history after criterion changes
+            }
         }
 
         // --- Other Functions ---
@@ -3082,9 +3449,9 @@
                  domElements.diagramRenderArea.scrollLeft = 0;
                  domElements.diagramRenderArea.scrollTop = 0;
             }
-            applyZoom(1.0, true); // Apply zoom without immediate redraw
-            currentAbcCauseFilter = 'all'; // Show all nodes for export
-            renderRcaDiagram(); // Re-render diagram with new filter and zoom
+            applyZoom(1.0, true); 
+            currentAbcCauseFilter = 'all'; 
+            renderRcaDiagram(); 
 
             // Ensure SVG connectors are redrawn after diagram re-render
             await new Promise(resolve => requestAnimationFrame(() => {
@@ -3096,9 +3463,9 @@
             const exportContainer = document.createElement('div');
             exportContainer.id = 'export-temp-container';
             exportContainer.style.position = 'absolute';
-            exportContainer.style.left = '-99999px'; // Move off-screen
+            exportContainer.style.left = '-99999px'; 
             exportContainer.style.top = '-99999px';
-            exportContainer.style.backgroundColor = '#ffffff'; // Ensure white background
+            exportContainer.style.backgroundColor = '#ffffff'; 
             exportContainer.style.padding = '0'; 
             exportContainer.style.margin = '0';
             exportContainer.style.overflow = 'hidden'; 
@@ -3107,11 +3474,11 @@
             const contentWidth = domElements.scalableContentWrapper.scrollWidth;
             const contentHeight = domElements.scalableContentWrapper.scrollHeight;
             exportContainer.style.width = contentWidth + 'px';
-            exportContainer.style.height = contentHeight + 'px';
+            exportContainer.style.height = contentHeight + 'px'; 
             
             // Clone the scalable content wrapper for rendering
             const clonedScalableContent = domElements.scalableContentWrapper.cloneNode(true);
-            clonedScalableContent.style.transform = 'scale(1.0)'; // Ensure no scaling on cloned content
+            clonedScalableContent.style.transform = 'scale(1.0)'; 
             clonedScalableContent.style.margin = '0'; 
             clonedScalableContent.style.padding = getComputedStyle(domElements.scalableContentWrapper).padding; 
             clonedScalableContent.style.backgroundColor = '#ffffff'; 
@@ -3123,7 +3490,7 @@
 
             // Hide action buttons and input containers in the cloned content
             const clonedActionDivs = clonedScalableContent.querySelectorAll('.rca-node-actions');
-            if (isFinalizedView) { // Only hide if in finalized view
+            if (isFinalizedView) { 
                 clonedActionDivs.forEach(div => div.style.display = 'none');
             }
             const clonedInputContainers = clonedScalableContent.querySelectorAll('.input-group-container');
@@ -3146,21 +3513,15 @@
                     resolve();
                 }));
             }
-            // Give a small delay to ensure all rendering is complete
             await new Promise(resolve => setTimeout(resolve, 300)); 
 
             try {
                 const canvas = await html2canvas(exportContainer, { 
-                    scale: 1.5, // Increase scale for higher resolution
+                    scale: 1.5, 
                     useCORS: true,
-                    backgroundColor: '#ffffff', // Explicitly set background color
-                    logging: false, // Disable logging for cleaner console
-                    width: contentWidth, 
-                    height: contentHeight, 
-                    x: 0, y: 0, 
-                    scrollX: 0, scrollY: 0, 
-                    windowWidth: contentWidth, windowHeight: contentHeight, 
-                });
+                    backgroundColor: '#ffffff', 
+                    logging: false 
+                }); 
                 const image = canvas.toDataURL('image/png');
                 const link = document.createElement('a');
                 link.download = '創新問題解決工具-圖表.png'; 
@@ -3172,22 +3533,19 @@
             } finally {
                 // Clean up temporary container and restore original states
                 document.body.removeChild(exportContainer); 
-                activeInputGroups.forEach(group => group.style.display = 'flex'); // Restore original input group visibility
-                currentAbcCauseFilter = originalAbcCauseFilter; // Restore original filter
-                applyZoom(originalZoom, true); // Restore original zoom level without immediate redraw
-                renderRcaDiagram(); // Re-render diagram to restore original state
+                activeInputGroups.forEach(group => group.style.display = 'flex'); 
+                currentAbcCauseFilter = originalAbcCauseFilter; 
+                applyZoom(originalZoom, true); 
+                renderRcaDiagram(); 
                 if(domElements.diagramRenderArea) {
                     domElements.diagramRenderArea.scrollLeft = originalRenderAreaScrollX;
                     domElements.diagramRenderArea.scrollTop = originalRenderAreaScrollY;
                 }
-                requestAnimationFrame(() => drawAllSvgConnectors()); // Ensure connectors are redrawn correctly
+                requestAnimationFrame(() => drawAllSvgConnectors()); 
             }
         }
-
-        // Removed Node Customization Functions (openNodeCustomizationModal, closeNodeCustomizationModal, handleSaveNodeCustomization, getDefaultNodeColor)
         
         document.addEventListener('DOMContentLoaded', initialize);
     </script>
-    <script src="mcdm-evaluation.js"></script>
 </body>
 </html>
