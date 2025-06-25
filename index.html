@@ -50,10 +50,8 @@
         .hotel-popup .rating-stars { color: #f59e0b; letter-spacing: 2px; }
         .hotel-popup .popup-actions { margin-top: 12px; border-top: 1px solid #e5e7eb; padding-top: 8px; display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
         .hotel-popup .popup-actions button, .hotel-popup .popup-actions a { display: inline-flex; align-items: center; gap: 4px; background: none; border: none; cursor: pointer; font-size: 12px; padding: 4px 8px; border-radius: 4px; transition: background-color 0.2s; text-decoration: none; }
-        
-        /* Favorite button */
-        .favorite-btn svg { transition: all 0.2s ease-in-out; }
-        .favorite-btn.favorited svg { fill: #ef4444; stroke: #ef4444; transform: scale(1.1); }
+        .hotel-popup .popup-actions .funnow-btn { color: #ff7f08; }
+        .hotel-popup .popup-actions .funnow-btn:hover { background-color: #fff4e6; }
 
         /* List View styles */
         .list-item.highlighted { background-color: #e0f2fe; }
@@ -221,7 +219,6 @@
             try {
                 const storedHotels = localStorage.getItem(LOCAL_STORAGE_KEY);
                 let loadedHotels = storedHotels ? JSON.parse(storedHotels) : [...initialHotels];
-                // Ensure all hotels have the isFavorite property
                 hotels = loadedHotels.map(h => ({ ...h, isFavorite: h.isFavorite || false }));
                 if (!storedHotels) saveHotels();
             } catch (e) { console.error("無法讀取本地儲存資料:", e); hotels = [...initialHotels]; }
@@ -276,7 +273,7 @@
                             <div class="flex justify-between items-start">
                                 <h4 class="font-bold text-base text-gray-800">${hotel.name}</h4>
                                 <button class="favorite-btn ${isFavorited}" data-id="${hotel.id}">
-                                    <svg class="w-6 h-6 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                                    <svg class="w-6 h-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                                 </button>
                             </div>
                             <div class="text-sm text-yellow-500 font-semibold">${generateStarDisplay(overallRating)} <span class="text-gray-600 font-normal">(${overallRating.toFixed(1)})</span></div>
@@ -363,6 +360,7 @@
             const coupleRatingsHtml = COUPLE_RATINGS.map(cat => `<div class="col-span-2 grid grid-cols-2 items-center"><span class="rating-label">${cat.name}</span><span class="rating-stars">${generateStarDisplay(hotel[`rating_${cat.id}`])}</span></div>`).join('');
             const categoryColor = HOTEL_CATEGORIES[hotel.category] || 'bg-gray-400';
             const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotel.name)}`;
+            const funnowUrl = `https://www.funnow.tw/search?q=${encodeURIComponent(hotel.name)}`;
 
             const popupContent = `
                 <div class="hotel-popup">
@@ -379,7 +377,10 @@
                         <h4 class="ratings-section-title">住宿品質</h4><div class="ratings-grid">${qualityRatingsHtml}</div>
                         <h4 class="ratings-section-title">情侶專屬體驗</h4><div class="ratings-grid">${coupleRatingsHtml}</div>
                         <div class="popup-actions">
-                            <button class="share-btn" data-id="${hotel.id}"><span>分享</span></button>
+                             <a href="${funnowUrl}" target="_blank" rel="noopener noreferrer" class="funnow-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+                                <span>FunNow搜尋</span>
+                            </a>
                             <a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer" class="map-btn"><span>Google搜尋</span></a>
                             <button class="edit-btn" data-id="${hotel.id}">編輯</button>
                             <button class="delete-btn" data-id="${hotel.id}">刪除</button>
