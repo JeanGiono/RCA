@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台北市旅館體驗地圖</title>
+    <title>我的體驗地圖</title>
 
     <!-- LeafletJS CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
@@ -17,27 +17,14 @@
     <style>
         /* Base styles */
         body { font-family: 'Inter', 'Noto Sans TC', sans-serif; }
-        #map { 
-            height: calc(100vh - 140px);
-            width: 100%;
-            cursor: default;
-            position: relative;
-        }
+        #map { height: 100%; width: 100%; cursor: default; }
         #map.crosshair-cursor { cursor: crosshair !important; }
 
         /* Add-mode Banner */
         #add-mode-banner {
-            display: none;
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            background-color: rgba(0, 0, 0, 0.75);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 9999px;
-            font-size: 14px;
+            display: none; position: absolute; top: 10px; left: 50%;
+            transform: translateX(-50%); z-index: 1000; background-color: rgba(0, 0, 0, 0.75);
+            color: white; padding: 8px 16px; border-radius: 9999px; font-size: 14px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
@@ -51,66 +38,72 @@
         .hotel-popup h3 { font-size: 1.1rem; font-weight: bold; color: #1a202c; }
         .hotel-popup .price-range { font-size: 0.9rem; font-weight: 600; color: #4b5563; }
         .hotel-popup .category-badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; color: white; white-space: nowrap; }
-        
         .hotel-popup .pros-cons-container { margin-top: 8px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #e5e7eb; }
         .hotel-popup .pros, .hotel-popup .cons { margin-bottom: 8px; }
         .hotel-popup .pros-cons-title { display: flex; align-items: center; gap: 6px; font-weight: bold; margin-bottom: 4px; }
         .hotel-popup .pros .pros-cons-title { color: #16a34a; }
         .hotel-popup .cons .pros-cons-title { color: #ef4444; }
         .hotel-popup .pros-cons-text { font-size: 13px; color: #4a5568; padding-left: 20px; word-break: break-word; }
-
         .hotel-popup .ratings-section-title { font-weight: bold; color: #374151; margin-top: 12px; margin-bottom: 8px; }
         .hotel-popup .ratings-grid { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: center; font-size: 13px; }
-        .hotel-popup .rating-label { color: #6b7280; display: flex; align-items: center; gap: 6px; }
+        .hotel-popup .rating-label { color: #6b7280; }
         .hotel-popup .rating-stars { color: #f59e0b; letter-spacing: 2px; }
-
         .hotel-popup .popup-actions { margin-top: 12px; border-top: 1px solid #e5e7eb; padding-top: 8px; display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
         .hotel-popup .popup-actions button, .hotel-popup .popup-actions a { display: inline-flex; align-items: center; gap: 4px; background: none; border: none; cursor: pointer; font-size: 12px; padding: 4px 8px; border-radius: 4px; transition: background-color 0.2s; text-decoration: none; }
-        .hotel-popup .popup-actions .share-btn { color: #16a34a; }
-        .hotel-popup .popup-actions .share-btn:hover { background-color: #dcfce7; }
-        .hotel-popup .popup-actions .map-btn { color: #0284c7; }
-        .hotel-popup .popup-actions .map-btn:hover { background-color: #e0f2fe; }
-        .hotel-popup .popup-actions .edit-btn { color: #3b82f6; }
-        .hotel-popup .popup-actions .edit-btn:hover { background-color: #dbeafe; }
-        .hotel-popup .popup-actions .delete-btn { color: #ef4444; }
-        .hotel-popup .popup-actions .delete-btn:hover { background-color: #fee2e2; }
+        
+        /* List View styles */
+        .list-item.highlighted { background-color: #e0f2fe; }
+        .category-filter-btn { transition: all 0.2s; }
+        .category-filter-btn.active {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
 
         /* Form styles */
         .form-section-title { font-size: 1rem; font-weight: bold; color: #374151; margin-top: 1.5rem; margin-bottom: 0.5rem; padding-bottom: 0.25rem; border-bottom: 1px solid #e5e7eb; }
         .rating-input-group { margin-bottom: 1rem; }
-        .rating-input-group > label { display: flex; align-items: center; gap: 6px; }
         .rating-input { display: flex; flex-direction: row-reverse; justify-content: flex-end; }
         .rating-input input { display: none; }
         .rating-input label { color: #d1d5db; font-size: 1.75rem; cursor: pointer; transition: color 0.2s; }
-        .rating-input input:checked ~ label,
-        .rating-input label:hover,
-        .rating-input label:hover ~ label { color: #f59e0b; }
+        .rating-input input:checked ~ label, .rating-input label:hover, .rating-input label:hover ~ label { color: #f59e0b; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans">
 
     <header class="bg-white shadow-md w-full p-4 h-[80px] flex items-center justify-center">
-        <h1 class="text-2xl font-bold text-gray-800">台北市旅館體驗地圖</h1>
+        <h1 class="text-2xl font-bold text-gray-800">我的體驗地圖</h1>
     </header>
 
-    <div class="bg-gray-50 p-4 h-[60px] flex items-center justify-center flex-wrap gap-4 shadow-inner">
-        <input type="search" id="search-box" placeholder="搜尋旅館名稱..." class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow sm:flex-grow-0 sm:w-1/4">
-        <select id="rating-filter" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option value="0">顯示全部評分</option>
-            <option value="4">4星以上</option>
-            <option value="3">3星以上</option>
-        </select>
-        <select id="category-filter" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <!-- Categories will be populated by JS -->
-        </select>
-        <button id="add-hotel-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
-            新增評價
-        </button>
+    <div class="bg-gray-50 p-4 pb-2 flex flex-col items-center justify-center gap-4 shadow-inner">
+        <div class="w-full flex items-center justify-center flex-wrap gap-4">
+            <input type="search" id="search-box" placeholder="搜尋旅館名稱..." class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow sm:flex-grow-0 sm:w-auto">
+            <select id="rating-filter" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+            <button id="add-hotel-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">新增評價</button>
+            <button id="toggle-list-btn" class="md:hidden bg-gray-600 hover:bg-gray-700 text-white font-bold p-2 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            </button>
+        </div>
+        <div id="category-filter-container" class="w-full flex items-center justify-center flex-wrap gap-2 py-2"></div>
     </div>
 
-    <main class="w-full relative">
-        <div id="map" class="z-0">
-            <div id="add-mode-banner">請在地圖上選擇位置以新增評價</div>
+    <main class="w-full flex" style="height: calc(100vh - 188px);">
+        <!-- List Panel -->
+        <div id="list-panel" class="w-full md:w-2/5 lg:w-1/3 xl:w-1/4 bg-white shadow-lg h-full flex flex-col">
+            <div class="p-2 border-b">
+                 <select id="sort-by" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="rating_desc">排序：綜合評分 (高至低)</option>
+                    <option value="price_asc">排序：價格 (低至高)</option>
+                    <option value="price_desc">排序：價格 (高至低)</option>
+                </select>
+            </div>
+            <div id="list-container" class="flex-grow overflow-y-auto"></div>
+        </div>
+
+        <!-- Map Container -->
+        <div id="map-container" class="w-full h-full relative">
+             <div id="map" class="z-0">
+                <div id="add-mode-banner">請在地圖上選擇位置以新增評價</div>
+             </div>
         </div>
     </main>
 
@@ -125,50 +118,43 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label for="hotel-name" class="block text-gray-700 text-sm font-bold mb-2">旅館名稱</label>
-                        <input type="text" id="hotel-name" name="hotel-name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                        <input type="text" id="hotel-name" name="hotel-name" class="shadow appearance-none border rounded w-full py-2 px-3" required>
                     </div>
                     <div>
                          <label for="hotel-image-url" class="block text-gray-700 text-sm font-bold mb-2">圖片網址</label>
-                        <input type="url" id="hotel-image-url" name="hotel-image-url" placeholder="https://example.com/image.jpg" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <input type="url" id="hotel-image-url" name="hotel-image-url" placeholder="https://example.com/image.jpg" class="shadow appearance-none border rounded w-full py-2 px-3">
                     </div>
                     <div class="sm:col-span-1">
                         <label for="hotel-category" class="block text-gray-700 text-sm font-bold mb-2">旅館分類</label>
-                        <select id="hotel-category" name="hotel-category" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                        </select>
+                        <select id="hotel-category" name="hotel-category" class="shadow border rounded w-full py-2 px-3" required></select>
                     </div>
                     <div class="sm:col-span-1">
                         <label for="hotel-price" class="block text-gray-700 text-sm font-bold mb-2">價格範圍</label>
-                        <select id="hotel-price" name="hotel-price" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                            <option value="" disabled selected>選擇</option>
-                            <option value="$">$</option>
-                            <option value="$$">$$</option>
-                            <option value="$$$">$$$</option>
-                            <option value="$$$$">$$$$</option>
-                        </select>
+                        <select id="hotel-price" name="hotel-price" class="shadow border rounded w-full py-2 px-3" required></select>
                     </div>
                 </div>
                 <div class="mb-4">
-                    <label for="hotel-pros" class="block text-green-600 text-sm font-bold mb-2">優點 (Pros)</label>
-                    <textarea id="hotel-pros" name="hotel-pros" rows="3" placeholder="每點一行，例如：&#10;- 房間乾淨&#10;- 服務親切" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
+                    <label for="hotel-pros" class="block text-green-600 text-sm font-bold mb-2">優點</label>
+                    <textarea id="hotel-pros" name="hotel-pros" rows="3" placeholder="每點一行" class="shadow appearance-none border rounded w-full py-2 px-3"></textarea>
                 </div>
                 <div class="mb-4">
-                    <label for="hotel-cons" class="block text-red-600 text-sm font-bold mb-2">缺點 (Cons)</label>
-                    <textarea id="hotel-cons" name="hotel-cons" rows="3" placeholder="每點一行，例如：&#10;- 隔音不佳&#10;- 早餐普通" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
+                    <label for="hotel-cons" class="block text-red-600 text-sm font-bold mb-2">缺點</label>
+                    <textarea id="hotel-cons" name="hotel-cons" rows="3" placeholder="每點一行" class="shadow appearance-none border rounded w-full py-2 px-3"></textarea>
                 </div>
 
-                <div id="ratings-container-quality"></div>
-                <div id="ratings-container-couple"></div>
+                <div id="ratings-container-quality" class="grid grid-cols-1 sm:grid-cols-2 gap-x-6"></div>
+                <div id="ratings-container-couple" class="grid grid-cols-1 sm:grid-cols-2 gap-x-6"></div>
 
                 <div class="flex items-center justify-end gap-4 mt-8">
-                    <button id="cancel-btn" type="button" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">取消</button>
-                    <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">儲存</button>
+                    <button id="cancel-btn" type="button" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg">取消</button>
+                    <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">儲存</button>
                 </div>
             </form>
         </div>
     </div>
     
     <!-- Custom Confirm Modal -->
-    <div id="confirm-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-[60] flex items-center justify-center">
+    <div id="confirm-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 z-[60] flex items-center justify-center">
         <div class="bg-white p-6 rounded-lg shadow-xl w-11/12 sm:w-1/3 text-center">
             <h3 class="text-lg font-bold mb-4">確認刪除</h3>
             <p class="text-gray-600 mb-6">您確定要刪除這筆評價嗎？此操作無法復原。</p>
@@ -181,11 +167,16 @@
 
     <script>
         // --- DOM Elements ---
+        const listPanel = document.getElementById('list-panel');
+        const listContainer = document.getElementById('list-container');
+        const mapContainer = document.getElementById('map-container');
+        const toggleListBtn = document.getElementById('toggle-list-btn');
+        const sortBySelect = document.getElementById('sort-by');
         const mapElement = document.getElementById('map');
         const addHotelBtn = document.getElementById('add-hotel-btn');
         const searchBox = document.getElementById('search-box');
         const ratingFilter = document.getElementById('rating-filter');
-        const categoryFilter = document.getElementById('category-filter');
+        const categoryFilterContainer = document.getElementById('category-filter-container');
         const addModeBanner = document.getElementById('add-mode-banner');
         // Modals & Forms
         const formModal = document.getElementById('form-modal');
@@ -196,39 +187,34 @@
         const ratingsContainerQuality = document.getElementById('ratings-container-quality');
         const ratingsContainerCouple = document.getElementById('ratings-container-couple');
         const hotelCategorySelect = document.getElementById('hotel-category');
+        const hotelPriceSelect = document.getElementById('hotel-price');
         const confirmModal = document.getElementById('confirm-modal');
         const confirmOkBtn = document.getElementById('confirm-ok-btn');
         const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
-
 
         // --- State Management & Constants ---
         let newHotelCoords = null;
         let hotels = [];
         let confirmCallback = null;
         let isAddMode = false;
+        let markerRegistry = {};
+        let currentCategoryFilter = 'all';
         const LOCAL_STORAGE_KEY = 'taipeiHotels';
         
         const QUALITY_RATINGS = [
-            { id: 'cleanliness', name: '房間清潔度' },
-            { id: 'privacy', name: '隱私性' },
-            { id: 'security', name: '安全性' },
-            { id: 'network', name: '網路速度' },
+            { id: 'cleanliness', name: '房間清潔度' }, { id: 'privacy', name: '隱私性' },
+            { id: 'security', name: '安全性' }, { id: 'network', name: '網路速度' },
             { id: 'service', name: '員工服務' },
         ];
-
         const COUPLE_RATINGS = [
-            { id: 'atmosphere', name: '浪漫氛圍' },
-            { id: 'facilities_couple', name: '私密設施' },
+            { id: 'atmosphere', name: '浪漫氛圍' }, { id: 'facilities_couple', name: '私密設施' },
             { id: 'creativity', name: '房型創意' },
         ];
-
         const HOTEL_CATEGORIES = {
-            "情侶專用": "bg-pink-500", "設計旅店": "bg-purple-500",
-            "豪華享受": "bg-red-500", "溫泉度假": "bg-yellow-500",
-            "商務旅行": "bg-blue-500", "家庭親子": "bg-green-500"
+            "情侶專用": "bg-pink-500", "設計旅店": "bg-purple-500", "豪華享受": "bg-red-500",
+            "溫泉度假": "bg-yellow-500", "商務旅行": "bg-blue-500", "家庭親子": "bg-green-500"
         };
         const PRICE_RANGES = ["$", "$$", "$$$", "$$$$"];
-
 
         // --- Initial Data (fallback) ---
         const initialHotels = [
@@ -252,7 +238,6 @@
             { id: 27, name: "Alper Motel", imageUrl: "https://placehold.co/600x400/ec4899/ffffff?text=Alper+Motel", category: "情侶專用", price: "$$$", lat: 25.0800, lng: 121.5500, pros: "- 時尚設計\n- 設有高級SPA", cons: "", rating_cleanliness: 5, rating_privacy: 5, rating_security: 5, rating_network: 4, rating_service: 4, rating_atmosphere: 5, rating_facilities_couple: 5, rating_creativity: 4 }
         ];
 
-
         // --- DATA MANAGEMENT ---
         function loadHotels() {
             try {
@@ -267,7 +252,7 @@
         }
 
         // --- MAP & UI RENDERING ---
-        const map = L.map('map').setView([25.0479, 121.5319], 13);
+        const map = L.map('map').setView([25.0479, 121.5319], 12);
         const markersLayer = L.layerGroup().addTo(map);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map);
@@ -280,24 +265,77 @@
             return (sum / validRatings.length);
         }
 
+        function renderAll(hotelsToRender) {
+            renderMarkers(hotelsToRender);
+            renderListView(hotelsToRender);
+        }
+
         function renderMarkers(hotelsToRender) {
             markersLayer.clearLayers();
-            hotelsToRender.forEach(hotel => addHotelMarker(hotel));
+            markerRegistry = {};
+            hotelsToRender.forEach(hotel => {
+                const marker = addHotelMarker(hotel);
+                markerRegistry[hotel.id] = marker;
+            });
         }
         
-        function applyFilters() {
+        function renderListView(hotelsToRender) {
+            if (hotelsToRender.length === 0) {
+                listContainer.innerHTML = `<div class="p-4 text-center text-gray-500">找不到符合條件的旅館。</div>`;
+                return;
+            }
+            listContainer.innerHTML = hotelsToRender.map(hotel => {
+                const overallRating = calculateOverallRating(hotel);
+                const categoryColor = HOTEL_CATEGORIES[hotel.category] || 'bg-gray-400';
+                return `
+                <div class="list-item border-b p-3 cursor-pointer hover:bg-gray-50 transition-colors" data-id="${hotel.id}">
+                    <div class="flex gap-3">
+                        <img src="${hotel.imageUrl || 'https://placehold.co/600x400/cccccc/ffffff?text=無圖片'}" class="w-24 h-24 object-cover rounded-md flex-shrink-0" alt="${hotel.name}" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/ffffff?text=圖片載入失敗';">
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-bold text-base text-gray-800">${hotel.name}</h4>
+                                <span class="category-badge ${categoryColor}">${hotel.category}</span>
+                            </div>
+                            <div class="text-sm text-yellow-500 font-semibold">${generateStarDisplay(overallRating)} <span class="text-gray-600 font-normal">(${overallRating.toFixed(1)})</span></div>
+                            <div class="text-lg text-gray-800 font-bold mt-1">${hotel.price || ''}</div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            document.querySelectorAll('.list-item').forEach(item => item.addEventListener('click', handleListItemClick));
+        }
+
+        function applyFiltersAndSort() {
+            // 1. Filtering
             const searchTerm = searchBox.value.toLowerCase();
             const minRating = parseFloat(ratingFilter.value);
-            const selectedCategory = categoryFilter.value;
             
-            const filteredHotels = hotels.filter(hotel => {
+            let filteredHotels = hotels.filter(hotel => {
                 const overallRating = calculateOverallRating(hotel);
                 const nameMatch = hotel.name.toLowerCase().includes(searchTerm);
                 const ratingMatch = overallRating >= minRating;
-                const categoryMatch = selectedCategory === "all" || hotel.category === selectedCategory;
+                const categoryMatch = currentCategoryFilter === "all" || hotel.category === currentCategoryFilter;
                 return nameMatch && ratingMatch && categoryMatch;
             });
-            renderMarkers(filteredHotels);
+
+            // 2. Sorting
+            const sortBy = sortBySelect.value;
+            const priceToInt = p => (p ? p.length : 0);
+
+            filteredHotels.sort((a, b) => {
+                switch (sortBy) {
+                    case 'price_asc':
+                        return priceToInt(a.price) - priceToInt(b.price);
+                    case 'price_desc':
+                        return priceToInt(b.price) - priceToInt(a.price);
+                    case 'rating_desc':
+                    default:
+                        return calculateOverallRating(b) - calculateOverallRating(a);
+                }
+            });
+            
+            renderAll(filteredHotels);
         }
 
         function createHotelIcon(rating) {
@@ -321,11 +359,11 @@
         
         function addHotelMarker(hotel) {
             const overallRating = calculateOverallRating(hotel);
-            const marker = L.marker([hotel.lat, hotel.lng], { icon: createHotelIcon(overallRating) }).addTo(markersLayer);
+            const marker = L.marker([hotel.lat, hotel.lng], { icon: createHotelIcon(overallRating) });
+            marker.hotelId = hotel.id;
             
-            const qualityRatingsHtml = QUALITY_RATINGS.map(cat => `<div class="col-span-2 grid grid-cols-2 items-center"><span class="rating-label">${cat.name}</span><span class="rating-stars" title="${hotel[`rating_${cat.id}`] || 0} / 5">${generateStarDisplay(hotel[`rating_${cat.id}`] || 0)}</span></div>`).join('');
-            const coupleRatingsHtml = COUPLE_RATINGS.map(cat => `<div class="col-span-2 grid grid-cols-2 items-center"><span class="rating-label">${cat.name}</span><span class="rating-stars" title="${hotel[`rating_${cat.id}`] || 0} / 5">${generateStarDisplay(hotel[`rating_${cat.id}`] || 0)}</span></div>`).join('');
-
+            const qualityRatingsHtml = QUALITY_RATINGS.map(cat => `<div class="col-span-2 grid grid-cols-2 items-center"><span class="rating-label">${cat.name}</span><span class="rating-stars">${generateStarDisplay(hotel[`rating_${cat.id}`])}</span></div>`).join('');
+            const coupleRatingsHtml = COUPLE_RATINGS.map(cat => `<div class="col-span-2 grid grid-cols-2 items-center"><span class="rating-label">${cat.name}</span><span class="rating-stars">${generateStarDisplay(hotel[`rating_${cat.id}`])}</span></div>`).join('');
             const categoryColor = HOTEL_CATEGORIES[hotel.category] || 'bg-gray-400';
             const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotel.name)}`;
 
@@ -341,10 +379,8 @@
                             ${hotel.pros ? `<div class="pros"><div class="pros-cons-title"><span>✔️</span>優點</div><div class="pros-cons-text">${formatProsCons(hotel.pros)}</div></div>` : ''}
                             ${hotel.cons ? `<div class="cons"><div class="pros-cons-title"><span>❌</span>缺點</div><div class="pros-cons-text">${formatProsCons(hotel.cons)}</div></div>` : ''}
                         </div>
-                        <h4 class="ratings-section-title">住宿品質</h4>
-                        <div class="ratings-grid">${qualityRatingsHtml}</div>
-                        <h4 class="ratings-section-title">情侶專屬體驗</h4>
-                        <div class="ratings-grid">${coupleRatingsHtml}</div>
+                        <h4 class="ratings-section-title">住宿品質</h4><div class="ratings-grid">${qualityRatingsHtml}</div>
+                        <h4 class="ratings-section-title">情侶專屬體驗</h4><div class="ratings-grid">${coupleRatingsHtml}</div>
                         <div class="popup-actions">
                             <button class="share-btn" data-id="${hotel.id}"><span>分享</span></button>
                             <a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer" class="map-btn"><span>Google搜尋</span></a>
@@ -354,6 +390,8 @@
                     </div>
                 </div>`;
             marker.bindPopup(popupContent);
+            markersLayer.addLayer(marker);
+            return marker;
         }
         
         // --- FORM & MODAL LOGIC ---
@@ -414,12 +452,23 @@
         }
         
         // --- EVENT HANDLERS ---
-        function handleAddButtonClick() {
-            if (isAddMode) {
-                exitAddMode();
-            } else {
-                enterAddMode();
+        function handleListItemClick(e) {
+            const itemId = e.currentTarget.dataset.id;
+            const marker = markerRegistry[itemId];
+            if (marker) {
+                if (window.innerWidth < 768) { // On mobile, show map first
+                    listPanel.classList.add('hidden');
+                    mapContainer.classList.remove('hidden');
+                    setTimeout(() => map.invalidateSize(), 100);
+                }
+                map.flyTo(marker.getLatLng(), 17);
+                marker.openPopup();
             }
+        }
+        
+        function handleAddButtonClick() {
+            if (isAddMode) exitAddMode();
+            else enterAddMode();
         }
 
         function handleMapClickForAdd(e) {
@@ -433,12 +482,9 @@
             const formData = new FormData(hotelForm);
             const hotelId = formData.get('hotel-id');
             const hotelData = {
-                name: formData.get('hotel-name'),
-                imageUrl: formData.get('hotel-image-url'),
-                category: formData.get('hotel-category'),
-                price: formData.get('hotel-price'),
-                pros: formData.get('hotel-pros'),
-                cons: formData.get('hotel-cons'),
+                name: formData.get('hotel-name'), imageUrl: formData.get('hotel-image-url'),
+                category: formData.get('hotel-category'), price: formData.get('hotel-price'),
+                pros: formData.get('hotel-pros'), cons: formData.get('hotel-cons'),
             };
             [...QUALITY_RATINGS, ...COUPLE_RATINGS].forEach(cat => { 
                 const rating = formData.get(`rating_${cat.id}`);
@@ -455,7 +501,7 @@
                 hotels.push(hotelData);
             }
             saveHotels();
-            applyFilters();
+            applyFiltersAndSort();
             formModal.classList.add('hidden');
         }
         
@@ -469,7 +515,7 @@
             textarea.style.position = 'absolute';
             textarea.style.left = '-9999px';
             document.body.appendChild(textarea);
-textarea.select();
+            textarea.select();
             try {
                 document.execCommand('copy');
                 const originalText = shareButton.querySelector('span').textContent;
@@ -483,7 +529,7 @@ textarea.select();
             showConfirmModal(() => {
                 hotels = hotels.filter(h => h.id != hotelId);
                 saveHotels();
-                applyFilters();
+                applyFiltersAndSort();
                 map.closePopup();
                 hideConfirmModal();
             });
@@ -496,45 +542,76 @@ textarea.select();
 
         // --- DYNAMIC CONTENT & EVENT LISTENERS SETUP ---
         function initialize() {
-            // Populate category dropdowns
-            const categoryOptions = ['<option value="all">顯示全部分類</option>', ...Object.keys(HOTEL_CATEGORIES).map(cat => `<option value="${cat}">${cat}</option>`)].join('');
-            categoryFilter.innerHTML = categoryOptions;
+            // Populate filter dropdowns
+            ratingFilter.innerHTML = `<option value="0">全部評分</option><option value="4">4星+</option><option value="3">3星+</option>`;
             
-            const formCategoryOptions = Object.keys(HOTEL_CATEGORIES).map(cat => `<option value="${cat}">${cat}</option>`).join('');
-            hotelCategorySelect.innerHTML = `<option value="" disabled selected>請選擇分類</option>${formCategoryOptions}`;
+            // Populate category filter buttons
+            let categoryButtonsHtml = `<button class="category-filter-btn px-3 py-1 text-sm rounded-full border bg-gray-200 shadow-md active" data-category="all">全部</button>`;
+            Object.entries(HOTEL_CATEGORIES).forEach(([name, color]) => {
+                categoryButtonsHtml += `<button class="category-filter-btn px-3 py-1 text-sm rounded-full border bg-white" data-category="${name}">${name}</button>`;
+            });
+            categoryFilterContainer.innerHTML = categoryButtonsHtml;
+            document.querySelectorAll('.category-filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    currentCategoryFilter = e.target.dataset.category;
+                    document.querySelectorAll('.category-filter-btn').forEach(b => {
+                        b.classList.remove('active', 'bg-gray-200', 'shadow-md');
+                        b.classList.add('bg-white');
+                    });
+                    e.target.classList.add('active', 'bg-gray-200', 'shadow-md');
+                    e.target.classList.remove('bg-white');
+                    applyFiltersAndSort();
+                });
+            });
+
+            hotelCategorySelect.innerHTML = ['<option value="" disabled selected>請選擇分類</option>', ...Object.keys(HOTEL_CATEGORIES).map(cat => `<option value="${cat}">${cat}</option>`)].join('');
+            hotelPriceSelect.innerHTML = ['<option value="" disabled selected>選擇</option>', ...PRICE_RANGES.map(p => `<option value="${p}">${p}</option>`)].join('');
         
             // Generate rating inputs dynamically
             const createRatingInputs = (categories) => categories.map(cat => `<div class="rating-input-group sm:col-span-1"><label class="block text-gray-700 text-sm font-bold mb-2">${cat.name}</label><div class="rating-input">${[5,4,3,2,1].map(num => `<input type="radio" id="star-${cat.id}-${num}" name="rating_${cat.id}" value="${num}"><label for="star-${cat.id}-${num}">★</label>`).join('')}</div></div>`).join('');
-            
             ratingsContainerQuality.innerHTML = '<h3 class="form-section-title sm:col-span-2">住宿品質</h3>' + createRatingInputs(QUALITY_RATINGS);
             ratingsContainerCouple.innerHTML = '<h3 class="form-section-title sm:col-span-2">情侶專屬體驗</h3>' + createRatingInputs(COUPLE_RATINGS);
 
-        
             // Main event listeners
             addHotelBtn.addEventListener('click', handleAddButtonClick);
             hotelForm.addEventListener('submit', handleFormSubmit);
             cancelBtn.addEventListener('click', () => formModal.classList.add('hidden'));
-            searchBox.addEventListener('input', applyFilters);
-            ratingFilter.addEventListener('change', applyFilters);
-            categoryFilter.addEventListener('change', applyFilters);
-            
+            [searchBox, ratingFilter, sortBySelect].forEach(el => el.addEventListener('input', applyFiltersAndSort));
             confirmOkBtn.addEventListener('click', () => { if(typeof confirmCallback === 'function') confirmCallback(); });
             confirmCancelBtn.addEventListener('click', hideConfirmModal);
             
-            // Event delegation for popup buttons
+            // Map event delegation for popup buttons & list highlighting
             map.on('popupopen', (e) => {
+                const hotelId = e.popup._source.hotelId;
+                document.querySelectorAll('.list-item').forEach(item => item.classList.remove('highlighted'));
+                const listItem = document.querySelector(`.list-item[data-id="${hotelId}"]`);
+                if (listItem) {
+                    listItem.classList.add('highlighted');
+                    listItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
                 const popupNode = e.popup.getElement();
                 popupNode.querySelector('.edit-btn')?.addEventListener('click', (ev) => handleEditClick(ev.target.dataset.id));
                 popupNode.querySelector('.delete-btn')?.addEventListener('click', (ev) => handleDeleteClick(ev.target.dataset.id));
                 popupNode.querySelector('.share-btn')?.addEventListener('click', (ev) => handleShareClick(ev.currentTarget.dataset.id, ev.currentTarget));
             });
+            map.on('popupclose', () => document.querySelectorAll('.list-item').forEach(item => item.classList.remove('highlighted')));
+
+            // Mobile list toggle
+            toggleListBtn.addEventListener('click', () => {
+                listPanel.classList.toggle('hidden');
+                mapContainer.classList.toggle('hidden');
+                if (!mapContainer.classList.contains('hidden')) setTimeout(() => map.invalidateSize(), 100);
+            });
+            
+            // Adjust for mobile view initially
+            if (window.innerWidth < 768) listPanel.classList.add('hidden');
+            else mapContainer.classList.remove('hidden');
 
             loadHotels();
-            applyFilters();
+            applyFiltersAndSort();
         }
         
         initialize();
-
     </script>
 </body>
 </html>
