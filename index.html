@@ -3,406 +3,467 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giono - 您的線上日記 (進階版)</title>
-    <!-- 引入 Tailwind CSS -->
+    <title>台北市旅館體驗地圖</title>
+
+    <!-- LeafletJS CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 Marked.js 用於 Markdown 解析 -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- 引入 DOMPurify 用於 HTML 清理，防止 XSS -->
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.6/dist/purify.min.js"></script>
-    <!-- 引入 Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- LeafletJS JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+
     <style>
-        body { font-family: 'Noto Sans TC', 'Inter', sans-serif; }
-        .modal-hidden { display: none; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .spinner { border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #4f46e5; animation: spin 1s ease infinite; }
-        .btn-spinner { border-left-color: #ffffff; } /* 按鈕中的 spinner 顏色 */
-        /* Markdown 渲染樣式 */
-        .rendered-markdown h1, .rendered-markdown h2, .rendered-markdown h3 { font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
-        .rendered-markdown h1 { font-size: 1.5em; }
-        .rendered-markdown h2 { font-size: 1.25em; }
-        .rendered-markdown h3 { font-size: 1.1em; }
-        .rendered-markdown p { margin-bottom: 0.75rem; }
-        .rendered-markdown ul, .rendered-markdown ol { margin-left: 1.5rem; margin-bottom: 0.75rem; }
-        .rendered-markdown li { margin-bottom: 0.25rem; }
-        .rendered-markdown blockquote { border-left: 4px solid #e5e7eb; padding-left: 1rem; color: #6b7280; margin: 1rem 0; }
-        .rendered-markdown code { background-color: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-family: monospace; }
-        .rendered-markdown pre { background-color: #f3f4f6; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; }
-        .rendered-markdown a { color: #4f46e5; text-decoration: underline; }
+        /* Base styles */
+        body { font-family: 'Inter', 'Noto Sans TC', sans-serif; }
+        #map { 
+            height: calc(100vh - 140px);
+            width: 100%;
+            cursor: default;
+            position: relative;
+        }
+        #map.crosshair-cursor { cursor: crosshair !important; }
+
+        /* Add-mode Banner */
+        #add-mode-banner {
+            display: none; /* Initially hidden */
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.75);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-size: 14px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Popup styles */
+        .leaflet-popup-content-wrapper { border-radius: 8px; padding: 0; overflow: hidden; }
+        .leaflet-popup-content { margin: 0; font-size: 14px; line-height: 1.6; width: 280px !important; }
+        .hotel-popup .popup-image { width: 100%; height: 140px; object-fit: cover; }
+        .hotel-popup .popup-content-container { padding: 12px; }
+        .hotel-popup .header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .hotel-popup h3 { font-size: 1.1rem; font-weight: bold; margin-bottom: 0.5rem; color: #1a202c; }
+        .hotel-popup .category-badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; color: white; white-space: nowrap; }
+        .hotel-popup .experience { color: #4a5568; margin-top: 8px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #e5e7eb; word-break: break-word; }
+        .hotel-popup .ratings-grid { display: grid; grid-template-columns: auto 1fr; gap: 6px 8px; align-items: center; font-size: 13px; }
+        .hotel-popup .rating-label { color: #6b7280; display: flex; align-items: center; gap: 6px; }
+        .hotel-popup .rating-label svg { width: 14px; height: 14px; stroke: #9ca3af; }
+        .hotel-popup .rating-stars { color: #f59e0b; letter-spacing: 2px; }
+        .hotel-popup .rating-overall .rating-label, .hotel-popup .rating-overall .rating-stars { font-weight: bold; font-size: 15px; }
+        .hotel-popup .rating-overall .rating-label svg { stroke: #6b7280; }
+        .hotel-popup .popup-actions { margin-top: 12px; border-top: 1px solid #e5e7eb; padding-top: 8px; display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+        .hotel-popup .popup-actions button, .hotel-popup .popup-actions a { display: inline-flex; align-items: center; gap: 4px; background: none; border: none; cursor: pointer; font-size: 12px; padding: 4px 8px; border-radius: 4px; transition: background-color 0.2s; text-decoration: none; }
+        .hotel-popup .popup-actions .share-btn { color: #16a34a; }
+        .hotel-popup .popup-actions .share-btn:hover { background-color: #dcfce7; }
+        .hotel-popup .popup-actions .map-btn { color: #0284c7; }
+        .hotel-popup .popup-actions .map-btn:hover { background-color: #e0f2fe; }
+        .hotel-popup .popup-actions .edit-btn { color: #3b82f6; }
+        .hotel-popup .popup-actions .edit-btn:hover { background-color: #dbeafe; }
+        .hotel-popup .popup-actions .delete-btn { color: #ef4444; }
+        .hotel-popup .popup-actions .delete-btn:hover { background-color: #fee2e2; }
+
+        /* Star rating input styles */
+        .rating-input-group { margin-bottom: 1rem; }
+        .rating-input-group > label { display: flex; align-items: center; gap: 6px; }
+        .rating-input-group > label svg { width: 16px; height: 16px; stroke: #6b7280; }
+        .rating-input { display: flex; flex-direction: row-reverse; justify-content: flex-end; }
+        .rating-input input { display: none; }
+        .rating-input label { color: #d1d5db; font-size: 2rem; cursor: pointer; transition: color 0.2s; }
+        .rating-input input:checked ~ label,
+        .rating-input label:hover,
+        .rating-input label:hover ~ label { color: #f59e0b; }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body class="bg-gray-100 font-sans">
 
-    <main class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-4xl">
-        <header class="text-center mb-10">
-            <h1 class="text-4xl sm:text-5xl font-bold text-indigo-700">Giono</h1>
-            <p class="text-gray-600 mt-2">您的個人空間，記錄思緒與生活</p>
-        </header>
+    <header class="bg-white shadow-md w-full p-4 h-[80px] flex items-center justify-center">
+        <h1 class="text-2xl font-bold text-gray-800">台北市旅館體驗地圖</h1>
+    </header>
 
-        <!-- 日記輸入區 -->
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-10">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label for="entry-date" class="block text-gray-700 text-sm font-bold mb-2">日期</label>
-                    <input type="date" id="entry-date" class="shadow-sm border-gray-300 rounded-lg w-full py-2 px-3 focus:ring-2 focus:ring-indigo-500">
-                </div>
-                 <div>
-                    <label for="entry-tags" class="block text-gray-700 text-sm font-bold mb-2">標籤 (以逗號分隔)</label>
-                    <input type="text" id="entry-tags" placeholder="例如：工作, 靈感, 生活" class="shadow-sm border-gray-300 rounded-lg w-full py-2 px-3 focus:ring-2 focus:ring-indigo-500">
-                </div>
-            </div>
-            <div class="mb-4">
-                <label for="diary-entry" class="block text-gray-700 text-sm font-bold mb-2">今天過得如何？ (支援 Markdown)</label>
-                <textarea id="diary-entry" rows="8" class="shadow-sm border-gray-300 rounded-lg w-full py-2 px-3 focus:ring-2 focus:ring-indigo-500" placeholder="# 標題&#10;* 清單項目&#10;**粗體文字**..."></textarea>
-                <p id="char-counter" class="text-right text-xs text-gray-500 mt-1">0 字</p>
-            </div>
-            <button id="save-entry" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:shadow-outline transition-colors duration-300">
-                儲存日記
-            </button>
-            <div id="message-box" class="mt-4 text-center text-sm font-medium"></div>
-        </div>
+    <div class="bg-gray-50 p-4 h-[60px] flex items-center justify-center flex-wrap gap-4 shadow-inner">
+        <input type="search" id="search-box" placeholder="搜尋旅館名稱..." class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow sm:flex-grow-0 sm:w-1/4">
+        <select id="rating-filter" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="0">顯示全部評分</option>
+            <option value="4">4星以上</option>
+            <option value="3">3星以上</option>
+        </select>
+        <select id="category-filter" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <!-- Categories will be populated by JS -->
+        </select>
+        <button id="add-hotel-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
+            新增評價
+        </button>
+    </div>
 
-        <!-- 歷史與搜尋 -->
-        <div>
-            <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
-                 <h2 class="text-2xl font-bold text-gray-900">我的日記歷史</h2>
-                 <input type="search" id="search-box" placeholder="搜尋日記內容..." class="shadow-sm border-gray-300 rounded-lg w-full sm:w-64 py-2 px-3 focus:ring-2 focus:ring-indigo-500">
-            </div>
-             <div id="active-filter-container" class="mb-4 text-sm text-gray-600"></div>
-            <div id="loading-container" class="flex justify-center py-8">
-                <div class="spinner"></div>
-            </div>
-            <div id="entries-container" class="space-y-6">
-                <!-- Diary entries will be dynamically inserted here -->
-            </div>
-        </div>
-
-        <div id="user-id-display" class="fixed bottom-4 right-4 bg-white p-3 rounded-lg shadow-lg text-xs text-gray-600 border border-gray-200">
-            <p class="font-bold">使用者 ID:</p>
-            <span id="user-id" class="break-all"></span>
+    <main class="w-full relative">
+        <div id="map" class="z-0">
+            <div id="add-mode-banner">請在地圖上選擇位置以新增評價</div>
         </div>
     </main>
 
-    <!-- Modals (Delete and Edit) -->
-    <div id="delete-modal" class="modal-hidden fixed inset-0 bg-gray-600 bg-opacity-50 h-full w-full flex items-center justify-center p-4">
-        <div class="bg-white p-6 rounded-lg shadow-xl w-11/12 max-w-sm">
-            <h3 class="text-lg font-bold">確認刪除</h3>
-            <p class="mt-2 text-sm text-gray-600">您確定要刪除這篇日記嗎？此操作無法復原。</p>
-            <div class="mt-6 flex justify-end space-x-3">
-                <button id="cancel-delete" class="bg-gray-200 hover:bg-gray-300 font-bold py-2 px-4 rounded-lg">取消</button>
-                <button id="confirm-delete" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg w-24 text-center">確認</button>
+    <!-- Modal Form (for Add/Edit) -->
+    <div id="form-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-11/12 md:w-1/2 lg:w-1/3 max-h-[90vh] overflow-y-auto">
+            <h2 id="form-title" class="text-xl font-bold mb-6">新增旅館評價</h2>
+            <form id="hotel-form">
+                <input type="hidden" id="hotel-id" name="hotel-id">
+                <div class="mb-4">
+                    <label for="hotel-name" class="block text-gray-700 text-sm font-bold mb-2">旅館名稱</label>
+                    <input type="text" id="hotel-name" name="hotel-name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                </div>
+                 <div class="mb-4">
+                    <label for="hotel-image-url" class="block text-gray-700 text-sm font-bold mb-2">圖片網址</label>
+                    <input type="url" id="hotel-image-url" name="hotel-image-url" placeholder="https://example.com/image.jpg" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                </div>
+                <div class="mb-4">
+                    <label for="hotel-category" class="block text-gray-700 text-sm font-bold mb-2">旅館分類</label>
+                    <select id="hotel-category" name="hotel-category" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                        <!-- Categories will be populated by JS -->
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="hotel-experience" class="block text-gray-700 text-sm font-bold mb-2">體驗心得</label>
+                    <textarea id="hotel-experience" name="hotel-experience" rows="3" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6" id="ratings-container">
+                    <!-- Rating Inputs are generated by JS -->
+                </div>
+
+                <div class="flex items-center justify-end gap-4 mt-4">
+                    <button id="cancel-btn" type="button" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">取消</button>
+                    <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">儲存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Custom Confirm Modal -->
+    <div id="confirm-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-[60] flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg shadow-xl w-11/12 sm:w-1/3 text-center">
+            <h3 class="text-lg font-bold mb-4">確認刪除</h3>
+            <p class="text-gray-600 mb-6">您確定要刪除這筆評價嗎？此操作無法復原。</p>
+            <div class="flex justify-center gap-4">
+                <button id="confirm-cancel-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-lg">取消</button>
+                <button id="confirm-ok-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg">確定</button>
             </div>
         </div>
     </div>
-    <div id="edit-modal" class="modal-hidden fixed inset-0 bg-gray-600 bg-opacity-50 h-full w-full flex items-center justify-center p-4">
-        <div class="bg-white p-6 rounded-lg shadow-xl w-11/12 max-w-2xl">
-            <h3 class="text-lg font-bold mb-4">編輯日記</h3>
-            <input type="hidden" id="edit-entry-id">
-             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                     <label for="edit-entry-date" class="block text-sm font-bold mb-2">日期</label>
-                     <input type="date" id="edit-entry-date" class="border-gray-300 rounded-lg w-full">
-                </div>
-                 <div>
-                    <label for="edit-entry-tags" class="block text-sm font-bold mb-2">標籤</label>
-                    <input type="text" id="edit-entry-tags" class="border-gray-300 rounded-lg w-full">
-                </div>
-            </div>
-            <div>
-                <label for="edit-diary-entry" class="block text-sm font-bold mb-2">內容</label>
-                <textarea id="edit-diary-entry" rows="12" class="border-gray-300 rounded-lg w-full"></textarea>
-            </div>
-            <div class="mt-6 flex justify-end space-x-3">
-                <button id="cancel-edit" class="bg-gray-200 hover:bg-gray-300 font-bold py-2 px-4 rounded-lg">取消</button>
-                <button id="save-edit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg w-24 text-center">儲存</button>
-            </div>
-        </div>
-    </div>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, addDoc, deleteDoc, updateDoc, onSnapshot, collection, query, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <script>
+        // --- DOM Elements ---
+        const mapElement = document.getElementById('map');
+        const addHotelBtn = document.getElementById('add-hotel-btn');
+        const searchBox = document.getElementById('search-box');
+        const ratingFilter = document.getElementById('rating-filter');
+        const categoryFilter = document.getElementById('category-filter');
+        const addModeBanner = document.getElementById('add-mode-banner');
+        // Modals & Forms
+        const formModal = document.getElementById('form-modal');
+        const hotelForm = document.getElementById('hotel-form');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const formTitle = document.getElementById('form-title');
+        const hotelIdInput = document.getElementById('hotel-id');
+        const ratingsContainer = document.getElementById('ratings-container');
+        const hotelCategorySelect = document.getElementById('hotel-category');
+        const confirmModal = document.getElementById('confirm-modal');
+        const confirmOkBtn = document.getElementById('confirm-ok-btn');
+        const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
 
-        // --- Firebase 設定 ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'giono-diary-app';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        // --- App 狀態 ---
-        let db, auth, userId = null, diariesCollectionRef = null, unsubscribe = null;
-        let allEntries = []; // 儲存所有日記，用於客戶端篩選
-        let searchTerm = '';
-        let activeTag = '';
+        // --- State Management & Constants ---
+        let newHotelCoords = null;
+        let hotels = [];
+        let confirmCallback = null;
+        let isAddMode = false;
+        const LOCAL_STORAGE_KEY = 'taipeiHotels';
+        const RATING_CATEGORIES = [
+            { id: 'overall', name: '總體評分', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>' }, 
+            { id: 'bathroom', name: '浴室', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6 6 9H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2l3 3"/><path d="M18 10h1a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-1"/><path d="m22 12-4-4-4 4"/><path d="M2 12h11"/></svg>' },
+            { id: 'bed', name: '床鋪', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4v16a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V4"/><path d="M12 4v10"/><path d="M2 10h20"/></svg>' }, 
+            { id: 'facilities', name: '設施', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 22v-4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v4"/><path d="M18 22V8a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v14"/><path d="M18 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>' },
+            { id: 'amenities', name: '備品', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m13.4 2.6 3.4 3.4"/><path d="M18 11.5 21 8.5"/><path d="m2 22 5.5-1.5L20.5 7.5l-3-3L4.5 17.5 2 22"/><path d="m18 11.5-1.5-1.5"/></svg>' },
+        ];
+        const HOTEL_CATEGORIES = {
+            "商務旅行": "bg-blue-500", "家庭親子": "bg-green-500",
+            "溫泉度假": "bg-yellow-500", "設計旅店": "bg-purple-500",
+            "豪華享受": "bg-red-500", "情侶專用": "bg-pink-500"
+        };
 
-        // --- DOM 元素 ---
-        const entryDate = document.getElementById('entry-date'), entryTags = document.getElementById('entry-tags'), diaryEntry = document.getElementById('diary-entry');
-        const saveButton = document.getElementById('save-entry'), messageBox = document.getElementById('message-box'), entriesContainer = document.getElementById('entries-container');
-        const loadingContainer = document.getElementById('loading-container'), userIdElement = document.getElementById('user-id'), charCounter = document.getElementById('char-counter');
-        const searchBox = document.getElementById('search-box'), activeFilterContainer = document.getElementById('active-filter-container');
-        const deleteModal = document.getElementById('delete-modal'), confirmDeleteBtn = document.getElementById('confirm-delete'), cancelDeleteBtn = document.getElementById('cancel-delete');
-        const editModal = document.getElementById('edit-modal'), cancelEditBtn = document.getElementById('cancel-edit'), saveEditBtn = document.getElementById('save-edit');
+        // --- Initial Data (fallback) ---
+        const initialHotels = [
+            { id: 1, name: "台北W飯店", imageUrl: "https://placehold.co/600x400/7c3aed/ffffff?text=W+Hotel", category: "豪華享受", lat: 25.0407, lng: 121.5646, rating_overall: 5, rating_bathroom: 5, rating_bed: 4, rating_facilities: 5, rating_amenities: 5, experience: "信義區的奢華指標，頂樓泳池酒吧視野絕佳，充滿時尚與活力。" },
+            { id: 2, name: "誠品行旅", imageUrl: "https://placehold.co/600x400/16a34a/ffffff?text=Eslite+Hotel", category: "設計旅店", lat: 25.0426, lng: 121.5559, rating_overall: 4.5, rating_bathroom: 4, rating_bed: 5, rating_facilities: 4, rating_amenities: 5, experience: "坐落於松山文創園區，充滿書香與藝術氣息，適合文青深度旅遊。" },
+            { id: 3, name: "君品酒店", imageUrl: "https://placehold.co/600x400/1d4ed8/ffffff?text=Palais+de+Chine", category: "商務旅行", lat: 25.0479, lng: 121.5174, rating_overall: 4.8, rating_bathroom: 5, rating_bed: 5, rating_facilities: 4, rating_amenities: 4, experience: "緊鄰台北車站，交通極度便利，以歐洲古堡為設計風格。" },
+            { id: 4, name: "北投麗禧溫泉酒店", imageUrl: "https://placehold.co/600x400/f59e0b/ffffff?text=Grand+View", category: "溫泉度假", lat: 25.1378, lng: 121.5152, rating_overall: 4.7, rating_bathroom: 5, rating_bed: 4, rating_facilities: 5, rating_amenities: 4, experience: "位於北投制高點，每個房間都有獨立的冷熱溫泉池。" },
+            { id: 7, name: "台北沐蘭精品旅館", imageUrl: "https://placehold.co/600x400/ec4899/ffffff?text=Mulan+Motel", category: "情侶專用", lat: 25.0623, lng: 121.5283, rating_overall: 4.4, rating_bathroom: 5, rating_bed: 4, rating_facilities: 4, rating_amenities: 4, experience: "以自然元素打造，房間內有大型浴缸和私人蒸氣室，隱密性高。" },
+            { id: 9, name: "薇閣精品旅館 (大直館)", imageUrl: "https://placehold.co/600x400/ec4899/ffffff?text=Wego+Motel", category: "情侶專用", lat: 25.0830, lng: 121.5582, rating_overall: 4.5, rating_bathroom: 5, rating_bed: 5, rating_facilities: 4, rating_amenities: 4, experience: "以多樣化的主題房型聞名，設備豪華，是情侶休息的經典選擇。" },
+        ];
 
-        function initialize() {
+
+        // --- DATA MANAGEMENT ---
+        function loadHotels() {
             try {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                setLogLevel('debug');
-                setupAuthListener();
-                setupEventListeners();
-                setDefaultDate();
-            } catch (error) {
-                console.error("Firebase 初始化失敗:", error);
-                displayMessage("應用程式初始化失敗。", "error");
-                loadingContainer.innerHTML = '<p class="text-red-500">無法載入日記。</p>';
-            }
+                const storedHotels = localStorage.getItem(LOCAL_STORAGE_KEY);
+                hotels = storedHotels ? JSON.parse(storedHotels) : [...initialHotels];
+                if (!storedHotels) saveHotels();
+            } catch (e) { console.error("無法讀取本地儲存資料:", e); hotels = [...initialHotels]; }
+        }
+        function saveHotels() {
+            try { localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(hotels)); } 
+            catch (e) { console.error("無法儲存資料至本地:", e); }
         }
 
-        async function setupAuthListener() {
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    userId = user.uid;
-                    userIdElement.textContent = userId;
-                    diariesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/diaries`);
-                    listenForEntries();
-                } else {
-                    userId = null;
-                    if (unsubscribe) unsubscribe();
-                    entriesContainer.innerHTML = '<p class="text-center text-gray-500">請先登入以查看日記。</p>';
-                    loadingContainer.style.display = 'none';
-                    try {
-                        if (initialAuthToken) await signInWithCustomToken(auth, initialAuthToken);
-                        else await signInAnonymously(auth);
-                    } catch (error) { console.error("登入失敗:", error); }
-                }
-            });
-        }
 
-        function setupEventListeners() {
-            saveButton.addEventListener('click', saveEntry);
-            diaryEntry.addEventListener('input', () => charCounter.textContent = `${diaryEntry.value.length} 字`);
-            searchBox.addEventListener('input', (e) => {
-                searchTerm = e.target.value;
-                activeTag = '';
-                filterAndRenderEntries();
-            });
-            entriesContainer.addEventListener('click', handleEntryClick);
-            cancelDeleteBtn.addEventListener('click', () => deleteModal.classList.add('modal-hidden'));
-            confirmDeleteBtn.addEventListener('click', handleDeleteConfirmation);
-            cancelEditBtn.addEventListener('click', () => editModal.classList.add('modal-hidden'));
-            saveEditBtn.addEventListener('click', handleSaveEdit);
-        }
+        // --- MAP & UI RENDERING ---
+        const map = L.map('map').setView([25.0479, 121.5319], 13);
+        const markersLayer = L.layerGroup().addTo(map);
 
-        function handleEntryClick(e) {
-            const target = e.target;
-            const deleteBtn = target.closest('.delete-btn');
-            const editBtn = target.closest('.edit-btn');
-            const tagBtn = target.closest('.tag-btn');
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' }).addTo(map);
 
-            if (deleteBtn) {
-                const entryIdToDelete = deleteBtn.getAttribute('data-id');
-                deleteModal.setAttribute('data-id', entryIdToDelete);
-                deleteModal.classList.remove('modal-hidden');
-                return;
-            }
-
-            if (editBtn) {
-                const id = editBtn.getAttribute('data-id');
-                const entry = allEntries.find(en => en.id === id);
-                if (entry) {
-                    document.getElementById('edit-entry-id').value = entry.id;
-                    document.getElementById('edit-entry-date').value = entry.date;
-                    document.getElementById('edit-entry-tags').value = entry.tags ? entry.tags.join(', ') : '';
-                    document.getElementById('edit-diary-entry').value = entry.content;
-                    editModal.classList.remove('modal-hidden');
-                }
-                return;
-            }
-
-            if (tagBtn) {
-                activeTag = tagBtn.getAttribute('data-tag');
-                searchTerm = ''; 
-                searchBox.value = '';
-                filterAndRenderEntries();
-                return;
-            }
-        }
-
-        function setDefaultDate() {
-            entryDate.value = new Date().toISOString().slice(0, 10);
-        }
-
-        function displayMessage(message, type = "success") {
-            messageBox.textContent = message;
-            messageBox.className = 'mt-4 text-center text-sm font-medium ' + (type === 'error' ? 'text-red-500' : 'text-green-600');
-            setTimeout(() => messageBox.textContent = '', 3000);
+        function renderMarkers(hotelsToRender) {
+            markersLayer.clearLayers();
+            hotelsToRender.forEach(hotel => addHotelMarker(hotel));
         }
         
-        async function saveEntry() {
-            if (!userId) return displayMessage("尚未登入，無法儲存。", "error");
-            const date = entryDate.value, content = diaryEntry.value.trim();
-            if (!date || !content) return displayMessage("日期和內容不能為空！", "error");
+        function applyFilters() {
+            const searchTerm = searchBox.value.toLowerCase();
+            const minRating = parseFloat(ratingFilter.value);
+            const selectedCategory = categoryFilter.value;
             
-            const tags = entryTags.value.split(',').map(tag => tag.trim()).filter(Boolean);
-
-            saveButton.disabled = true; saveButton.textContent = "儲存中...";
-            try {
-                await addDoc(diariesCollectionRef, { date, content, tags, createdAt: new Date().toISOString() });
-                displayMessage("日記儲存成功！");
-                diaryEntry.value = ''; entryTags.value = ''; charCounter.textContent = '0 字';
-            } catch (error) {
-                console.error("儲存失敗:", error);
-                displayMessage("儲存失敗。", "error");
-            } finally {
-                saveButton.disabled = false; saveButton.textContent = "儲存日記";
-            }
+            const filteredHotels = hotels.filter(hotel => {
+                const nameMatch = hotel.name.toLowerCase().includes(searchTerm);
+                const ratingMatch = hotel.rating_overall >= minRating;
+                const categoryMatch = selectedCategory === "all" || hotel.category === selectedCategory;
+                return nameMatch && ratingMatch && categoryMatch;
+            });
+            renderMarkers(filteredHotels);
         }
 
-        function listenForEntries() {
-            if (!diariesCollectionRef) return;
-            if (unsubscribe) unsubscribe();
-
-            loadingContainer.style.display = 'flex';
-            const q = query(diariesCollectionRef);
-            unsubscribe = onSnapshot(q, (snapshot) => {
-                loadingContainer.style.display = 'none';
-                allEntries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                allEntries.sort((a, b) => new Date(b.date) - new Date(a.date));
-                filterAndRenderEntries();
-            }, (error) => {
-                console.error("監聽日記失敗:", error);
-                loadingContainer.innerHTML = '<p class="text-red-500">讀取日記時發生錯誤。</p>';
-            });
+        function createHotelIcon(rating) {
+            let iconUrl;
+            if (rating >= 4.8) iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png';
+            else if (rating >= 4.5) iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png';
+            else iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png';
+            return new L.Icon({ iconUrl, shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
         }
         
-        function filterAndRenderEntries() {
-            let entriesToRender = [...allEntries];
-            let filterMessage = '';
-
-            if (searchTerm) {
-                const lowerCaseSearch = searchTerm.toLowerCase();
-                entriesToRender = entriesToRender.filter(entry => entry.content.toLowerCase().includes(lowerCaseSearch));
-                filterMessage = `搜尋結果為 "<strong>${escapeHTML(searchTerm)}</strong>"`;
-            } else if (activeTag) {
-                entriesToRender = entriesToRender.filter(entry => entry.tags && entry.tags.includes(activeTag));
-                filterMessage = `篩選標籤：<span class="inline-block bg-indigo-100 text-indigo-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full">${escapeHTML(activeTag)}</span>`;
-            }
-
-            if (filterMessage) {
-                 activeFilterContainer.innerHTML = `${filterMessage} <button id="clear-filter" class="ml-2 text-indigo-600 hover:underline">清除篩選</button>`;
-                 document.getElementById('clear-filter').addEventListener('click', () => {
-                     searchTerm = ''; searchBox.value = ''; activeTag = '';
-                     filterAndRenderEntries();
-                 });
-            } else {
-                activeFilterContainer.innerHTML = '';
-            }
-
-            renderEntries(entriesToRender);
+        function generateStarDisplay(rating) {
+            const r = Math.round(rating);
+            return '★'.repeat(r) + '☆'.repeat(5 - r);
         }
 
-        function renderEntries(entries) {
-            if (entries.length === 0) {
-                entriesContainer.innerHTML = `<div class="text-center py-10 bg-white rounded-lg shadow">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    <h3 class="mt-2 text-sm font-medium text-gray-900">沒有符合的日記</h3>
-                    <p class="mt-1 text-sm text-gray-500">${(searchTerm || activeTag) ? '請嘗試不同的關鍵字或清除篩選。' : '開始寫下你的第一篇日記吧！'}</p>
-                </div>`;
-                return;
-            }
+        function addHotelMarker(hotel) {
+            const marker = L.marker([hotel.lat, hotel.lng], { icon: createHotelIcon(hotel.rating_overall) }).addTo(markersLayer);
+            
+            const ratingsHtml = RATING_CATEGORIES.map(cat => {
+                const rating = hotel[`rating_${cat.id}`];
+                const isOverall = cat.id === 'overall';
+                return `<div class="${isOverall ? 'rating-overall' : ''} col-span-2 grid grid-cols-2 items-center">
+                            <span class="rating-label">${cat.icon}<span>${cat.name}</span></span>
+                            <span class="rating-stars" title="${rating} / 5">${generateStarDisplay(rating)}</span>
+                        </div>`;
+            }).join('');
+            
+            const categoryColor = HOTEL_CATEGORIES[hotel.category] || 'bg-gray-400';
+            const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotel.name)}`;
 
-            entriesContainer.innerHTML = '';
-            entries.forEach(entry => {
-                const entryElement = document.createElement('div');
-                entryElement.className = 'bg-white rounded-lg shadow p-6 transition-shadow duration-300 hover:shadow-xl';
-
-                const tagsHTML = (entry.tags && entry.tags.length > 0)
-                    ? entry.tags.map(tag => `<button class="tag-btn inline-block bg-indigo-100 hover:bg-indigo-200 text-indigo-800 text-xs font-semibold mr-2 px-2.5 py-0.5 rounded-full" data-tag="${escapeHTML(tag)}">${escapeHTML(tag)}</button>`).join('')
-                    : '';
-
-                const cleanHTML = DOMPurify.sanitize(marked.parse(entry.content));
-
-                entryElement.innerHTML = `
-                    <div class="flex justify-between items-start mb-3">
-                        <div>
-                            <p class="font-bold text-xl text-indigo-700">${entry.date}</p>
-                            <p class="text-xs text-gray-400">建立於: ${new Date(entry.createdAt).toLocaleString('zh-TW')}</p>
+            const popupContent = `
+                <div class="hotel-popup">
+                    <img src="${hotel.imageUrl || 'https://placehold.co/600x400/cccccc/ffffff?text=無圖片'}" alt="${hotel.name}" class="popup-image" onerror="this.onerror=null;this.src='https://placehold.co/600x400/cccccc/ffffff?text=圖片載入失敗';">
+                    <div class="popup-content-container">
+                        <div class="header">
+                            <h3>${hotel.name}</h3>
+                            <span class="category-badge ${categoryColor}">${hotel.category}</span>
                         </div>
-                        <div class="flex space-x-2">
-                            <button data-id="${entry.id}" class="edit-btn text-gray-400 hover:text-blue-500 p-1 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg></button>
-                            <button data-id="${entry.id}" class="delete-btn text-gray-400 hover:text-red-500 p-1 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                        <p class="experience">${hotel.experience}</p>
+                        <div class="ratings-grid">${ratingsHtml}</div>
+                        <div class="popup-actions">
+                            <button class="share-btn" data-id="${hotel.id}"><span>分享</span></button>
+                            <a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer" class="map-btn"><span>Google搜尋</span></a>
+                            <button class="edit-btn" data-id="${hotel.id}">編輯</button>
+                            <button class="delete-btn" data-id="${hotel.id}">刪除</button>
                         </div>
                     </div>
-                    <div class="mb-4">${tagsHTML}</div>
-                    <div class="rendered-markdown text-gray-700">${cleanHTML}</div>`;
-                
-                entriesContainer.appendChild(entryElement);
+                </div>`;
+            marker.bindPopup(popupContent);
+        }
+        
+        // --- FORM & MODAL LOGIC ---
+        function openFormModal(hotelToEdit = null) {
+            hotelForm.reset();
+            if (hotelToEdit) {
+                formTitle.textContent = '編輯旅館評價';
+                hotelIdInput.value = hotelToEdit.id;
+                document.getElementById('hotel-name').value = hotelToEdit.name;
+                document.getElementById('hotel-image-url').value = hotelToEdit.imageUrl || '';
+                document.getElementById('hotel-category').value = hotelToEdit.category;
+                document.getElementById('hotel-experience').value = hotelToEdit.experience;
+                RATING_CATEGORIES.forEach(cat => {
+                    const ratingValue = hotelToEdit[`rating_${cat.id}`];
+                    if (ratingValue) {
+                        const radio = document.querySelector(`input[name="rating_${cat.id}"][value="${ratingValue}"]`);
+                        if (radio) radio.checked = true;
+                    }
+                });
+            } else {
+                formTitle.textContent = '新增旅館評價';
+                hotelIdInput.value = '';
+            }
+            formModal.classList.remove('hidden');
+        }
+
+        function showConfirmModal(callback) {
+            confirmCallback = callback;
+            confirmModal.classList.remove('hidden');
+        }
+        
+        function hideConfirmModal() {
+            confirmCallback = null;
+            confirmModal.classList.add('hidden');
+        }
+        
+        function enterAddMode() {
+            isAddMode = true;
+            addModeBanner.style.display = 'block';
+            addHotelBtn.textContent = '取消新增';
+            addHotelBtn.classList.replace('bg-blue-500', 'bg-red-500');
+            addHotelBtn.classList.replace('hover:bg-blue-600', 'hover:bg-red-600');
+            mapElement.classList.add('crosshair-cursor');
+            map.once('click', handleMapClickForAdd);
+        }
+
+        function exitAddMode() {
+            isAddMode = false;
+            map.off('click', handleMapClickForAdd);
+            addModeBanner.style.display = 'none';
+            addHotelBtn.textContent = '新增評價';
+            addHotelBtn.classList.replace('bg-red-500', 'bg-blue-500');
+            addHotelBtn.classList.replace('hover:bg-red-600', 'hover:bg-blue-600');
+            mapElement.classList.remove('crosshair-cursor');
+        }
+        
+        // --- EVENT HANDLERS ---
+        function handleAddButtonClick() {
+            if (isAddMode) {
+                exitAddMode();
+            } else {
+                enterAddMode();
+            }
+        }
+
+        function handleMapClickForAdd(e) {
+            newHotelCoords = e.latlng;
+            openFormModal();
+            exitAddMode(); // Exit add mode after opening form
+        }
+        
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const formData = new FormData(hotelForm);
+            const hotelId = formData.get('hotel-id');
+            const hotelData = {
+                name: formData.get('hotel-name'),
+                imageUrl: formData.get('hotel-image-url'),
+                category: formData.get('hotel-category'),
+                experience: formData.get('hotel-experience')
+            };
+            RATING_CATEGORIES.forEach(cat => { hotelData[`rating_${cat.id}`] = parseFloat(formData.get(`rating_${cat.id}`)); });
+
+            if (hotelId) {
+                const hotelIndex = hotels.findIndex(h => h.id == hotelId);
+                if (hotelIndex !== -1) hotels[hotelIndex] = { ...hotels[hotelIndex], ...hotelData };
+            } else {
+                hotelData.id = Date.now();
+                hotelData.lat = newHotelCoords.lat;
+                hotelData.lng = newHotelCoords.lng;
+                hotels.push(hotelData);
+            }
+            saveHotels();
+            applyFilters();
+            formModal.classList.add('hidden');
+        }
+        
+        function handleShareClick(hotelId, shareButton) {
+            const hotel = hotels.find(h => h.id == hotelId);
+            if (!hotel) return;
+            const shareText = `推薦一間旅館給你！\n\n旅館名稱：${hotel.name}\n總體評分：${generateStarDisplay(hotel.rating_overall)}\n我的心得：${hotel.experience}`;
+            const textarea = document.createElement('textarea');
+            textarea.value = shareText;
+            textarea.style.position = 'absolute';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                const originalText = shareButton.querySelector('span').textContent;
+                shareButton.querySelector('span').textContent = '已複製！';
+                setTimeout(() => { shareButton.querySelector('span').textContent = originalText; }, 2000);
+            } catch (err) { console.error('無法複製文字: ', err); }
+            document.body.removeChild(textarea);
+        }
+        
+        function handleDeleteClick(hotelId) {
+            showConfirmModal(() => {
+                hotels = hotels.filter(h => h.id != hotelId);
+                saveHotels();
+                applyFilters();
+                map.closePopup();
+                hideConfirmModal();
             });
         }
         
-        async function handleDeleteConfirmation() {
-            const id = deleteModal.getAttribute('data-id');
-            if (!id || !userId) return;
-
-            const originalText = confirmDeleteBtn.textContent;
-            confirmDeleteBtn.disabled = true;
-            cancelDeleteBtn.disabled = true;
-            confirmDeleteBtn.innerHTML = `<div class="spinner btn-spinner mx-auto" style="width: 20px; height: 20px; border-width: 2px;"></div>`;
-
-            try {
-                await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/diaries`, id));
-                displayMessage("日記已刪除。");
-            } catch (error) {
-                console.error("刪除失敗:", error);
-                displayMessage("刪除失敗，請稍後再試。", "error");
-            } finally {
-                confirmDeleteBtn.disabled = false;
-                cancelDeleteBtn.disabled = false;
-                confirmDeleteBtn.textContent = originalText;
-                deleteModal.classList.add('modal-hidden');
-            }
+        function handleEditClick(hotelId) {
+            const hotel = hotels.find(h => h.id == hotelId);
+            if(hotel) openFormModal(hotel);
         }
 
-        async function handleSaveEdit() {
-            const id = document.getElementById('edit-entry-id').value;
-            const date = document.getElementById('edit-entry-date').value;
-            const content = document.getElementById('edit-diary-entry').value.trim();
-            const tags = document.getElementById('edit-entry-tags').value.split(',').map(tag => tag.trim()).filter(Boolean);
-
-            if (!id || !date || !content || !userId) {
-                displayMessage("日期和內容不能為空！", "error");
-                return;
-            }
+        // --- DYNAMIC CONTENT & EVENT LISTENERS SETUP ---
+        function initialize() {
+            // Populate category dropdowns
+            const categoryOptions = ['<option value="all">顯示全部分類</option>', ...Object.keys(HOTEL_CATEGORIES).map(cat => `<option value="${cat}">${cat}</option>`)].join('');
+            categoryFilter.innerHTML = categoryOptions;
             
-            const originalText = saveEditBtn.textContent;
-            saveEditBtn.disabled = true;
-            cancelEditBtn.disabled = true;
-            saveEditBtn.innerHTML = `<div class="spinner btn-spinner mx-auto" style="width: 20px; height: 20px; border-width: 2px;"></div>`;
+            const formCategoryOptions = Object.keys(HOTEL_CATEGORIES).map(cat => `<option value="${cat}">${cat}</option>`).join('');
+            hotelCategorySelect.innerHTML = `<option value="" disabled selected>請選擇分類</option>${formCategoryOptions}`;
+        
+            // Generate rating inputs dynamically
+            ratingsContainer.innerHTML = RATING_CATEGORIES.map(cat => `<div class="rating-input-group"><label class="block text-gray-700 text-sm font-bold mb-2">${cat.icon} ${cat.name}</label><div class="rating-input">${[5,4,3,2,1].map(num => `<input type="radio" id="star-${cat.id}-${num}" name="rating_${cat.id}" value="${num}" required><label for="star-${cat.id}-${num}">★</label>`).join('')}</div></div>`).join('');
+        
+            // Main event listeners
+            addHotelBtn.addEventListener('click', handleAddButtonClick);
+            hotelForm.addEventListener('submit', handleFormSubmit);
+            cancelBtn.addEventListener('click', () => formModal.classList.add('hidden'));
+            searchBox.addEventListener('input', applyFilters);
+            ratingFilter.addEventListener('change', applyFilters);
+            categoryFilter.addEventListener('change', applyFilters);
+            
+            confirmOkBtn.addEventListener('click', () => { if(typeof confirmCallback === 'function') confirmCallback(); });
+            confirmCancelBtn.addEventListener('click', hideConfirmModal);
+            
+            // Event delegation for popup buttons
+            map.on('popupopen', (e) => {
+                const popupNode = e.popup.getElement();
+                popupNode.querySelector('.edit-btn')?.addEventListener('click', (ev) => handleEditClick(ev.target.dataset.id));
+                popupNode.querySelector('.delete-btn')?.addEventListener('click', (ev) => handleDeleteClick(ev.target.dataset.id));
+                popupNode.querySelector('.share-btn')?.addEventListener('click', (ev) => handleShareClick(ev.currentTarget.dataset.id, ev.currentTarget));
+            });
 
-            try {
-                await updateDoc(doc(db, `artifacts/${appId}/users/${userId}/diaries`, id), { date, content, tags });
-                displayMessage("變更已儲存。");
-                editModal.classList.add('modal-hidden');
-            } catch (error) {
-                console.error("更新失敗:", error);
-                displayMessage("更新失敗，請稍後再試。", "error");
-            } finally {
-                saveEditBtn.disabled = false;
-                cancelEditBtn.disabled = false;
-                saveEditBtn.textContent = originalText;
-            }
+            loadHotels();
+            applyFilters();
         }
-
-        function escapeHTML(str) {
-            return str.replace(/[&<>'"]/g, tag => ({'&': '&amp;','<': '&lt;','>': '&gt;',"'": '&#39;','"': '&quot;'}[tag] || tag));
-        }
-
+        
         initialize();
+
     </script>
 </body>
 </html>
