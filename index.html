@@ -3,107 +3,134 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>購屋財務與貸款分析器</title>
-  
-  <!-- 引入 Tailwind CSS -->
+  <title>專家版購屋財務與貸款分析器</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- 引入 React 與 ReactDOM -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  
-  <!-- 引入 Babel 用於在瀏覽器編譯 JSX -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
   <style>
     body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body>
+<body class="bg-gray-100">
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useMemo } = React;
 
-    // --- 圖示元件 ---
-    const IconCalculator = ({ size = 24, className = "" }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16.01" y1="10" y2="10"/><line x1="16" x2="16.01" y1="14" y2="14"/><line x1="16" x2="16.01" y1="18" y2="18"/><line x1="8" x2="8.01" y1="10" y2="10"/><line x1="8" x2="8.01" y1="14" y2="14"/><line x1="8" x2="8.01" y1="18" y2="18"/><line x1="12" x2="12.01" y1="10" y2="10"/><line x1="12" x2="12.01" y1="14" y2="14"/><line x1="12" x2="12.01" y1="18" y2="18"/></svg>
-    );
-    const IconHome = ({ size = 24, className = "" }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    );
-    const IconDollar = ({ size = 24, className = "" }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-    );
-    const IconPercent = ({ size = 24, className = "" }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" x2="5" y1="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
-    );
-    const IconCalendar = ({ size = 24, className = "" }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-    );
-    const IconAlert = ({ size = 24, className = "" }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
-    );
-    const IconMessage = ({ size = 24, className = "" }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
-    );
-    const IconSearch = ({ size = 24, className = "" }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-    );
-    const IconExternalLink = ({ size = 24, className = "" }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
-    );
+    // --- 圖示元件庫 ---
+    const IconCalculator = ({ size = 24, className = "" }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16.01" y1="10" y2="10"/><line x1="16" x2="16.01" y1="14" y2="14"/><line x1="16" x2="16.01" y1="18" y2="18"/><line x1="8" x2="8.01" y1="10" y2="10"/><line x1="8" x2="8.01" y1="14" y2="14"/><line x1="8" x2="8.01" y1="18" y2="18"/><line x1="12" x2="12.01" y1="10" y2="10"/><line x1="12" x2="12.01" y1="14" y2="14"/><line x1="12" x2="12.01" y1="18" y2="18"/></svg>;
+    const IconHome = ({ size = 24, className = "" }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
+    const IconDollar = ({ size = 24, className = "" }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
+    const IconWallet = ({ size = 24, className = "" }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a8 8 0 0 1-5 7.59C14.1 21.29 13 22 12 22a8 8 0 0 1-8-8V7h15Z"/><path d="M19 15v-4"/></svg>;
+    const IconShield = ({ size = 24, className = "" }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2-1 4-2 7-2 2.82 0 4.96.94 7 2a1 1 0 0 1 1 1v7z"/></svg>;
+    const IconCar = ({ size = 24, className = "" }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 16H9m10 0h3v-3.15a1 1 0 0 0-.84-.99L16 11l-2.7-3.6a2 2 0 0 0-1.6-.8H8.3a2 2 0 0 0-1.6.8L4 11l-5.16.86a1 1 0 0 0-.84.99V16h3m14 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM7 16a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"/></svg>;
+    const IconTable = ({ size = 24, className = "" }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="3" x2="21" y1="9" y2="9"/><line x1="3" x2="21" y1="15" y2="15"/><line x1="9" x2="9" y1="9" y2="21"/><line x1="15" x2="15" y1="9" y2="21"/></svg>;
+    const IconMessage = ({ size = 24, className = "" }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>;
+    const IconX = ({ size = 24, className = "" }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>;
+    const IconAlert = ({ size = 24, className = "" }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>;
+    const IconSearch = ({ size = 24, className = "" }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>;
+    const IconExternalLink = ({ size = 24, className = "" }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>;
+    const IconGhost = ({ size = 24, className = "" }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"/></svg>;
+    const IconSun = ({ size = 24, className = "" }) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path d="M12 4v1"/><path d="M17.66 6.34l-.7.7"/><path d="M20 12h-1"/><path d="M17.66 17.66l-.7-.7"/><path d="M12 20v-1"/><path d="M6.34 17.66l.7-.7"/><path d="M4 12h1"/><path d="M6.34 6.34l.7.7"/></svg>;
+
+    const generateLoanSchedule = (amount, annualRatePct, years, graceYears, method) => {
+      if (amount <= 0) return [];
+      const monthlyRate = (annualRatePct / 100) / 12;
+      const totalMonths = years * 12;
+      const graceMonths = graceYears * 12;
+      const amortMonths = totalMonths - graceMonths;
+      
+      const schedule = [];
+      let balance = amount;
+      
+      let equalPiPayment = 0;
+      if (method === 'equal-pi' && amortMonths > 0 && monthlyRate > 0) {
+        const temp = Math.pow(1 + monthlyRate, amortMonths);
+        equalPiPayment = amount * ((temp * monthlyRate) / (temp - 1));
+      }
+
+      const equalPrincipalMonthly = amortMonths > 0 ? amount / amortMonths : 0;
+
+      for (let m = 1; m <= totalMonths; m++) {
+        let interest = balance * monthlyRate;
+        let principal = 0;
+
+        if (m > graceMonths) {
+          if (method === 'equal-pi') principal = monthlyRate > 0 ? equalPiPayment - interest : amount / amortMonths;
+          else principal = equalPrincipalMonthly;
+        }
+        
+        if (m === totalMonths) principal = balance;
+        balance -= principal;
+        if (balance < 0) balance = 0;
+        
+        schedule.push({ month: m, interest, principal, payment: interest + principal, balance });
+      }
+      return schedule;
+    };
 
     const MortgageCalculator = () => {
-      // --- 狀態管理 (預設值) ---
-      const [totalPrice, setTotalPrice] = useState(1500);
-      const [sizePing, setSizePing] = useState(25);
-      const [ltv, setLtv] = useState(80); // 新增：貸款成數 (預設8成)
-      const [downPayment, setDownPayment] = useState(300); // 預設為 1500 * 20%
+      // 1. 房屋、實坪與車位資訊
+      const [totalPrice, setTotalPrice] = useState(2000); // 預設 2000 萬
+      const [sizePing, setSizePing] = useState(45); // 總坪數
+      const [mainPing, setMainPing] = useState(25); // 主建物(室內)坪數
       
-      const [loanScheme, setLoanScheme] = useState('standard'); // 新增：追蹤目前方案 ('standard', 'youth', 'custom')
+      // 車位
+      const [hasCarPark, setHasCarPark] = useState(true);
+      const [carParkPrice, setCarParkPrice] = useState(250);
+      const [carParkSize, setCarParkSize] = useState(10);
+
+      // 露台
+      const [hasBalcony, setHasBalcony] = useState(false);
+      const [balconyPing, setBalconyPing] = useState(5);
+      const [balconyType, setBalconyType] = useState('registered'); // registered(權狀內), agreed(約定專用)
+      
+      const [ltv, setLtv] = useState(80);
+      const [downPayment, setDownPayment] = useState(400);
+
+      // 2. 隱藏成本
+      const [agentFeeRate, setAgentFeeRate] = useState(2);
+      const [taxFee, setTaxFee] = useState(15);
+      const [decorationFee, setDecorationFee] = useState(80);
+
+      // 3. 財務健康度
+      const [monthlyIncome, setMonthlyIncome] = useState(15);
+
+      // 4. 貸款條件
+      const [loanScheme, setLoanScheme] = useState('standard');
+      const [repaymentMethod, setRepaymentMethod] = useState('equal-pi');
+      
+      const [interestRate, setInterestRate] = useState(2.06);
       const [loanTerm, setLoanTerm] = useState(30);
       const [gracePeriod, setGracePeriod] = useState(0);
-      const [interestRate, setInterestRate] = useState(2.06);
-      
-      const [repaymentMethod, setRepaymentMethod] = useState('equal-pi');
 
-      // --- 計算結果狀態 ---
-      const [results, setResults] = useState({
-        unitPrice: 0, loanAmount: 0, monthlyPaymentGrace: 0,
-        monthlyPaymentAmortization: 0, firstMonthAmortization: 0, monthlyDecrease: 0,
-        totalInterest: 0, totalPayment: 0
-      });
+      const [excessRate, setExcessRate] = useState(2.06);
+      const [excessTerm, setExcessTerm] = useState(30);
+      const [excessGrace, setExcessGrace] = useState(0);
 
-      // --- 格式化工具 ---
-      const formatCurrency = (value) => {
-        return new Intl.NumberFormat('zh-TW', {
-          style: 'currency', currency: 'TWD', maximumFractionDigits: 0
-        }).format(Math.round(value));
-      };
+      const [showModal, setShowModal] = useState(false);
 
-      // --- 房屋資金連動邏輯 ---
+      const formatCurrency = (val) => new Intl.NumberFormat('zh-TW', { style: 'currency', currency: 'TWD', maximumFractionDigits: 0 }).format(Math.round(val || 0));
+
       const handleTotalPriceChange = (e) => {
         const newPrice = Number(e.target.value);
         setTotalPrice(newPrice);
         setDownPayment(Math.round(newPrice * (1 - ltv / 100) * 100) / 100);
       };
-
       const handleLtvChange = (e) => {
         const newLtv = Number(e.target.value);
         setLtv(newLtv);
         setDownPayment(Math.round(totalPrice * (1 - newLtv / 100) * 100) / 100);
       };
-
       const handleDpChange = (e) => {
         const newDp = Number(e.target.value);
         setDownPayment(newDp);
-        if (totalPrice > 0) {
-          setLtv(Math.round(((totalPrice - newDp) / totalPrice) * 1000) / 10);
-        }
+        if (totalPrice > 0) setLtv(Math.round(((totalPrice - newDp) / totalPrice) * 1000) / 10);
       };
 
-      // --- 快速套用方案邏輯 ---
       const applyScheme = (scheme) => {
         setLoanScheme(scheme);
         if (scheme === 'standard') {
@@ -113,323 +140,489 @@
         }
       };
 
-      // 若手動修改任何貸款參數，將標籤切換為「自訂」
-      const handleCustomInput = (setter) => (e) => {
-        setter(Number(e.target.value));
-        setLoanScheme('custom');
-      };
-
-      // --- 分享至 LINE ---
-      const handleShareToLine = () => {
-        const methodText = repaymentMethod === 'equal-pi' ? '本息平均攤還' : '本金平均攤還';
-        const schemeText = loanScheme === 'youth' ? '新青安專案' : (loanScheme === 'standard' ? '一般首購' : '自訂條件');
-        
-        let amortizationText = repaymentMethod === 'equal-pi' 
-          ? `${formatCurrency(results.monthlyPaymentAmortization)} (固定)`
-          : `首月 ${formatCurrency(results.firstMonthAmortization)} (之後每月約遞減 ${formatCurrency(results.monthlyDecrease)})`;
-
-        const shareText = `🏠 購屋財務試算結果\n------------------\n💰 房屋總價：${totalPrice} 萬元\n📐 建坪大小：${sizePing} 坪\n💎 坪數單價：${results.unitPrice} 萬/坪\n🏦 貸款成數：${ltv}%\n💰 自備頭款：${downPayment} 萬元\n🏦 貸款總額：${formatCurrency(results.loanAmount)}\n📊 貸款條件：${schemeText} (${interestRate}% / ${loanTerm}年 / 寬限期 ${gracePeriod}年)\n🔄 攤還方式：${methodText}\n------------------\n${gracePeriod > 0 
-          ? `🗓️ 前 ${gracePeriod} 年每月還款：${formatCurrency(results.monthlyPaymentGrace)} (僅繳利息)\n🗓️ 第 ${gracePeriod + 1} 年起還款：${amortizationText}` 
-          : `🗓️ 每月還款金額：${amortizationText}`}\n------------------\n💡 本試算僅供參考，實際核貸結果依銀行為準。`;
-
-        const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(shareText)}`;
-        window.open(lineUrl, '_blank');
-      };
-
-      // --- 核心計算邏輯 ---
-      useEffect(() => {
-        const unitPrice = sizePing > 0 ? (totalPrice / sizePing).toFixed(2) : 0;
-        const loanAmountTWD = Math.max(0, (totalPrice - downPayment) * 10000);
-        
-        const monthlyRate = (interestRate / 100) / 12;
-        const totalMonths = loanTerm * 12;
-        const graceMonths = gracePeriod * 12;
-        const amortizationMonths = totalMonths - graceMonths;
-
-        let monthlyGrace = 0; let monthlyAmortization = 0; 
-        let firstMonthAmortization = 0; let monthlyDecrease = 0; let totalInterestPaid = 0;
-
-        if (loanAmountTWD > 0 && interestRate > 0) {
-          monthlyGrace = loanAmountTWD * monthlyRate;
-          if (amortizationMonths > 0) {
-            if (repaymentMethod === 'equal-pi') {
-              const temp = Math.pow(1 + monthlyRate, amortizationMonths);
-              const amortizationRate = (temp * monthlyRate) / (temp - 1);
-              monthlyAmortization = loanAmountTWD * amortizationRate;
-              const totalPaid = (monthlyGrace * graceMonths) + (monthlyAmortization * amortizationMonths);
-              totalInterestPaid = totalPaid - loanAmountTWD;
-            } else {
-              const monthlyPrincipal = loanAmountTWD / amortizationMonths;
-              firstMonthAmortization = monthlyPrincipal + (loanAmountTWD * monthlyRate);
-              monthlyDecrease = monthlyPrincipal * monthlyRate;
-              const amortizationInterest = ((amortizationMonths + 1) * loanAmountTWD * monthlyRate) / 2;
-              totalInterestPaid = (monthlyGrace * graceMonths) + amortizationInterest;
-            }
-          } else {
-             totalInterestPaid = monthlyGrace * graceMonths;
-          }
-        } else if (interestRate === 0 && amortizationMonths > 0) {
-          monthlyAmortization = loanAmountTWD / amortizationMonths;
-          firstMonthAmortization = monthlyAmortization;
+      // --- 核心計算 ---
+      const calculation = useMemo(() => {
+        // A. 扣除車位後的房屋總價
+        let houseOnlyPrice = totalPrice;
+        let houseOnlySize = sizePing;
+        if (hasCarPark) {
+          houseOnlyPrice = Math.max(0, totalPrice - carParkPrice);
+          houseOnlySize = Math.max(0.1, sizePing - carParkSize);
         }
 
-        setResults({
-          unitPrice: parseFloat(unitPrice), loanAmount: loanAmountTWD,
-          monthlyPaymentGrace: monthlyGrace, monthlyPaymentAmortization: monthlyAmortization,
-          firstMonthAmortization: firstMonthAmortization, monthlyDecrease: monthlyDecrease,
-          totalInterest: totalInterestPaid, totalPayment: loanAmountTWD + totalInterestPaid
-        });
-      }, [totalPrice, sizePing, downPayment, loanTerm, gracePeriod, interestRate, repaymentMethod]);
+        // B. 常規權狀單價 (總價-車位) / (總坪數-車位)
+        const standardUnitPrice = (houseOnlyPrice / houseOnlySize).toFixed(2);
+
+        // C. 實坪制單價 (總價-車位) / 主建物坪數
+        const realIndoorUnitPrice = mainPing > 0 ? (houseOnlyPrice / mainPing).toFixed(2) : 0;
+
+        // D. 露台價值預估 (1/3 價原則)
+        let balconyEstimatedValue = 0;
+        if (hasBalcony && balconyPing > 0) {
+          balconyEstimatedValue = ((houseOnlyPrice / houseOnlySize) / 3) * balconyPing;
+        }
+
+        // 2. 購屋應備總現金
+        const agentFeeTWD = (totalPrice * 10000) * (agentFeeRate / 100);
+        const taxFeeTWD = taxFee * 10000;
+        const decoFeeTWD = decorationFee * 10000;
+        const dpTWD = downPayment * 10000;
+        const totalCashNeeded = dpTWD + agentFeeTWD + taxFeeTWD + decoFeeTWD;
+
+        // 3. 貸款總額與雙方案拆算
+        const loanAmountTWD = Math.max(0, (totalPrice - downPayment) * 10000);
+        let schedule1 = [], schedule2 = [], isDualLoan = false;
+
+        if (loanScheme === 'youth' && loanAmountTWD > 10000000) {
+          isDualLoan = true;
+          schedule1 = generateLoanSchedule(10000000, interestRate, loanTerm, gracePeriod, repaymentMethod);
+          schedule2 = generateLoanSchedule(loanAmountTWD - 10000000, excessRate, excessTerm, excessGrace, repaymentMethod);
+        } else {
+          schedule1 = generateLoanSchedule(loanAmountTWD, interestRate, loanTerm, gracePeriod, repaymentMethod);
+        }
+
+        // 4. 合併月還款
+        const maxMonths = Math.max(schedule1.length, schedule2.length);
+        const combinedMonthly = [];
+        let totalInterest = 0, maxMonthlyPayment = 0;
+
+        for (let m = 0; m < maxMonths; m++) {
+          const s1 = schedule1[m] || { interest: 0, principal: 0, payment: 0, balance: 0 };
+          const s2 = schedule2[m] || { interest: 0, principal: 0, payment: 0, balance: 0 };
+          const curPayment = s1.payment + s2.payment;
+          if (curPayment > maxMonthlyPayment) maxMonthlyPayment = curPayment;
+          totalInterest += (s1.interest + s2.interest);
+          combinedMonthly.push({
+            month: m + 1, interest: s1.interest + s2.interest, principal: s1.principal + s2.principal,
+            payment: curPayment, balance: s1.balance + s2.balance
+          });
+        }
+
+        // 5. 收支比
+        const incomeTWD = monthlyIncome * 10000;
+        const dti = incomeTWD > 0 ? (maxMonthlyPayment / incomeTWD) * 100 : 0;
+        let dtiStatus = { color: 'bg-green-100 text-green-800 border-green-200', text: '安全 (餘裕充足)' };
+        if (dti > 60) dtiStatus = { color: 'bg-red-100 text-red-800 border-red-200', text: '危險 (銀行恐拒貸)' };
+        else if (dti > 35) dtiStatus = { color: 'bg-yellow-100 text-yellow-800 border-yellow-200', text: '警戒 (生活品質受限)' };
+
+        // 6. 提煉 UI 顯示用的階段摘要
+        const displayPhases = [];
+        if (combinedMonthly.length > 0) {
+          if (repaymentMethod === 'equal-pi') {
+            let currentPhase = { start: 1, end: 1, payment: combinedMonthly[0].payment };
+            for (let i = 1; i < combinedMonthly.length; i++) {
+              if (Math.abs(combinedMonthly[i].payment - currentPhase.payment) > 10) {
+                currentPhase.end = i; displayPhases.push(currentPhase);
+                currentPhase = { start: i + 1, end: i + 1, payment: combinedMonthly[i].payment };
+              } else currentPhase.end = i + 1;
+            }
+            displayPhases.push(currentPhase);
+          } else {
+            displayPhases.push({ start: 1, end: maxMonths, payment: combinedMonthly[0].payment, type: 'principal' });
+          }
+        }
+
+        // 7. 年度報表聚合
+        const yearlySchedule = [];
+        for (let y = 0; y < Math.ceil(maxMonths / 12); y++) {
+          let yInt = 0, yPrin = 0, yPay = 0, endBal = 0;
+          for (let m = 0; m < 12; m++) {
+            const idx = y * 12 + m;
+            if (idx < combinedMonthly.length) {
+              yInt += combinedMonthly[idx].interest; yPrin += combinedMonthly[idx].principal;
+              yPay += combinedMonthly[idx].payment; endBal = combinedMonthly[idx].balance;
+            }
+          }
+          yearlySchedule.push({ year: y + 1, payment: yPay, principal: yPrin, interest: yInt, balance: endBal });
+        }
+
+        return {
+          standardUnitPrice, realIndoorUnitPrice, balconyEstimatedValue,
+          totalCashNeeded, loanAmountTWD, agentFeeTWD, taxFeeTWD, decoFeeTWD, dpTWD,
+          isDualLoan, maxMonthlyPayment, totalInterest, dti, dtiStatus, displayPhases, yearlySchedule, combinedMonthly
+        };
+      }, [totalPrice, sizePing, mainPing, hasCarPark, carParkPrice, carParkSize, hasBalcony, balconyPing, balconyType, ltv, downPayment, 
+          agentFeeRate, taxFee, decorationFee, monthlyIncome, loanScheme, repaymentMethod, 
+          interestRate, loanTerm, gracePeriod, excessRate, excessTerm, excessGrace]);
+
+      const handleShareToLine = () => {
+        const shareText = `🏠 購屋財務健檢報告\n------------------\n` +
+          `💰 總價：${totalPrice}萬 ${hasCarPark ? `(含車位${carParkPrice}萬)` : ''}\n` +
+          `✨ 實坪居住成本：${calculation.realIndoorUnitPrice} 萬/坪 (權狀:${calculation.standardUnitPrice})\n` +
+          `🏦 貸款成數：${ltv}%\n` +
+          `💸 應備現金：${formatCurrency(calculation.totalCashNeeded)} (含頭款/稅/裝潢)\n` +
+          `📊 收支比：${calculation.dti.toFixed(1)}% [${calculation.dtiStatus.text}]\n` +
+          `------------------\n` +
+          `🏦 總貸款：${formatCurrency(calculation.loanAmountTWD)}\n` +
+          `📈 最高月繳：${formatCurrency(calculation.maxMonthlyPayment)}\n` +
+          `------------------\n💡 試算結果僅供參考。`;
+
+        window.open(`https://line.me/R/msg/text/?${encodeURIComponent(shareText)}`, '_blank');
+      };
 
       return (
-        <div className="min-h-screen bg-gray-50 p-4 md:p-8 text-gray-800">
-          <div className="max-w-5xl mx-auto space-y-6">
+        <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-6xl mx-auto">
             
             {/* Header */}
-            <div className="flex items-center space-x-3 mb-8">
-              <div className="bg-blue-600 p-3 rounded-lg text-white shadow-md">
-                <IconCalculator size={28} />
+            <div className="flex items-center space-x-4 mb-8">
+              <div className="bg-blue-800 p-3.5 rounded-2xl text-white shadow-lg shadow-blue-200">
+                <IconCalculator size={32} />
               </div>
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">購屋財務與貸款分析器</h1>
-                <p className="text-gray-500 text-sm md:text-base mt-1">整合單價分析、貸款成數與新青安試算</p>
+                <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">專家版購屋財務分析器</h1>
+                <p className="text-gray-500 mt-1">實坪制單價還原 × 露台估價 × 車位陷阱防護 × 新青安組合試算</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               
-              {/* 左側：輸入區 */}
+              {/* === 左側：輸入區 === */}
               <div className="lg:col-span-7 space-y-6">
                 
-                {/* 房屋資訊卡片 */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                  <div className="flex items-center space-x-2 mb-5 text-blue-800 border-b border-gray-50 pb-3">
+                {/* 1. 房屋、實坪與車位資訊 */}
+                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8">
+                  <div className="flex items-center space-x-2 mb-6 text-blue-800 border-b border-gray-100 pb-3">
                     <IconHome size={22} className="text-blue-600"/>
-                    <h2 className="text-xl font-semibold">房屋與資金資訊</h2>
+                    <h2 className="text-xl font-bold">房屋、實坪與車位資訊</h2>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">房屋總價 (萬元)</label>
-                      <input type="number" value={totalPrice} onChange={handleTotalPriceChange} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none" />
+                  <div className="grid grid-cols-2 gap-5 mb-5">
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">房屋總價 (萬元)</label>
+                      <input type="number" value={totalPrice} onChange={handleTotalPriceChange} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium" />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">建坪大小 (坪)</label>
-                      <input type="number" value={sizePing} onChange={(e) => setSizePing(Number(e.target.value))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none" />
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">權狀總建坪 (坪)</label>
+                      <input type="number" value={sizePing} onChange={(e) => setSizePing(Number(e.target.value))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium" />
                     </div>
-                    
-                    {/* --- 新增：貸款成數 --- */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">貸款成數 (%)</label>
-                      <input type="number" value={ltv} onChange={handleLtvChange} max="100" min="0" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none" />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">自備頭期款 (萬元)</label>
-                      <input type="number" value={downPayment} onChange={handleDpChange} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none" />
+                    <div className="col-span-2">
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">主建物(室內)實坪 (坪)</label>
+                      <input type="number" value={mainPing} onChange={(e) => setMainPing(Number(e.target.value))} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium" />
+                      <p className="text-xs text-gray-400 mt-1.5 flex items-center">💡 <span className="ml-1">去除公設，用於還原「真實居住成本」，避免被高公設比稀釋單價。</span></p>
                     </div>
                   </div>
 
-                  {/* 錯誤提示 */}
-                  {downPayment > totalPrice && (
-                    <p className="text-red-500 text-sm mt-3 flex items-center bg-red-50 p-2 rounded-lg">
-                      <IconAlert size={16} className="mr-1.5" /> 頭期款不能大於房屋總價
-                    </p>
-                  )}
-                  {ltv > 100 && (
-                    <p className="text-red-500 text-sm mt-3 flex items-center bg-red-50 p-2 rounded-lg">
-                      <IconAlert size={16} className="mr-1.5" /> 貸款成數不能超過 100%
-                    </p>
-                  )}
+                  {/* 車位開關與輸入 */}
+                  <div className="bg-blue-50/50 p-4 rounded-2xl border border-blue-100 mb-4 transition-all">
+                    <label className="flex items-center cursor-pointer mb-2">
+                      <input type="checkbox" checked={hasCarPark} onChange={() => setHasCarPark(!hasCarPark)} className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 border-gray-300" />
+                      <span className="ml-2 font-semibold text-blue-900 flex items-center"><IconCar size={18} className="mr-1"/> 包含車位 (啟用車位單價拆算)</span>
+                    </label>
+                    {hasCarPark && (
+                      <div className="mt-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-medium text-blue-800 mb-1">車位總價 (萬元)</label>
+                            <input type="number" value={carParkPrice} onChange={(e) => setCarParkPrice(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-blue-800 mb-1">車位坪數 (坪)</label>
+                            <input type="number" value={carParkSize} onChange={(e) => setCarParkSize(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                          </div>
+                        </div>
+                        <div className="mt-3 p-2.5 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start">
+                          <IconAlert size={14} className="text-yellow-600 mr-1.5 mt-0.5 flex-shrink-0" />
+                          <p className="text-xs text-yellow-800 leading-relaxed"><strong>車位訂價調控陷阱：</strong>房仲常透過調高「車位價」來壓低「房屋單價」。獨立車位行情通常僅為綁定價的 6~7 折，請務必核對社區獨立車位實價登錄！</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
-                  <div className="mt-5 bg-blue-50/70 p-4 rounded-xl border border-blue-100/50 flex items-center justify-between">
-                    <span className="text-gray-700 font-medium">換算坪數單價</span>
-                    <span className="text-xl font-bold text-blue-700">
-                      {results.unitPrice} <span className="text-sm font-normal text-gray-500">萬/坪</span>
-                    </span>
+                  {/* 露台估價 */}
+                  <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100 mb-5 transition-all">
+                    <label className="flex items-center cursor-pointer mb-2">
+                      <input type="checkbox" checked={hasBalcony} onChange={() => setHasBalcony(!hasBalcony)} className="w-5 h-5 rounded text-emerald-600 focus:ring-emerald-500 border-gray-300" />
+                      <span className="ml-2 font-semibold text-emerald-900 flex items-center"><IconSun size={18} className="mr-1"/> 特殊空間：包含大露台</span>
+                    </label>
+                    {hasBalcony && (
+                      <div className="mt-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-medium text-emerald-800 mb-1">露台坪數 (坪)</label>
+                            <input type="number" value={balconyPing} onChange={(e) => setBalconyPing(Number(e.target.value))} className="w-full px-3 py-2 bg-white border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-emerald-800 mb-1">露台權益類型</label>
+                            <select value={balconyType} onChange={(e) => setBalconyType(e.target.value)} className="w-full px-3 py-2 bg-white border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+                              <option value="registered">附屬建物 (登記在權狀內)</option>
+                              <option value="agreed">約定專用 (無權狀登記)</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div className="mt-3 space-y-2">
+                          <p className="text-xs text-emerald-800 font-medium">✨ 依據 1/3 價原則，該露台合理總價約：<strong className="text-emerald-600 text-sm ml-1">{Math.round(calculation.balconyEstimatedValue)} 萬元</strong></p>
+                          <ul className="text-xs text-gray-500 list-disc list-inside ml-1">
+                            {balconyType === 'registered' ? <li>此為附屬建物，<strong>需繳交房屋稅</strong>。</li> : <li>此為約定專用僅具使用權，<strong>須承擔樓上墜落物風險</strong>。</li>}
+                            {balconyPing >= 18 && <li className="text-red-500 font-semibold">警告：露台超過 18 坪，大露台將成為「管理負擔」(清潔、漏水風險)，價值應進一步折減！</li>}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-5 border-t border-gray-100 pt-5">
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">貸款成數 (%)</label>
+                      <input type="number" value={ltv} onChange={handleLtvChange} max="100" className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium" />
+                    </div>
+                    <div className="col-span-2 sm:col-span-1">
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">自備頭期款 (萬元)</label>
+                      <input type="number" value={downPayment} onChange={handleDpChange} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium" />
+                    </div>
+                  </div>
+
+                  {/* 顯示真實單價 */}
+                  <div className="mt-6 bg-gray-800 rounded-2xl p-5 flex flex-col sm:flex-row justify-between sm:items-center text-white shadow-md">
+                    <div className="mb-3 sm:mb-0">
+                      <p className="text-gray-400 text-xs font-medium mb-1">傳統表象單價</p>
+                      <p className="text-lg text-gray-300 line-through decoration-gray-500">{calculation.standardUnitPrice} 萬/坪</p>
+                    </div>
+                    <div className="sm:text-right">
+                      <p className="text-blue-300 text-xs font-bold mb-1 tracking-wider uppercase">實坪制真實居住成本</p>
+                      <div className="flex items-baseline sm:justify-end">
+                        <span className="text-4xl font-extrabold text-white">{calculation.realIndoorUnitPrice}</span>
+                        <span className="text-blue-200 ml-1 font-medium text-sm">萬/坪</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                {/* 市場行情查詢卡片 */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                  <div className="flex items-center space-x-2 mb-4 text-purple-800 border-b border-gray-50 pb-3">
+                {/* --- 市場行情與凶宅查詢卡片 --- */}
+                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8">
+                  <div className="flex items-center space-x-2 mb-4 text-purple-800 border-b border-gray-100 pb-3">
                     <IconSearch size={22} className="text-purple-600"/>
-                    <h2 className="text-xl font-semibold">市場行情與實價登錄查詢</h2>
+                    <h2 className="text-xl font-bold">市場行情與風險排雷</h2>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <a href="https://lvr.land.moi.gov.tw/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center space-x-2 px-4 py-3 bg-gray-50 hover:bg-purple-50 hover:text-purple-700 text-gray-700 rounded-xl border border-gray-200 hover:border-purple-200 transition-colors font-medium text-sm shadow-sm">
-                      <span>內政部實價登錄</span><IconExternalLink size={14} />
-                    </a>
-                    <a href="https://www.leju.com.tw/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center space-x-2 px-4 py-3 bg-gray-50 hover:bg-blue-50 hover:text-blue-700 text-gray-700 rounded-xl border border-gray-200 hover:border-blue-200 transition-colors font-medium text-sm shadow-sm">
-                      <span>樂居 Leju</span><IconExternalLink size={14} />
-                    </a>
-                    <a href="https://www.591.com.tw/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center space-x-2 px-4 py-3 bg-gray-50 hover:bg-orange-50 hover:text-orange-600 text-gray-700 rounded-xl border border-gray-200 hover:border-orange-200 transition-colors font-medium text-sm shadow-sm">
-                      <span>591 房屋交易</span><IconExternalLink size={14} />
-                    </a>
+                  <div className="space-y-6">
+                    {/* 價格查詢 */}
+                    <div>
+                      <p className="text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">💰 價格與車位實登比對</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <a href="https://lvr.land.moi.gov.tw/" target="_blank" className="flex items-center justify-center space-x-2 px-4 py-3 bg-gray-50 hover:bg-purple-50 text-gray-700 rounded-xl border border-gray-200 transition-colors font-medium text-sm"><span>內政部實價登錄</span><IconExternalLink size={14}/></a>
+                        <a href="https://www.leju.com.tw/" target="_blank" className="flex items-center justify-center space-x-2 px-4 py-3 bg-gray-50 hover:bg-blue-50 text-gray-700 rounded-xl border border-gray-200 transition-colors font-medium text-sm"><span>樂居 Leju</span><IconExternalLink size={14}/></a>
+                        <a href="https://www.591.com.tw/" target="_blank" className="flex items-center justify-center space-x-2 px-4 py-3 bg-gray-50 hover:bg-orange-50 text-gray-700 rounded-xl border border-gray-200 transition-colors font-medium text-sm"><span>591 房屋交易</span><IconExternalLink size={14}/></a>
+                      </div>
+                    </div>
+
+                    {/* 凶宅查詢 */}
+                    <div>
+                      <p className="text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider flex items-center"><IconGhost size={14} className="mr-1" /> 風險與凶宅排雷</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <a href="http://unluckyhouse.com/" target="_blank" className="flex items-center justify-center space-x-2 px-4 py-3 bg-gray-50 hover:bg-red-50 hover:text-red-700 text-gray-700 rounded-xl border border-gray-200 transition-colors font-medium text-sm shadow-sm"><IconGhost size={16} /><span>台灣凶宅網</span><IconExternalLink size={14} /></a>
+                        <a href="https://www.google.com/search?q=%E5%87%B6%E5%AE%85+%E5%91%BD%E6%A1%88+%E4%BA%8B%E6%95%85+%E7%A4%BE%E5%8D%80%E5%90%8D%E7%A8%B1" target="_blank" className="flex items-center justify-center space-x-2 px-4 py-3 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl border border-gray-200 transition-colors font-medium text-sm shadow-sm"><IconSearch size={16} /><span>Google 新聞排雷</span><IconExternalLink size={14} /></a>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-2.5 bg-gray-50 p-2.5 rounded-lg border border-gray-100">💡 點擊「新聞排雷」後，請補上想買的<strong className="text-red-400">「社區名稱」</strong>或<strong className="text-red-400">「地址」</strong>進行交叉比對。</p>
+                    </div>
                   </div>
                 </div>
 
-                {/* 貸款設定卡片 */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                  <div className="flex items-center space-x-2 text-green-700 mb-5 border-b border-gray-50 pb-3">
+                {/* 2. 隱藏成本 */}
+                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8">
+                  <div className="flex items-center space-x-2 mb-6 text-orange-800 border-b border-gray-100 pb-3">
+                    <IconWallet size={22} className="text-orange-600"/>
+                    <h2 className="text-xl font-bold">購屋隱藏成本估算</h2>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">買方仲介費 (%)</label>
+                      <input type="number" step="0.1" value={agentFeeRate} onChange={(e) => setAgentFeeRate(Number(e.target.value))} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none" />
+                      <p className="text-xs text-gray-400 mt-1">約 {Math.round(totalPrice * agentFeeRate / 100)} 萬</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">代書與稅費 (萬元)</label>
+                      <input type="number" value={taxFee} onChange={(e) => setTaxFee(Number(e.target.value))} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">裝潢預算 (萬元)</label>
+                      <input type="number" value={decorationFee} onChange={(e) => setDecorationFee(Number(e.target.value))} className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. 貸款條件 */}
+                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8">
+                  <div className="flex items-center space-x-2 text-green-700 mb-6 border-b border-gray-100 pb-3">
                     <IconDollar size={22} className="text-green-600"/>
-                    <h2 className="text-xl font-semibold text-gray-800">貸款條件設定</h2>
+                    <h2 className="text-xl font-bold text-gray-800">貸款條件設定</h2>
                   </div>
 
-                  {/* --- 新增：方案選擇切換器 (Segmented Control) --- */}
-                  <label className="block text-sm font-medium text-gray-700 mb-2">1. 選擇貸款專案</label>
                   <div className="mb-6 bg-gray-100 p-1.5 rounded-xl flex space-x-1">
-                    <button 
-                      onClick={() => applyScheme('standard')}
-                      className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${loanScheme === 'standard' ? 'bg-white shadow-sm text-blue-700' : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                      一般首購 (2.06%)
-                    </button>
-                    <button 
-                      onClick={() => applyScheme('youth')}
-                      className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${loanScheme === 'youth' ? 'bg-white shadow-sm text-green-700 border border-green-100' : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                      🚀 新青安 (1.775%)
-                    </button>
-                    <button 
-                      onClick={() => setLoanScheme('custom')}
-                      className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${loanScheme === 'custom' ? 'bg-white shadow-sm text-purple-700' : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                      手動自訂
-                    </button>
+                    <button onClick={() => applyScheme('standard')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${loanScheme === 'standard' ? 'bg-white shadow-sm text-blue-700' : 'text-gray-500 hover:text-gray-700'}`}>一般首購</button>
+                    <button onClick={() => applyScheme('youth')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${loanScheme === 'youth' ? 'bg-white shadow-sm text-green-700 border border-green-100' : 'text-gray-500 hover:text-gray-700'}`}>🚀 新青安專案</button>
+                    <button onClick={() => setLoanScheme('custom')} className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${loanScheme === 'custom' ? 'bg-white shadow-sm text-purple-700' : 'text-gray-500 hover:text-gray-700'}`}>自訂條件</button>
                   </div>
 
-                  {/* 攤還方式切換器 */}
-                  <label className="block text-sm font-medium text-gray-700 mb-2">2. 選擇攤還方式</label>
-                  <div className="mb-6 bg-gray-100 p-1.5 rounded-xl flex space-x-1">
-                    <button 
-                      onClick={() => setRepaymentMethod('equal-pi')}
-                      className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${repaymentMethod === 'equal-pi' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                      本息平均攤還 <span className="block text-xs font-normal text-gray-400 mt-0.5">每月繳款固定</span>
-                    </button>
-                    <button 
-                      onClick={() => setRepaymentMethod('equal-principal')}
-                      className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${repaymentMethod === 'equal-principal' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}
-                    >
-                      本金平均攤還 <span className="block text-xs font-normal text-gray-400 mt-0.5">先苦後甘(省利息)</span>
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center"><IconPercent size={14} className="mr-1 text-gray-400"/> 年利率 (%)</label>
-                      <input type="number" step="0.001" value={interestRate} onChange={handleCustomInput(setInterestRate)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all outline-none" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center"><IconCalendar size={14} className="mr-1 text-gray-400"/> 貸款年限 (年)</label>
-                      <select value={loanTerm} onChange={handleCustomInput(setLoanTerm)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all outline-none appearance-none">
-                        <option value={20}>20 年</option>
-                        <option value={30}>30 年</option>
-                        <option value={40}>40 年</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center"><IconCalendar size={14} className="mr-1 text-gray-400"/> 寬限期 (年)</label>
-                      <select value={gracePeriod} onChange={handleCustomInput(setGracePeriod)} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all outline-none appearance-none">
-                        <option value={0}>無寬限期</option>
-                        <option value={1}>1 年</option>
-                        <option value={2}>2 年</option>
-                        <option value={3}>3 年</option>
-                        <option value={4}>4 年</option>
-                        <option value={5}>5 年</option>
-                      </select>
-                    </div>
-                  </div>
-                  
-                  {loanScheme === 'youth' && (
-                    <div className="mt-5 text-sm text-green-800 bg-green-50 p-4 rounded-xl border border-green-100 flex items-start transition-all">
-                      <IconAlert size={18} className="mr-2 flex-shrink-0 mt-0.5 text-green-600" />
-                      <p className="leading-relaxed">您目前套用「新青安方案」條件。請注意：新青安貸款最高上限為 1,000 萬元，若您的貸款總額超過 1,000 萬，超過部分需依銀行一般利率計算。（本工具為全額單一利率簡化試算）</p>
+                  {calculation.isDualLoan && (
+                    <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-2xl">
+                      <p className="text-sm font-bold text-green-800 mb-1 flex items-center"><IconAlert size={16} className="mr-1"/> 啟動新青安雙貸款組合拆算</p>
+                      <p className="text-xs text-green-700 mb-3">您的貸款總額為 {calculation.loanAmountTWD / 10000} 萬，系統將自動拆分 1000 萬與超過部分的利率計算：</p>
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div className="bg-white p-3 rounded-xl shadow-sm border border-green-100">
+                          <span className="block text-green-600 font-bold mb-1">額度內 (1,000萬)</span>
+                          使用新青安條件。
+                        </div>
+                        <div className="bg-white p-3 rounded-xl shadow-sm border border-blue-100">
+                          <span className="block text-blue-600 font-bold mb-1">超過部分 ({(calculation.loanAmountTWD/10000 - 1000).toFixed(1)}萬)</span>
+                          <div className="space-y-2 mt-2">
+                            <div className="flex items-center justify-between"><span className="text-gray-500 text-xs">利率%</span><input type="number" step="0.01" value={excessRate} onChange={e=>setExcessRate(Number(e.target.value))} className="w-16 border rounded px-1 text-right text-xs py-0.5" /></div>
+                            <div className="flex items-center justify-between"><span className="text-gray-500 text-xs">年限</span><input type="number" value={excessTerm} onChange={e=>setExcessTerm(Number(e.target.value))} className="w-16 border rounded px-1 text-right text-xs py-0.5" /></div>
+                            <div className="flex items-center justify-between"><span className="text-gray-500 text-xs">寬限期</span><input type="number" value={excessGrace} onChange={e=>setExcessGrace(Number(e.target.value))} className="w-16 border rounded px-1 text-right text-xs py-0.5" /></div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
-                </div>
-              </div>
 
-              {/* 右側：分析結果區 */}
-              <div className="lg:col-span-5 flex flex-col">
-                <div className="bg-gray-900 rounded-3xl shadow-xl p-6 md:p-8 text-white sticky top-8 flex-grow flex flex-col">
-                  <h2 className="text-xl font-bold mb-6 border-b border-gray-800 pb-4">財務試算結果</h2>
-                  
-                  <div className="space-y-6 flex-grow">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
                     <div>
-                      <p className="text-gray-400 text-sm mb-1 font-medium">需貸款總額 (佔比 {ltv}%)</p>
-                      <p className="text-4xl font-bold text-white tracking-tight">{formatCurrency(results.loanAmount)}</p>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">主方案年利率 (%)</label>
+                      <input type="number" step="0.001" value={interestRate} onChange={(e)=>{setInterestRate(Number(e.target.value)); setLoanScheme('custom');}} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none font-medium" />
                     </div>
-
-                    <div className="h-px bg-gray-800 w-full"></div>
-
                     <div>
-                      <p className="text-gray-400 text-sm mb-3 font-medium">每月還款金額</p>
-                      {gracePeriod > 0 ? (
-                        <div className="space-y-3">
-                          <div className="bg-gray-800/60 p-4 rounded-2xl border border-gray-700/50">
-                            <div className="flex justify-between items-center mb-1.5">
-                              <span className="text-sm font-medium text-yellow-400">前 {gracePeriod} 年 (寬限期)</span>
-                              <span className="text-xs text-gray-400 bg-gray-900 px-2 py-0.5 rounded-full">僅繳利息</span>
-                            </div>
-                            <p className="text-2xl font-bold text-yellow-400">{formatCurrency(results.monthlyPaymentGrace)} <span className="text-sm font-normal text-gray-500">/月</span></p>
-                          </div>
-                          <div className="bg-gray-800/60 p-4 rounded-2xl border border-gray-700/50">
-                            <div className="flex justify-between items-center mb-1.5">
-                              <span className="text-sm font-medium text-white">第 {gracePeriod + 1} 年起</span>
-                              <span className="text-xs text-gray-400 bg-gray-900 px-2 py-0.5 rounded-full">{repaymentMethod === 'equal-pi' ? '固定本息' : '首月本息'}</span>
-                            </div>
-                            {repaymentMethod === 'equal-pi' ? (
-                                <p className="text-2xl font-bold text-white">{formatCurrency(results.monthlyPaymentAmortization)} <span className="text-sm font-normal text-gray-500">/月</span></p>
-                            ) : (
-                                <div>
-                                    <p className="text-2xl font-bold text-white">{formatCurrency(results.firstMonthAmortization)} <span className="text-sm font-normal text-gray-500">/月</span></p>
-                                    <p className="text-sm text-gray-400 mt-1">之後每月約遞減 <span className="text-gray-300">{formatCurrency(results.monthlyDecrease)}</span></p>
-                                </div>
-                            )}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="bg-gray-800 p-5 rounded-2xl border border-gray-700">
-                          {repaymentMethod === 'equal-pi' ? (
-                              <div>
-                                <p className="text-3xl font-bold text-blue-400">{formatCurrency(results.monthlyPaymentAmortization)} <span className="text-lg font-normal text-gray-500">/月</span></p>
-                                <p className="text-gray-400 text-sm mt-2">採本息平均攤還，每月金額固定</p>
-                              </div>
-                          ) : (
-                              <div>
-                                <p className="text-3xl font-bold text-blue-400">{formatCurrency(results.firstMonthAmortization)} <span className="text-lg font-normal text-gray-500">/首月</span></p>
-                                <p className="text-gray-400 text-sm mt-2">採本金平均攤還，之後每月約遞減 <span className="text-blue-300 font-medium">{formatCurrency(results.monthlyDecrease)}</span></p>
-                              </div>
-                          )}
-                        </div>
-                      )}
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">貸款年限 (年)</label>
+                      <select value={loanTerm} onChange={(e)=>{setLoanTerm(Number(e.target.value)); setLoanScheme('custom');}} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none font-medium">
+                        <option value={20}>20 年</option><option value={30}>30 年</option><option value={40}>40 年</option>
+                      </select>
                     </div>
-
-                    <div className="h-px bg-gray-800 w-full"></div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-gray-800/30 p-4 rounded-xl">
-                        <p className="text-gray-400 text-xs mb-1.5">累計總利息</p>
-                        <p className="text-xl font-semibold text-red-400">{formatCurrency(results.totalInterest)}</p>
-                      </div>
-                      <div className="bg-gray-800/30 p-4 rounded-xl">
-                        <p className="text-gray-400 text-xs mb-1.5">本息總支出</p>
-                        <p className="text-xl font-semibold text-white">{formatCurrency(results.totalPayment)}</p>
-                      </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">寬限期 (年)</label>
+                      <select value={gracePeriod} onChange={(e)=>{setGracePeriod(Number(e.target.value)); setLoanScheme('custom');}} className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none font-medium">
+                        <option value={0}>無寬限期</option><option value={1}>1 年</option><option value={2}>2 年</option>
+                        <option value={3}>3 年</option><option value={4}>4 年</option><option value={5}>5 年</option>
+                      </select>
                     </div>
                   </div>
 
-                  <button onClick={handleShareToLine} className="w-full mt-8 bg-[#06C755] hover:bg-[#05b34c] text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0">
-                    <IconMessage size={20} className="mr-2" />
-                    分享結果至 LINE
-                  </button>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">攤還方式</label>
+                  <div className="bg-gray-100 p-1.5 rounded-xl flex space-x-1">
+                    <button onClick={() => setRepaymentMethod('equal-pi')} className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${repaymentMethod === 'equal-pi' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>本息平均攤還</button>
+                    <button onClick={() => setRepaymentMethod('equal-principal')} className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${repaymentMethod === 'equal-principal' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>本金平均攤還</button>
+                  </div>
                 </div>
               </div>
 
+              {/* === 右側：結果區 === */}
+              <div className="lg:col-span-5 flex flex-col space-y-6">
+                
+                {/* 財務健康度 */}
+                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8">
+                  <div className="flex items-center space-x-2 text-purple-800 mb-5 border-b border-gray-100 pb-3">
+                    <IconShield size={22} className="text-purple-600"/>
+                    <h2 className="text-xl font-bold">買房負擔能力 (收支比)</h2>
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">家庭每月總收入 (萬元)</label>
+                    <input type="number" value={monthlyIncome} onChange={(e) => setMonthlyIncome(Number(e.target.value))} placeholder="例如: 12" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none font-bold text-lg text-purple-900" />
+                  </div>
+                  <div className={`mt-4 p-4 rounded-2xl border flex items-center justify-between transition-colors ${calculation.dtiStatus.color}`}>
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-wider opacity-75">房貸佔收入比</p>
+                      <p className="text-lg font-extrabold">{calculation.dti.toFixed(1)} %</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold">{calculation.dtiStatus.text}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 結算報告黑卡 */}
+                <div className="bg-gray-900 rounded-3xl shadow-xl p-6 md:p-8 text-white flex-grow flex flex-col relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -mr-10 -mt-10"></div>
+                  
+                  <h2 className="text-2xl font-bold mb-6 border-b border-gray-800 pb-4 relative z-10">總結算報告</h2>
+                  
+                  <div className="space-y-6 flex-grow relative z-10">
+                    <div className="bg-gray-800/50 p-5 rounded-2xl border border-gray-700/50">
+                      <p className="text-gray-400 text-sm font-medium mb-1">簽約至交屋 應備總現金</p>
+                      <p className="text-4xl font-extrabold text-white tracking-tight">{formatCurrency(calculation.totalCashNeeded)}</p>
+                      <p className="text-gray-400 text-xs mt-2 font-medium">包含頭款 {calculation.dpTWD/10000}萬 + 稅費裝潢等雜支 {(calculation.agentFeeTWD+calculation.taxFeeTWD+calculation.decoFeeTWD)/10000}萬</p>
+                    </div>
+
+                    <div className="h-px bg-gray-800 w-full"></div>
+
+                    <div>
+                      <p className="text-gray-400 text-sm font-medium mb-3 flex items-center justify-between">
+                        <span>每月房貸還款</span>
+                        {calculation.isDualLoan && <span className="bg-blue-900 text-blue-200 text-xs px-2 py-0.5 rounded-full">雙貸款組合</span>}
+                      </p>
+                      <div className="space-y-3">
+                        {calculation.displayPhases.map((phase, idx) => (
+                          <div key={idx} className={`p-4 rounded-2xl border ${idx === calculation.displayPhases.length - 1 && repaymentMethod === 'equal-pi' ? 'bg-blue-900/20 border-blue-500/30' : 'bg-gray-800/40 border-gray-700/50'}`}>
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-sm font-medium text-gray-300">
+                                {repaymentMethod === 'equal-pi' 
+                                  ? `第 ${Math.ceil(phase.start/12)}~${Math.ceil(phase.end/12)} 年`
+                                  : '首月最高繳款'}
+                              </span>
+                            </div>
+                            <p className="text-2xl font-bold text-white">
+                              {formatCurrency(phase.payment)} <span className="text-sm font-normal text-gray-500">/月</span>
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="h-px bg-gray-800 w-full"></div>
+
+                    <div className="flex justify-between items-center">
+                      <p className="text-gray-400 text-sm font-medium">貸款期間總利息</p>
+                      <p className="text-xl font-bold text-red-400">{formatCurrency(calculation.totalInterest)}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-8 space-y-3 relative z-10">
+                    <button onClick={() => setShowModal(true)} className="w-full bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center transition-all">
+                      <IconTable size={18} className="mr-2" /> 查看年度還款明細表
+                    </button>
+                    <button onClick={handleShareToLine} className="w-full bg-[#06C755] hover:bg-[#05b34c] text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center transition-all shadow-lg hover:shadow-xl">
+                      <IconMessage size={18} className="mr-2" /> LINE 傳送健檢報告
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
+
+          {/* === 年度還款明細 Modal === */}
+          {showModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
+              <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-[fadeIn_0.2s_ease-out]">
+                <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">年度還款明細表</h3>
+                    <p className="text-sm text-gray-500 mt-1">總貸款：{formatCurrency(calculation.loanAmountTWD)} | 總利息：{formatCurrency(calculation.totalInterest)}</p>
+                  </div>
+                  <button onClick={() => setShowModal(false)} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-full transition-colors"><IconX size={24} /></button>
+                </div>
+                <div className="flex-grow overflow-y-auto p-0 no-scrollbar relative">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="sticky top-0 bg-white/95 backdrop-blur shadow-sm z-10">
+                      <tr>
+                        <th className="py-3 px-6 text-sm font-bold text-gray-700 border-b">年度</th>
+                        <th className="py-3 px-6 text-sm font-bold text-gray-700 border-b text-right">該年繳款總額</th>
+                        <th className="py-3 px-6 text-sm font-bold text-gray-700 border-b text-right">其中本金</th>
+                        <th className="py-3 px-6 text-sm font-bold text-gray-700 border-b text-right">其中利息</th>
+                        <th className="py-3 px-6 text-sm font-bold text-blue-700 border-b text-right bg-blue-50/30">年底剩餘房貸</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {calculation.yearlySchedule.map((row) => (
+                        <tr key={row.year} className="hover:bg-gray-50 transition-colors">
+                          <td className="py-3 px-6 text-sm font-medium text-gray-900">第 {row.year} 年</td>
+                          <td className="py-3 px-6 text-sm text-gray-600 text-right">{formatCurrency(row.payment)}</td>
+                          <td className="py-3 px-6 text-sm text-gray-600 text-right">{formatCurrency(row.principal)}</td>
+                          <td className="py-3 px-6 text-sm text-red-500 text-right">{formatCurrency(row.interest)}</td>
+                          <td className="py-3 px-6 text-sm font-bold text-blue-700 text-right bg-blue-50/10">{formatCurrency(row.balance)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     };
